@@ -70,11 +70,11 @@ export default function Grille({rayon, carte}: {rayon: number; carte: Carte}) {
         }
     });
 
-    // Affectation des connexions de "carte" à la Grille
-    const connexions: Connexion[] = [];
+    // Affectation des tyroliennes de "carte" à la Grille
+    const tyroliennes: Connexion[] = [];
     carte.connexions.forEach((connexion) => {
         if (connexion.type === "tyrolienne") {
-            connexions.push(connexion);
+            tyroliennes.push(connexion);
         }
     });
 
@@ -85,27 +85,28 @@ export default function Grille({rayon, carte}: {rayon: number; carte: Carte}) {
                 <Group x={0} y={0}>
                     {hexagons.map(hexagon => (
                         <RegularPolygon
-                            key={hexagon.id}
-                            x={hexagon.position.x}
-                            y={hexagon.position.y}
-                            sides={6}
-                            radius={rayon}
-                            fill={hexagon.couleur}
-                            stroke={"black"}
+                            key = {hexagon.id}
+                            x = {hexagon.position.x}
+                            y = {hexagon.position.y}
+                            sides = {6}
+                            radius = {rayon}
+                            fill = {hexagon.couleur}
+                            stroke = {"black"}
                         />
                     ))}
-                    {connexions.map((connexion) => {
+                    {tyroliennes.map((connexion) => {
                         const start = hexagons.find(hex => hex.id === `${connexion.tuiles[0][0]}-${connexion.tuiles[0][1]}`);
                         const end = hexagons.find(hex => hex.id === `${connexion.tuiles[1][0]}-${connexion.tuiles[1][1]}`);
                         if (!start || !end) return null;
                         return (
                             <Arrow
-                                points={[start.position.x, start.position.y, end.position.x, end.position.y]}
-                                pointerLength={30}
-                                pointerWidth={30}
-                                fill="orange"
-                                stroke="orange"
-                                strokeWidth={4}
+                                key = {`t-${connexion.tuiles[0][0]}-${connexion.tuiles[0][1]}-${connexion.tuiles[1][0]}-${connexion.tuiles[1][1]}`}
+                                points = {[start.position.x, start.position.y, end.position.x, end.position.y]}
+                                pointerLength = {30}
+                                pointerWidth = {30}
+                                fill = "orange"
+                                stroke = "orange"
+                                strokeWidth = {4}
                             />
                         );
                     })}
