@@ -6,23 +6,36 @@ Crée une grille composée d'hexagone.
 La dimension de la grille est définie en fonction de :
 - "nb_x" (nombre d'hexagones sur l'axe des abscisse, sur la longueur de la grille),
 - "nb_y" (nombre d'hexagones sur l'axe des ordonées, sur la hauteur de la grille).
-La taille de chaque hexagone est définie par "rayon".
-
-Pour l'instant la grille n'est pas proprement alignée (à corriger).
-J'ai pour l'instant ajusté à tatillon, il faudra le refaire plus mathématiquement.
+La taille d'un côté ainsi que la distance centre/sommet est définie par "rayon".
+La distance centre/côté est définie par "petitRayon".
 */
 export default function Grille({rayon=40, nb_x=10, nb_y=6}) {
     const hexagons = [];
+    let petitRayon = (rayon/2) * Math.sqrt(3);
     for (let i = 0; i < nb_y; i++) {
         let decalage = 0 == i%2;
         for (let j = 0; j < nb_x; j++) {
             if (decalage) {
                 hexagons.push(
-                    <RegularPolygon x={rayon*.86+rayon+j*(rayon*1.7)} y={rayon+i*(rayon*1.5)} sides={6} radius={rayon} fill={"#5C7EF8"} stroke={"black"}/>
+                    <RegularPolygon 
+                        x = {petitRayon+rayon+j*(2*petitRayon)} 
+                        y = {rayon+i*(rayon + rayon/2)} 
+                        sides = {6} 
+                        radius = {rayon} 
+                        fill = {"#5C7EF8"} 
+                        stroke = {"black"}
+                    />
                 );
             } else {
                 hexagons.push(
-                    <RegularPolygon x={rayon+j*(rayon*1.7)} y={rayon+i*(rayon*1.5)} sides={6} radius={rayon} fill={"#5C7EF8"} stroke={"black"}/>
+                    <RegularPolygon 
+                        x = {rayon+j*(2*petitRayon)} 
+                        y = {rayon+i*(rayon + rayon/2)} 
+                        sides = {6} 
+                        radius = {rayon} 
+                        fill=  {"#5C7EF8"} 
+                        stroke = {"black"}
+                    />
                 );
             }
         }
