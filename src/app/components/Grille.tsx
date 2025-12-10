@@ -1,54 +1,96 @@
 "use client";
-import { Stage, Layer, RegularPolygon, Text, Group } from "react-konva";
+import {Stage, Layer, RegularPolygon, Group} from "react-konva";
+
+// Interface des Cartes
+interface Connexion {
+    type: string;
+    tuiles: number[][];
+}
+interface Carte {
+    plan: {
+        grille: {lignes: number; colonnes: number};
+        terrains: {
+            plaine: number[][]; 
+            foret: number[][]; 
+            montagne: number[][];
+        };
+    };
+    raccourcis: {
+        connexions: Connexion[];
+    };
+}
+
+// Interface des Cases (Hexagones)
+interface Case {
+    id: string;
+    position: {x: number; y: number};
+    type: string;
+    couleur: string;
+}
 
 /*
-Crée une grille composée d'hexagone.
-La dimension de la grille est définie en fonction de :
-- "nb_x" (nombre d'hexagones sur l'axe des abscisse, sur la longueur de la grille),
-- "nb_y" (nombre d'hexagones sur l'axe des ordonées, sur la hauteur de la grille).
-La taille d'un côté ainsi que la distance centre/sommet est définie par "rayon".
+Créé une grille composée d'hexagones.
+La taille d'un côté ainsi que la distance centre/sommet sont définies par "rayon".
+Les dimensions ainsi que le contenu de la grille sont définis par un objet de type "carte" (voir l'interface "Carte").
 La distance centre/côté est définie par "petitRayon".
 */
-export default function Grille({rayon=40, nb_x=10, nb_y=6}) {
-    const hexagons = [];
-    let petitRayon = (rayon/2) * Math.sqrt(3);
-    for (let i = 0; i < nb_y; i++) {
-        let decalage = 0 == i%2;
-        for (let j = 0; j < nb_x; j++) {
-            if (decalage) {
-                hexagons.push(
-                    <RegularPolygon 
-                        x = {petitRayon+rayon+j*(2*petitRayon)} 
-                        y = {rayon+i*(rayon + rayon/2)} 
-                        sides = {6} 
-                        radius = {rayon} 
-                        fill = {"#5C7EF8"} 
-                        stroke = {"black"}
-                    />
-                );
-            } else {
-                hexagons.push(
-                    <RegularPolygon 
-                        x = {rayon+j*(2*petitRayon)} 
-                        y = {rayon+i*(rayon + rayon/2)} 
-                        sides = {6} 
-                        radius = {rayon} 
-                        fill=  {"#5C7EF8"} 
-                        stroke = {"black"}
-                    />
-                );
-            }
+export default function Grille({rayon, carte}: {rayon: number; carte: Carte}) {
+    // Initialisation de la Grille
+    const hexagons: Case[] = [];
+    const petitRayon = (rayon/2) * Math.sqrt(3);
+    for (let i = 0; i < carte.plan.grille.lignes; i++) {
+        const decalage = i % 2 === 0;
+        for (let j = 0; j < carte.plan.grille.colonnes; j++) {
+            const position = {
+                x: decalage ? petitRayon + petitRayon + j * (2 * petitRayon) : petitRayon + j * (2 * petitRayon),
+                y: rayon + i * (rayon + rayon / 2)
+            };
+            hexagons.push({id: `${i}-${j}`, position, type: "ocean", couleur: "#748BF8"});
         }
     }
+
+    // Affectation des terrains de "carte" à la Grille, ainsi que leur couleur
+    // A modifier dans le futur, ce n'est pas optimisé (répétition, non extensible à d'autres terrains sans modification du code)
+    carte.plan.terrains.plaine.forEach(([i, j]) => {
+        const hexagonIndex = hexagons.findIndex(hexagon => hexagon.id === `${i}-${j}`);
+        if (hexagonIndex !== -1) {
+            hexagons[hexagonIndex].type = "plaine";
+            hexagons[hexagonIndex].couleur = "#62D926";
+        }
+    });
+    carte.plan.terrains.foret.forEach(([i, j]) => {
+        const hexagonIndex = hexagons.findIndex(hexagon => hexagon.id === `${i}-${j}`);
+        if (hexagonIndex !== -1) {
+            hexagons[hexagonIndex].type = "foret";
+            hexagons[hexagonIndex].couleur = "#1A4405";
+        }
+    });
+    carte.plan.terrains.montagne.forEach(([i, j]) => {
+        const hexagonIndex = hexagons.findIndex(hexagon => hexagon.id === `${i}-${j}`);
+        if (hexagonIndex !== -1) {
+            hexagons[hexagonIndex].type = "montagne";
+            hexagons[hexagonIndex].couleur = "#9E9E9E";
+        }
+    });
+
+    // Affichage de la Grille
     return (
-        <>
-            <Stage width={(rayon*2)*nb_x} height={(rayon*2)*nb_y}>
-                <Layer>
-                    <Group x={0} y={0}>
-                        {hexagons}
-                    </Group>
-                </Layer>
-            </Stage>
-        </>
+        <Stage width={rayon * 2 * carte.plan.grille.colonnes} height={rayon * 2 * carte.plan.grille.lignes}>
+            <Layer>
+                <Group x={0} y={0}>
+                    {hexagons.map(hexagon => (
+                        <RegularPolygon
+                            key={hexagon.id}
+                            x={hexagon.position.x}
+                            y={hexagon.position.y}
+                            sides={6}
+                            radius={rayon}
+                            fill={hexagon.couleur}
+                            stroke={"black"}
+                        />
+                    ))}
+                </Group>
+            </Layer>
+        </Stage>
     );
 }
