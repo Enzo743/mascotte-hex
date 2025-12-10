@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import "@picocss/pico/css/pico.min.css"; 
-import "./globals.scss";
+import "@picocss/pico/css/pico.min.css";
 
 export const metadata: Metadata = {
     title: "mascotte-hex",
