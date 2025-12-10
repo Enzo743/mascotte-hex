@@ -1,7 +1,9 @@
+import Grille from "./components/Grille";
+
 export default function Home() {
     return (
         <>
-            <p>Rien ici pour l'instant</p>
+            <Grille></Grille>
         </>
     );
 }
