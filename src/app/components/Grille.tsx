@@ -7,17 +7,14 @@ interface Connexion {
     tuiles: number[][];
 }
 interface Carte {
-    plan: {
         grille: {lignes: number; colonnes: number};
+        résidences: {info: number[]; bio: number[]};
         terrains: {
             plaine: number[][]; 
             foret: number[][]; 
             montagne: number[][];
         };
-    };
-    raccourcis: {
         connexions: Connexion[];
-    };
 }
 
 // Interface des Cases (Hexagones)
@@ -38,9 +35,9 @@ export default function Grille({rayon, carte}: {rayon: number; carte: Carte}) {
     // Initialisation de la Grille
     const hexagons: Case[] = [];
     const petitRayon = (rayon/2) * Math.sqrt(3);
-    for (let i = 0; i < carte.plan.grille.lignes; i++) {
+    for (let i = 0; i < carte.grille.lignes; i++) {
         const decalage = i % 2 === 0;
-        for (let j = 0; j < carte.plan.grille.colonnes; j++) {
+        for (let j = 0; j < carte.grille.colonnes; j++) {
             const position = {
                 x: decalage ? petitRayon + petitRayon + j * (2 * petitRayon) : petitRayon + j * (2 * petitRayon),
                 y: rayon + i * (rayon + rayon / 2)
@@ -51,22 +48,22 @@ export default function Grille({rayon, carte}: {rayon: number; carte: Carte}) {
 
     // Affectation des terrains de "carte" à la Grille, ainsi que leur couleur
     // A modifier dans le futur, ce n'est pas optimisé (répétition, non extensible à d'autres terrains sans modification du code)
-    carte.plan.terrains.plaine.forEach(([i, j]) => {
-        const hexagonIndex = hexagons.findIndex(hexagon => hexagon.id === `${i}-${j}`);
+    carte.terrains.plaine.forEach(([i, j]) => {
+        const hexagonIndex = hexagons.findIndex(hexagon => hexagon.id === `${j}-${i}`);
         if (hexagonIndex !== -1) {
             hexagons[hexagonIndex].type = "plaine";
             hexagons[hexagonIndex].couleur = "#62D926";
         }
     });
-    carte.plan.terrains.foret.forEach(([i, j]) => {
-        const hexagonIndex = hexagons.findIndex(hexagon => hexagon.id === `${i}-${j}`);
+    carte.terrains.foret.forEach(([i, j]) => {
+        const hexagonIndex = hexagons.findIndex(hexagon => hexagon.id === `${j}-${i}`);
         if (hexagonIndex !== -1) {
             hexagons[hexagonIndex].type = "foret";
             hexagons[hexagonIndex].couleur = "#1A4405";
         }
     });
-    carte.plan.terrains.montagne.forEach(([i, j]) => {
-        const hexagonIndex = hexagons.findIndex(hexagon => hexagon.id === `${i}-${j}`);
+    carte.terrains.montagne.forEach(([i, j]) => {
+        const hexagonIndex = hexagons.findIndex(hexagon => hexagon.id === `${j}-${i}`);
         if (hexagonIndex !== -1) {
             hexagons[hexagonIndex].type = "montagne";
             hexagons[hexagonIndex].couleur = "#9E9E9E";
@@ -75,7 +72,7 @@ export default function Grille({rayon, carte}: {rayon: number; carte: Carte}) {
 
     // Affichage de la Grille
     return (
-        <Stage width={rayon * 2 * carte.plan.grille.colonnes} height={rayon * 2 * carte.plan.grille.lignes}>
+        <Stage width={rayon * 2 * carte.grille.colonnes} height={rayon * 2 * carte.grille.lignes}>
             <Layer>
                 <Group x={0} y={0}>
                     {hexagons.map(hexagon => (
