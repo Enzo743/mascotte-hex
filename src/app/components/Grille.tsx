@@ -70,11 +70,15 @@ export default function Grille({rayon, carte}: {rayon: number; carte: Carte}) {
         }
     });
 
-    // Affectation des tyroliennes de "carte" à la Grille
+    // Affectation des tyroliennes et rivières de "carte" à la Grille
     const tyroliennes: Connexion[] = [];
+    const rivieres: Connexion[] = [];
     carte.connexions.forEach((connexion) => {
         if (connexion.type === "tyrolienne") {
             tyroliennes.push(connexion);
+        }
+        if (connexion.type === "riviere") {
+            rivieres.push(connexion);
         }
     });
 
@@ -107,6 +111,25 @@ export default function Grille({rayon, carte}: {rayon: number; carte: Carte}) {
                                 fill = "orange"
                                 stroke = "orange"
                                 strokeWidth = {4}
+                            />
+                        );
+                    })}
+                    {rivieres.map((connexion) => {
+                        const path = [];
+                        const start = hexagons.find(hex => hex.id === `${connexion.tuiles[0][0]}-${connexion.tuiles[0][1]}`);
+                        if (!start) return null;
+                        path.push(`M ${start.position.x} ${start.position.y}`);
+                        for (let i = 1; i < connexion.tuiles.length; i++) {
+                            const current = hexagons.find(hex => hex.id === `${connexion.tuiles[i][0]}-${connexion.tuiles[i][1]}`);
+                            if (!current) return null;
+                            path.push(`L ${current.position.x} ${current.position.y}`);
+                        }
+                        return (
+                            <Path
+                                key = {`r-${connexion.tuiles[0][0]}-${connexion.tuiles[0][1]}-${connexion.tuiles[connexion.tuiles.length-1][0]}-${connexion.tuiles[connexion.tuiles.length-1][1]}-`}
+                                data={path.join(' ')}
+                                stroke="#748BF8"
+                                strokeWidth={4}
                             />
                         );
                     })}
