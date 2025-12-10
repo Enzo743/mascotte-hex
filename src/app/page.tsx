@@ -1,10 +1,10 @@
 import Grille from "./components/Grille";
-import carte from './temp.json';
+import carte1 from './carte1.json';
 
 export default function Home() {
     return (
         <>
-            <Grille rayon={40} carte={carte} />
+            <Grille rayon={40} carte={carte1} />
         </>
     );
 }
