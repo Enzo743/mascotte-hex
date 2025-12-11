@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
 import { useRef } from "react";
-import { useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation';
+import slugify from 'slugify';
 
 export default function NouveauPopUpModal()
 {
@@ -16,7 +17,8 @@ export default function NouveauPopUpModal()
         const formData = new FormData();
         formData.append("lignes", ligne_ref.current?.value);
         formData.append("colonnes", colonne_ref.current?.value);
-        formData.append("nom", nom_ref.current?.value);
+        const nom_ref_slug = slugify(nom_ref.current?.value, '_');
+        formData.append("nom", nom_ref_slug);
 
         const reponse = await fetch("/api/cartes", {
             method: "POST",
@@ -26,7 +28,7 @@ export default function NouveauPopUpModal()
         const resultat = await reponse.json();
         console.log(resultat);
 
-        router.push(`/editeur/modifier?id=${nom_ref.current?.value}`);
+        router.push(`/editeur/modifier?id=${nom_ref_slug}`);
     }
 
     return (
