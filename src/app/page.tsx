@@ -4,14 +4,7 @@ import {useEffect, useState} from "react";
 import Grille from "./components/Grille";
 import {Jeu} from "./components/Jeu";
 import {useSearchParams} from "next/navigation";
-
-async function getCarte(nom: string | null) {
-    const response = await fetch(`/api/cartes/get/${nom}`, {
-        method: "GET",
-    });
-
-    return await response.json();
-}
+import {getCarte} from "@/app/actions/getCarte";
 
 export default function Home() {
     const searchParams = useSearchParams();
