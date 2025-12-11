@@ -4,6 +4,7 @@ import {useEffect, useState} from "react";
 import Grille from "./components/Grille";
 import {Jeu} from "./components/Jeu";
 import {useSearchParams} from "next/navigation";
+import {Graphe} from "./components/Graphe"
 
 async function getCarte(nom: string | null) {
     const response = await fetch(`/api/cartes/get/${nom}`, {
@@ -22,11 +23,15 @@ export default function Home() {
     const [posBio, setPosBio] = useState(null);
     const [posJoueur, setPosJoueur] = useState(null);
 
+
     useEffect(() => {
         if (carteId) {
             getCarte(carteId).then(json => {
                 if (json && !json.error) {
                     const nouvellePartie = new Jeu(json, 40);
+                    const graphe = new Graphe(json);
+                    graphe.actualiserGraphe();
+                    graphe.afficherGraphe();
 
                     setPartie(nouvellePartie);
 
@@ -40,22 +45,22 @@ export default function Home() {
 
     if (!partie || !posJoueur) {
         return <div>Chargement de la carte...</div>;
+    } else {
+        return (
+            <>
+                {/* Appel de la Grille */}
+                <Grille
+                    rayon={partie.rayon}
+                    hexagones={partie.hexagones}
+                    joueur={partie.position(posJoueur)}
+                    ennemi={partie.position(partie.ennemi)}
+                    mascotteInfo={partie.position(posInfo)}
+                    mascotteBio={partie.position(posBio)}
+                    rivieres={partie.rivieres}
+                    tyroliennes={partie.tyroliennes}
+                    deplacement={(position) => setPosJoueur(position)}
+                />
+            </>
+        );
     }
-
-    return (
-        <>
-            {/* Appel de la Grille */}
-            <Grille
-                rayon={partie.rayon}
-                hexagones={partie.hexagones}
-                joueur={partie.position(posJoueur)}
-                ennemi={partie.position(partie.ennemi)}
-                mascotteInfo={partie.position(posInfo)}
-                mascotteBio={partie.position(posBio)}
-                rivieres={partie.rivieres}
-                tyroliennes={partie.tyroliennes}
-                deplacement={(position) => setPosJoueur(position)}
-            />
-        </>
-    );
 }
