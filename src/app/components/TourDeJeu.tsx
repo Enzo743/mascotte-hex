@@ -1,28 +1,27 @@
-import { BuildManifest } from "next/dist/server/get-page-files";
 import { Case, Connexion } from "./Structure";
 
-
 // Renvoie true si la case cible est adjacente à la case du joueur
-function caseAdjacente({caseCible, coordCaseJoueurCourant}: {caseCible: Case; coordCaseJoueurCourant: [number, number]}) {
+function caseAdjacente({caseCible, caseJoueurCourant}: {caseCible: Case; caseJoueurCourant: Case}) {
     let caseAdjacentes = [];
 
+    
+    caseAdjacentes.push({"x": caseJoueurCourant.position.x, "y": caseJoueurCourant.position.y-1});
+    caseAdjacentes.push({"x": caseJoueurCourant.position.x+1, "y": caseJoueurCourant.position.y-1});
+    caseAdjacentes.push({"x": caseJoueurCourant.position.x+1, "y": caseJoueurCourant.position.y});
+    caseAdjacentes.push({"x": caseJoueurCourant.position.x-1, "y": caseJoueurCourant.position.y});
+    caseAdjacentes.push({"x": caseJoueurCourant.position.x+1, "y": caseJoueurCourant.position.y-1});
+    caseAdjacentes.push({"x": caseJoueurCourant.position.x+2, "y": caseJoueurCourant.position.y-1});
+    
     /*
-    caseAdjacentes.push({"x": coordCaseJoueurCourant.x, "y": coordCaseJoueurCourant.y-1});
-    caseAdjacentes.push({"x": coordCaseJoueurCourant.x+1, "y": coordCaseJoueurCourant.y-1});
-    caseAdjacentes.push({"x": coordCaseJoueurCourant.x+1, "y": coordCaseJoueurCourant.y});
-    caseAdjacentes.push({"x": coordCaseJoueurCourant.x-1, "y": coordCaseJoueurCourant.y});
-    caseAdjacentes.push({"x": coordCaseJoueurCourant.x+1, "y": coordCaseJoueurCourant.y-1});
-    caseAdjacentes.push({"x": coordCaseJoueurCourant.x+2, "y": coordCaseJoueurCourant.y-1});
-    */
-
     caseAdjacentes.push([coordCaseJoueurCourant[0], coordCaseJoueurCourant[1] - 1]);
     caseAdjacentes.push([coordCaseJoueurCourant[0] + 1, coordCaseJoueurCourant[1] - 1]);
     caseAdjacentes.push([coordCaseJoueurCourant[0] + 1, coordCaseJoueurCourant[1]]);
     caseAdjacentes.push([coordCaseJoueurCourant[0] - 1, coordCaseJoueurCourant[1]]);
     caseAdjacentes.push([coordCaseJoueurCourant[0] + 1, coordCaseJoueurCourant[1] - 1]);
     caseAdjacentes.push([coordCaseJoueurCourant[0] + 2, coordCaseJoueurCourant[1] - 1]);
+    */
     for(let i = 0; i<6; i++){
-        if (caseAdjacentes[i][0] == caseCible.position.x && caseAdjacentes[i][1] == caseCible.position.y) {
+        if (caseAdjacentes[i].x == caseCible.position.x && caseAdjacentes[i].y == caseCible.position.y) {
             return true;
         }
     }
@@ -43,10 +42,12 @@ function caseJouable({caseCible, coordCaseJoueurCourant, coordCaseAutreJoueur}: 
 }
 
 // Renvoie le joueur en fonction du premier clique et null sinon 
-function premierJoueur({caseCible, joueur, ennemi}: {caseCible: Case; joueur: [number, number]; ennemi: [number, number]}) {
-    if(caseAdjacente({caseCible, joueur})) return joueur;
-    if(caseAdjacente({caseCible, ennemi})) return ennemi;
-    return null;
+export function premierJoueur({caseCible, joueur, ennemi}: {caseCible: Case; joueur: Case; ennemi: Case}) {
+    let caseJoueurCourant = joueur;
+    if(caseAdjacente({caseCible, caseJoueurCourant})) return joueur;
+    caseJoueurCourant = ennemi
+    if(caseAdjacente({caseCible, caseJoueurCourant})) return ennemi;
+    return caseCible;
 }
 
 // Renvoie la case d'arrivée si la case cible est une tyrolienne
@@ -66,4 +67,13 @@ function estTyrolienne({tabTyroliennes, caseCible}: {tabTyroliennes: Connexion[]
     return caseArrivee;
 }
 
-
+// Renvoie un message de victoire si une mascotte est dans la résidence adverse
+function victoire({residenceInfo, residenceBio, mascotteInfo, mascotteBio}: {residenceInfo: Case; residenceBio: Case; mascotteInfo: Case; mascotteBio: Case}) {
+    if (mascotteBio.position.x == residenceInfo.position.x && mascotteBio.position.y == residenceInfo.position.y) {
+        return "Victoire des informaticiens !";
+    }
+    if (mascotteInfo.position.x == residenceBio.position.x && mascotteInfo.position.y == residenceBio.position.y) {
+        return "Victoire des biologistes !";
+    }
+    return "Partie en cours";
+}
