@@ -1,54 +1,97 @@
 "use client";
 import Link from "next/link";
-import { useRef } from "react";
+import {FormEvent, useRef} from "react";
+import {useRouter, useSearchParams} from 'next/navigation';
+import slugify from 'slugify';
+import ErreurPopUpModal from "@/app/components/editeur/ErreurPopUpModal";
 
-export default function NouveauPopUpModal()
-{
+export default function NouveauPopUpModal() {
     const ligne_ref = useRef<HTMLFormElement>(null);
     const colonne_ref = useRef<HTMLFormElement>(null);
     const nom_ref = useRef<HTMLFormElement>(null);
 
-    async function envoiFormulaire(event: React.FormEvent<HTMLFormElement>) {
-        event.preventDefault();
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const showErreur = searchParams.get("showErreur");
 
-        const formData = new FormData();
-        formData.append("lignes", ligne_ref.current?.value);
-        formData.append("colonnes", colonne_ref.current?.value);
-        formData.append("nom", nom_ref.current?.value);
-
+    async function envoiDonnees(data: FormData, nom_ref_slug: string) {
         const reponse = await fetch("/api/cartes", {
             method: "POST",
-            body: formData,
+            body: data,
         });
 
         const resultat = await reponse.json();
         console.log(resultat);
+
+        router.push(`/editeur/modifier?id=${nom_ref_slug}`);
+    }
+
+    async function traiterFormulaire(force: boolean) {
+        const valLignes = ligne_ref.current?.value;
+        const valColonnes = colonne_ref.current?.value;
+        const valNom = nom_ref.current?.value;
+
+        const formData = new FormData();
+        formData.append("lignes", valLignes);
+        formData.append("colonnes", valColonnes);
+
+        const nom_ref_slug = slugify(valNom, '_');
+        formData.append("nom", nom_ref_slug);
+
+        if (force) {
+            await envoiDonnees(formData, nom_ref_slug);
+            return;
+        }
+
+        const noms = await fetch("/api/cartes/noms", {method: "GET"});
+        const resultatNoms = await noms.json();
+        console.log(resultatNoms);
+
+        if (resultatNoms.find((nom: { nom: string; }) => nom.nom === nom_ref_slug)) {
+            router.push("/editeur?show=true&showErreur=true");
+        } else {
+            await envoiDonnees(formData, nom_ref_slug);
+        }
+    }
+
+    async function onFormSubmit(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        await traiterFormulaire(false);
     }
 
     return (
-        <dialog open>
-            <article>
-                <header>
-                    <Link href="/editeur" aria-label="Close" className="close" style={{ float: 'right', marginTop: '5px' }}/>
-                    <h3 style={{ textAlign: 'center', margin: 0 }}>Nouvelle carte</h3>
-                </header>
-                <form>
-                    <label htmlFor="nom">Nom du fichier :</label>
-                    <input id="nom" type="text" name="nom" ref={nom_ref} required/>
+        <>
+            <dialog open>
+                <article>
+                    <header>
+                        <Link href="/editeur" aria-label="Close" className="close"
+                              style={{float: 'right', marginTop: '5px'}}/>
+                        <h3 style={{textAlign: 'center', margin: 0}}>Nouvelle carte</h3>
+                    </header>
+                    <form onSubmit={onFormSubmit}>
+                        <label htmlFor="nom">Nom du fichier :</label>
+                        <input id="nom" type="text" name="nom" ref={nom_ref} required/>
 
-                    <label htmlFor="ligne">Nombre de lignes souhaitées :</label>
-                    <input id="ligne" type="number" name="ligne" ref={ligne_ref} required/>
+                        <label htmlFor="ligne">Nombre de lignes souhaitées :</label>
+                        <input id="ligne" type="number" name="ligne" ref={ligne_ref} required/>
 
-                    <label htmlFor="colonne">Nombre de colonnes souhaitées :</label>
-                    <input id="colonne" type="number" name="colonne" ref={colonne_ref} required/>
+                        <label htmlFor="colonne">Nombre de colonnes souhaitées :</label>
+                        <input id="colonne" type="number" name="colonne" ref={colonne_ref} required/>
 
-                    <button type="submit" onClick={envoiFormulaire}>Valider</button>
-                </form>
-            
-                
-            </article>
-            
-        </dialog>
+                        <button type="submit">Valider</button>
+                    </form>
+                </article>
+            </dialog>
+
+            {showErreur && <ErreurPopUpModal
+                titre={"Erreur"}
+                description={"Le nom que vous avez passé existe déjà ! Voulez-vous toujours créer une nouvelle carte, cela écrasera l'ancienne carte ?"}
+                onCloseRoute={"editeur?show=true"}
+                sndButton={true}
+                sndButtonLabel={"Oui"}
+                onClickSndButton={() => traiterFormulaire(true)}
+            />}
+        </>
     );
 };
 
