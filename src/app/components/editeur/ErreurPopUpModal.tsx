@@ -26,8 +26,12 @@ const ErreurPopUpModal: React.FC<ErreurPopUpModalProps> = ({
                           style={{float: 'right', marginTop: '5px'}}/>
                     <h3 style={{textAlign: 'center', margin: 0, color: '#D93526'}}>{titre}</h3>
                 </header>
-                <p>{description}</p>
-                {sndButton && <button type="button" onClick={onClickSndButton}>{sndButtonLabel}</button>}
+                <p style={{textAlign: 'justify'}}>{description}</p>
+                {sndButton &&
+                    <div style={{textAlign: 'center'}}>
+                        <button type="button" className={"secondary"}
+                                onClick={onClickSndButton}>{sndButtonLabel}</button>
+                    </div>}
             </article>
         </dialog>
     )
