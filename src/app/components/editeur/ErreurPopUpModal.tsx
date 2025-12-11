@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 
+// Interface des différentes propriétés du composant
 interface ErreurPopUpModalProps {
     titre: string;
     description: string;
@@ -18,6 +19,8 @@ const ErreurPopUpModal: React.FC<ErreurPopUpModalProps> = ({
                                                                sndButtonLabel,
                                                                onClickSndButton,
                                                            }) => {
+
+    // Modal qui permet d'afficher un message d'erreur avec des éléments paramétrables et optionnels
     return (
         <dialog open>
             <article>

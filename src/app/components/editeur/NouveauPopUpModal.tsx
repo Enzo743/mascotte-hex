@@ -6,6 +6,7 @@ import slugify from 'slugify';
 import ErreurPopUpModal from "@/app/components/editeur/ErreurPopUpModal";
 
 export default function NouveauPopUpModal() {
+    // Références aux éléments du formulaire
     const ligne_ref = useRef<HTMLFormElement>(null);
     const colonne_ref = useRef<HTMLFormElement>(null);
     const nom_ref = useRef<HTMLFormElement>(null);
@@ -14,6 +15,7 @@ export default function NouveauPopUpModal() {
     const searchParams = useSearchParams();
     const showErreur = searchParams.get("showErreur");
 
+    // Fonction qui permet l'envoi des données sur le serveur
     async function envoiDonnees(data: FormData, nom_ref_slug: string) {
         const reponse = await fetch("/api/cartes", {
             method: "POST",
@@ -26,6 +28,7 @@ export default function NouveauPopUpModal() {
         router.push(`/editeur/modifier?id=${nom_ref_slug}`);
     }
 
+    // Fonction qui permet de faire la validation du formulaire
     async function traiterFormulaire(force: boolean) {
         const valLignes = ligne_ref.current?.value;
         const valColonnes = colonne_ref.current?.value;
@@ -54,11 +57,13 @@ export default function NouveauPopUpModal() {
         }
     }
 
+    // Fonction qui est reliée au clic du bouton du formulaire
     async function onFormSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
         await traiterFormulaire(false);
     }
 
+    // Modal qui permet d'afficher le formulaire de création de carte
     return (
         <>
             <dialog open>
@@ -83,6 +88,7 @@ export default function NouveauPopUpModal() {
                 </article>
             </dialog>
 
+            {/* Si un appel est déclanché à la modal d'erreur, on la créée ici */}
             {showErreur && <ErreurPopUpModal
                 titre={"Erreur"}
                 description={"Le nom que vous avez passé existe déjà ! Voulez-vous toujours créer une nouvelle carte, cela écrasera l'ancienne carte ?"}
