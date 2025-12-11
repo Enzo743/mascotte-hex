@@ -1,133 +1,110 @@
-"use client";
-import {Arrow, Stage, Layer, Path, RegularPolygon, Group, Star} from "react-konva";
-import {Connexion, Carte, Case} from "./Structure";
+// Dépendances
+import { Arrow, Stage, Layer, Path, RegularPolygon, Group, Star, Circle } from "react-konva";
+import { Case, Connexion } from "./Structure";
 
-/*
-Créé une grille composée d'hexagones.
-La taille d'un côté ainsi que la distance centre/sommet sont définies par "rayon".
-Les dimensions ainsi que le contenu de la grille sont définis par un objet de type "carte" (voir l'interface "Carte").
-La distance centre/côté est définie par "petitRayon".
-*/
-export default function Grille({rayon, carte}: {rayon: number; carte: Carte}) {
-    // Initialisation de la Grille
-    const hexagons: Case[] = [];
-    const petitRayon = (rayon/2) * Math.sqrt(3);
-    for (let i = 0; i < carte.grille.lignes; i++) {
-        const decalage = i % 2 === 1;
-        for (let j = 0; j < carte.grille.colonnes; j++) {
-            const position = {
-                x: decalage ? petitRayon + petitRayon + j * (2 * petitRayon) : petitRayon + j * (2 * petitRayon),
-                y: rayon + i * (rayon + rayon / 2)
-            };
-            hexagons.push({id: `${j}-${i}`, position, type: "ocean", couleur: "#748BF8"});
-        }
-    }
+export default function Grille(
+    {
+    rayon,
+    hexagones,
+    joueur,
+    ennemi,
+    mascotteInfo,
+    mascotteBio,
+    rivieres,
+    tyroliennes,
+    deplacement
+}: {
+    rayon: number;
+    hexagones: Case[];
+    joueur: Case;
+    ennemi: Case;
+    mascotteInfo: Case;
+    mascotteBio: Case;
+    rivieres: Connexion[];
+    tyroliennes: Connexion[];
+    deplacement: (pos: [number, number]) => void;
+}) {
+    const width = Math.max.apply(0, hexagones.map((h) => h.position.x)) + rayon;
+    const height = Math.max.apply(0, hexagones.map((h) => h.position.y)) + rayon;
 
-    // Affectation des terrains de "carte" à la Grille, ainsi que leur couleur
-    // A modifier dans le futur, ce n'est pas optimisé (répétition, non extensible à d'autres terrains sans modification du code)
-    carte.terrains.plaine.forEach(([i, j]) => {
-        const hexagonIndex = hexagons.findIndex(hexagon => hexagon.id === `${i}-${j}`);
-        if (hexagonIndex !== -1) {
-            hexagons[hexagonIndex].type = "plaine";
-            hexagons[hexagonIndex].couleur = "#62D926";
-        }
-    });
-    carte.terrains.foret.forEach(([i, j]) => {
-        const hexagonIndex = hexagons.findIndex(hexagon => hexagon.id === `${i}-${j}`);
-        if (hexagonIndex !== -1) {
-            hexagons[hexagonIndex].type = "foret";
-            hexagons[hexagonIndex].couleur = "#1A4405";
-        }
-    });
-    carte.terrains.montagne.forEach(([i, j]) => {
-        const hexagonIndex = hexagons.findIndex(hexagon => hexagon.id === `${i}-${j}`);
-        if (hexagonIndex !== -1) {
-            hexagons[hexagonIndex].type = "montagne";
-            hexagons[hexagonIndex].couleur = "#9E9E9E";
-        }
-    });
-
-    // Affectation des tyroliennes et rivières de "carte" à la Grille
-    const tyroliennes: Connexion[] = [];
-    const rivieres: Connexion[] = [];
-    carte.connexions.forEach((connexion) => {
-        if (connexion.type === "tyrolienne") {
-            tyroliennes.push(connexion);
-        }
-        if (connexion.type === "riviere") {
-            rivieres.push(connexion);
-        }
-    });
-
-    // Affectaytion des mascottes de "carte" à la Grille
-    const mascotteInfo = hexagons.find(hex => hex.id === `${carte.résidences.info[0]}-${carte.résidences.info[1]}`);
-    const mascotteBio = hexagons.find(hex => hex.id === `${carte.résidences.bio[0]}-${carte.résidences.bio[1]}`);
-    if (!mascotteInfo || !mascotteBio) return null;
-
-
-    // Affichage de la Grille
     return (
-        <Stage width={rayon * 2 * carte.grille.colonnes} height={rayon * 2 * carte.grille.lignes}>
+        <Stage width={width} height={height}>
             <Layer>
-                <Group x={0} y={0}>
-                    {hexagons.map(hexagon => (
+                <Group>
+                    {/* --- CASES --- */}
+                    {hexagones.map((hexagone) => (
                         <RegularPolygon
-                            key = {hexagon.id}
-                            x = {hexagon.position.x}
-                            y = {hexagon.position.y}
+                            key = {hexagone.id}
+                            x = {hexagone.position.x}
+                            y = {hexagone.position.y}
                             sides = {6}
                             radius = {rayon}
-                            fill = {hexagon.couleur}
-                            stroke = {"black"}
+                            fill = {hexagone.couleur}
+                            stroke = "black"
+                            onClick = {() => {
+                                const [x, y] = hexagone.id.split("-").map(Number);
+                                deplacement([x, y]);
+                            }}
                         />
                     ))}
-                    <Star 
-                        key= {"m-info"}
+
+                    {/* --- MASCOTTE INFO --- */}
+                    <Star
                         x = {mascotteInfo.position.x}
                         y = {mascotteInfo.position.y}
                         numPoints = {6}
-                        innerRadius = {rayon/2.5}
+                        innerRadius = {rayon / 2.5}
                         outerRadius = {rayon}
-                        fill = {"#9486E1"}
-                        stroke = {"black"}
+                        fill = "#9486E1"
+                        stroke = "black"
                     />
-                    <Star 
-                        key= {"m-bio"}
-                        x={mascotteBio.position.x}
-                        y={mascotteBio.position.y}
+
+                    {/* --- MASCOTTE BIO --- */}
+                    <Star
+                        x = {mascotteBio.position.x}
+                        y = {mascotteBio.position.y}
                         numPoints = {6}
-                        innerRadius={rayon/2.5}
-                        outerRadius={rayon}
-                        fill={"#F17961"}
-                        stroke={"black"}
+                        innerRadius = {rayon / 2.5}
+                        outerRadius = {rayon}
+                        fill = "#F17961"
+                        stroke = "black"
                     />
-                    {rivieres.map((connexion) => {
-                        const path = [];
-                        const start = hexagons.find(hex => hex.id === `${connexion.tuiles[0][0]}-${connexion.tuiles[0][1]}`);
+
+                    {/* --- RIVIÈRES --- */}
+                    {rivieres.map((connexion, i) => {
+                        const path: string[] = [];
+                        const start = hexagones.find((h) => h.id === `${connexion.tuiles[0][0]}-${connexion.tuiles[0][1]}`);
                         if (!start) return null;
                         path.push(`M ${start.position.x} ${start.position.y}`);
-                        for (let i = 1; i < connexion.tuiles.length; i++) {
-                            const current = hexagons.find(hex => hex.id === `${connexion.tuiles[i][0]}-${connexion.tuiles[i][1]}`);
-                            if (!current) return null;
-                            path.push(`L ${current.position.x} ${current.position.y}`);
+                        for (let k = 1; k < connexion.tuiles.length; k++) {
+                            const tuile = connexion.tuiles[k];
+                            const hexagone = hexagones.find((h) => h.id === `${tuile[0]}-${tuile[1]}`);
+                            if (hexagone) { path.push(`L ${hexagone.position.x} ${hexagone.position.y}`); }
                         }
                         return (
                             <Path
-                                key = {`r-${connexion.tuiles[0][0]}-${connexion.tuiles[0][1]}-${connexion.tuiles[connexion.tuiles.length-1][0]}-${connexion.tuiles[connexion.tuiles.length-1][1]}-`}
-                                data={path.join(' ')}
-                                stroke="#748BF8"
-                                strokeWidth={4}
+                                key = {`r-${i}`}
+                                data = {path.join(" ")}
+                                stroke = "#748BF8"
+                                strokeWidth = {4}
                             />
                         );
                     })}
-                    {tyroliennes.map((connexion) => {
-                        const start = hexagons.find(hex => hex.id === `${connexion.tuiles[0][0]}-${connexion.tuiles[0][1]}`);
-                        const end = hexagons.find(hex => hex.id === `${connexion.tuiles[1][0]}-${connexion.tuiles[1][1]}`);
+
+                    {/* --- TYROLIENNES --- */}
+                    {tyroliennes.map((c, i) => {
+                        const start = hexagones.find((h) => h.id === `${c.tuiles[0][0]}-${c.tuiles[0][1]}`);
+                        const end = hexagones.find((h) => h.id === `${c.tuiles[1][0]}-${c.tuiles[1][1]}`);
                         if (!start || !end) return null;
                         return (
                             <Arrow
-                                key = {`t-${connexion.tuiles[0][0]}-${connexion.tuiles[0][1]}-${connexion.tuiles[1][0]}-${connexion.tuiles[1][1]}`}
-                                points = {[start.position.x, start.position.y, end.position.x, end.position.y]}
+                                key = {`t-${i}`}
+                                points = {[
+                                    start.position.x,
+                                    start.position.y,
+                                    end.position.x,
+                                    end.position.y
+                                ]}
                                 pointerLength = {30}
                                 pointerWidth = {30}
                                 fill = "#FFA23A"
@@ -136,6 +113,22 @@ export default function Grille({rayon, carte}: {rayon: number; carte: Carte}) {
                             />
                         );
                     })}
+
+                    {/* Joueurs */}
+                    <Circle
+                        x = {joueur.position.x}
+                        y = {joueur.position.y}
+                        radius = {rayon/2}
+                        fill = "#9486E1"
+                        stroke = "black"
+                    />
+                    <Circle
+                        x = {ennemi.position.x}
+                        y = {ennemi.position.y}
+                        radius = {rayon/2}
+                        fill = "#F17961"
+                        stroke = "black"
+                    />
                 </Group>
             </Layer>
         </Stage>
