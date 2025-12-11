@@ -16,22 +16,20 @@ export default function Home() {
     const [posInfo, setPosInfo] = useState(null);
     const [posBio, setPosBio] = useState(null);
     const [posJoueur, setPosJoueur] = useState(null);
-
+    const [jsonData, setJsonData] = useState(null);
 
     useEffect(() => {
         if (carteId) {
             getCarte(carteId).then(json => {
                 if (json && !json.error) {
                     const nouvellePartie = new Jeu(json, 40);
-                    const graphe = new Graphe(json);
-                    graphe.actualiserGraphe();
-                    graphe.afficherGraphe();
-
                     setPartie(nouvellePartie);
 
                     setPosInfo(nouvellePartie.mascotteInfo);
                     setPosBio(nouvellePartie.mascotteBio);
                     setPosJoueur(nouvellePartie.joueur);
+
+                    setJsonData(json);
                 }
             });
         }
@@ -40,6 +38,8 @@ export default function Home() {
     if (!partie || !posJoueur) {
         return <div>Chargement de la carte...</div>;
     } else {
+        const graphe = new Graphe(jsonData);
+        graphe.actualiserGraphe();
         return (
             <>
                 {/* Appel de la Grille */}
@@ -52,7 +52,12 @@ export default function Home() {
                     mascotteBio={partie.position(posBio)}
                     rivieres={partie.rivieres}
                     tyroliennes={partie.tyroliennes}
-                    deplacement={(position) => setPosJoueur(position)}
+                    graphe={graphe}
+                    deplacement={(position) => {
+                        if (graphe.verifier(posJoueur, position)) {
+                            setPosJoueur(position);
+                        }
+                    }}
                 />
             </>
         );
