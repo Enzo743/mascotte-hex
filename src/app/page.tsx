@@ -1,32 +1,60 @@
 // Dépendances
 "use client";
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import Grille from "./components/Grille";
-import carte1 from "./carte1.json";
-import { Jeu } from "./components/Jeu";
+import {Jeu} from "./components/Jeu";
+import {useSearchParams} from "next/navigation";
+
+async function getCarte(nom: string | null) {
+    const response = await fetch(`/api/cartes/get/${nom}`, {
+        method: "GET",
+    });
+
+    return await response.json();
+}
 
 export default function Home() {
-    // Initialisation de la partie
-    const [partie] = useState(() => new Jeu(carte1, 40));
+    const searchParams = useSearchParams();
+    const carteId = searchParams.get("id");
 
-    // Etats des éléments pouvant être déplacés
-    const [posInfo, setPosInfo] = useState(partie.mascotteInfo);
-    const [posBio, setPosBio] = useState(partie.mascotteBio);
-    const [posJoueur, setPosJoueur] = useState(partie.joueur);
+    const [partie, setPartie] = useState<any>(null);
+    const [posInfo, setPosInfo] = useState(null);
+    const [posBio, setPosBio] = useState(null);
+    const [posJoueur, setPosJoueur] = useState(null);
+
+    useEffect(() => {
+        if (carteId) {
+            getCarte(carteId).then(json => {
+                if (json && !json.error) {
+                    const nouvellePartie = new Jeu(json, 40);
+
+                    setPartie(nouvellePartie);
+
+                    setPosInfo(nouvellePartie.mascotteInfo);
+                    setPosBio(nouvellePartie.mascotteBio);
+                    setPosJoueur(nouvellePartie.joueur);
+                }
+            });
+        }
+    }, [carteId]);
+
+    if (!partie || !posJoueur) {
+        return <div>Chargement de la carte...</div>;
+    }
 
     return (
         <>
             {/* Appel de la Grille */}
             <Grille
-                rayon = {partie.rayon}
-                hexagones = {partie.hexagones}
-                joueur = {partie.position(posJoueur)}
-                ennemi = {partie.position(partie.ennemi)}
-                mascotteInfo = {partie.position(posInfo)}
-                mascotteBio = {partie.position(posBio)}
-                rivieres = {partie.rivieres}
-                tyroliennes = {partie.tyroliennes}
-                deplacement = {(position) => setPosJoueur(position)}
+                rayon={partie.rayon}
+                hexagones={partie.hexagones}
+                joueur={partie.position(posJoueur)}
+                ennemi={partie.position(partie.ennemi)}
+                mascotteInfo={partie.position(posInfo)}
+                mascotteBio={partie.position(posBio)}
+                rivieres={partie.rivieres}
+                tyroliennes={partie.tyroliennes}
+                deplacement={(position) => setPosJoueur(position)}
             />
         </>
     );
