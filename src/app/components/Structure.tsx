@@ -21,3 +21,8 @@ export interface Case {
     type: string;
     couleur: string;
 }
+
+export interface Voisins {
+    position: {x: number; y:number};
+    voisins: number[][];
+}
