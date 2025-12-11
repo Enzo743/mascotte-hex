@@ -1,27 +1,28 @@
 "use client";
 import Link from "next/link";
-import { useSearchParams } from 'next/navigation';
+import {useSearchParams} from 'next/navigation';
 import NouveauPopUpModal from "../components/editeur/NouveauPopUpModal";
+import "../globals.css";
 
-export default function Title() {
+export default function Page() {
     const searchParams = useSearchParams();
-
     const show = searchParams.get("show");
 
     return (
         <main className="container">
-            <header style={{ marginBottom: "2rem" }}>
-                <h1>Editeur du jeu</h1>
-                <p>Paragraphe explicatif</p>
+            <header className={"head"}>
+                <h1 className={"titre-head"}>Editeur de cartes Mascotte Hex</h1>
+                <p className={"text-head"}>Bienvenue sur l&#39;éditeur de cartes du jeu Mascotte Hex. Vous pouvez créer
+                    une nouvelle carte, en visualiser une pour voir si elle vous plait, ou modifier une carte
+                    existante.</p>
             </header>
-            <div className="grid">
-                <Link id="btnNouveau" href="editeur?show=true" role="button">Nouveau</Link>
+            <div className={"grid"}>
+                <Link id="btnNouveau" href="/editeur?show=true" role="button">Nouveau</Link>
                 <button id="btnVisualiser">Visualiser</button>
                 <button id="btnModifier">Modifier</button>
             </div>
 
-            {show && <NouveauPopUpModal />}
+            {show && <NouveauPopUpModal/>}
         </main>
-
-        
-);};
+    );
+};

@@ -1,4 +1,18 @@
-/* Page editeur/modifier */
+/* Page /editeur */
+
+.head {
+    margin-bottom: 2rem;
+}
+
+.titre-head {
+    text-align: center;
+}
+
+.text-head {
+    text-align: justify;
+}
+
+/* Page /editeur/modifier */
 
 .editeur {
     height: 100vh;
