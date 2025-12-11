@@ -120,6 +120,7 @@
 }
 
 /* Composant GestionnaireModal */
+
 .col-titres {
     border-bottom: 2px solid var(--pico-muted-border-color);
     margin-bottom: 1rem;
@@ -131,4 +132,29 @@
 .col-titres .col-nom,
 .col-titres .col-lignes {
     border-right: 1px solid var(--pico-muted-border-color);
+}
+
+/* Commun (croix de fermeture) */
+
+dialog article header {
+    position: relative; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-right: 3rem;
+    padding-left: 3rem;
+}
+
+dialog article header h3 {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 0;
+}
+
+dialog article header .close {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    margin: 0;
 }
