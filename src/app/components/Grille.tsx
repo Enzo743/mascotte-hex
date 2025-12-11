@@ -1,6 +1,7 @@
 // Dépendances
 import { Arrow, Stage, Layer, Path, RegularPolygon, Group, Star, Circle } from "react-konva";
 import { Case, Connexion } from "./Structure";
+import { Graphe } from "./Graphe";
 
 export default function Grille(
     {
@@ -12,6 +13,7 @@ export default function Grille(
     mascotteBio,
     rivieres,
     tyroliennes,
+    graphe,
     deplacement
 }: {
     rayon: number;
@@ -22,31 +24,55 @@ export default function Grille(
     mascotteBio: Case;
     rivieres: Connexion[];
     tyroliennes: Connexion[];
+    graphe: Graphe;
     deplacement: (pos: [number, number]) => void;
 }) {
     const width = Math.max.apply(0, hexagones.map((h) => h.position.x)) + rayon;
     const height = Math.max.apply(0, hexagones.map((h) => h.position.y)) + rayon;
 
+    const [jx, jy] = joueur.id.split("-").map(Number);
+
+    const voisins = graphe.graphe.find(g => 
+        g.position.x === jx && g.position.y === jy
+    )?.voisins || [];
+    voisins.push([jx, jy]);
+
     return (
         <Stage width={width} height={height}>
             <Layer>
                 <Group>
-                    {/* --- CASES --- */}
+                    {/* --- CASES (VISUEL DU TERRAIN) --- */}
                     {hexagones.map((hexagone) => (
                         <RegularPolygon
-                            key = {hexagone.id}
+                            key = {"v-" + hexagone.id}
                             x = {hexagone.position.x}
                             y = {hexagone.position.y}
                             sides = {6}
                             radius = {rayon}
                             fill = {hexagone.couleur}
-                            stroke = "black"
-                            onClick = {() => {
-                                const [x, y] = hexagone.id.split("-").map(Number);
-                                deplacement([x, y]);
-                            }}
+                            stroke = {"black"}
                         />
-                    ))}
+                        )
+                    )}
+
+                    {/* --- CASES (VISUEL DES ADJACENCES) --- */}
+                    {hexagones.map((hexagone) => {
+                        const [x, y] = hexagone.id.split("-").map(Number);
+                        const adjacent = voisins.some(
+                            (voisin) => voisin[0] === x && voisin[1] === y
+                        );
+                        if (!adjacent) {return null;}
+                        return (
+                        <RegularPolygon
+                            key = {"a-" + hexagone.id}
+                            x = {hexagone.position.x}
+                            y = {hexagone.position.y}
+                            sides = {6}
+                            radius = {rayon}
+                            stroke = {"red"}
+                        />
+                        )
+                    })}     
 
                     {/* --- MASCOTTE INFO --- */}
                     <Star
@@ -128,7 +154,22 @@ export default function Grille(
                         radius = {rayon/2}
                         fill = "#F17961"
                         stroke = "black"
-                    />
+                    />   
+
+                    {/* CASES (FONCTIONNEL)*/}
+                    {hexagones.map((hexagone) => (
+                        <RegularPolygon
+                            key = {hexagone.id}
+                            x = {hexagone.position.x}
+                            y = {hexagone.position.y}
+                            sides = {6}
+                            radius = {rayon}
+                            onClick = {() => {
+                                const [x, y] = hexagone.id.split("-").map(Number);
+                                deplacement([x, y]);
+                            }}
+                        />
+                    ))}
                 </Group>
             </Layer>
         </Stage>
