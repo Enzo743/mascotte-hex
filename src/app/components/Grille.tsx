@@ -1,29 +1,6 @@
 "use client";
 import {Arrow, Stage, Layer, Path, RegularPolygon, Group} from "react-konva";
-
-// Interface des Cartes
-interface Connexion {
-    type: string;
-    tuiles: number[][];
-}
-interface Carte {
-        grille: {lignes: number; colonnes: number};
-        résidences: {info: number[]; bio: number[]};
-        terrains: {
-            plaine: number[][]; 
-            foret: number[][]; 
-            montagne: number[][];
-        };
-        connexions: Connexion[];
-}
-
-// Interface des Cases (Hexagones)
-interface Case {
-    id: string;
-    position: {x: number; y: number};
-    type: string;
-    couleur: string;
-}
+import {Connexion, Carte, Case} from "./Structure";
 
 /*
 Créé une grille composée d'hexagones.
@@ -98,22 +75,6 @@ export default function Grille({rayon, carte}: {rayon: number; carte: Carte}) {
                             stroke = {"black"}
                         />
                     ))}
-                    {tyroliennes.map((connexion) => {
-                        const start = hexagons.find(hex => hex.id === `${connexion.tuiles[0][0]}-${connexion.tuiles[0][1]}`);
-                        const end = hexagons.find(hex => hex.id === `${connexion.tuiles[1][0]}-${connexion.tuiles[1][1]}`);
-                        if (!start || !end) return null;
-                        return (
-                            <Arrow
-                                key = {`t-${connexion.tuiles[0][0]}-${connexion.tuiles[0][1]}-${connexion.tuiles[1][0]}-${connexion.tuiles[1][1]}`}
-                                points = {[start.position.x, start.position.y, end.position.x, end.position.y]}
-                                pointerLength = {30}
-                                pointerWidth = {30}
-                                fill = "orange"
-                                stroke = "orange"
-                                strokeWidth = {4}
-                            />
-                        );
-                    })}
                     {rivieres.map((connexion) => {
                         const path = [];
                         const start = hexagons.find(hex => hex.id === `${connexion.tuiles[0][0]}-${connexion.tuiles[0][1]}`);
@@ -130,6 +91,22 @@ export default function Grille({rayon, carte}: {rayon: number; carte: Carte}) {
                                 data={path.join(' ')}
                                 stroke="#748BF8"
                                 strokeWidth={4}
+                            />
+                        );
+                    })}
+                    {tyroliennes.map((connexion) => {
+                        const start = hexagons.find(hex => hex.id === `${connexion.tuiles[0][0]}-${connexion.tuiles[0][1]}`);
+                        const end = hexagons.find(hex => hex.id === `${connexion.tuiles[1][0]}-${connexion.tuiles[1][1]}`);
+                        if (!start || !end) return null;
+                        return (
+                            <Arrow
+                                key = {`t-${connexion.tuiles[0][0]}-${connexion.tuiles[0][1]}-${connexion.tuiles[1][0]}-${connexion.tuiles[1][1]}`}
+                                points = {[start.position.x, start.position.y, end.position.x, end.position.y]}
+                                pointerLength = {30}
+                                pointerWidth = {30}
+                                fill = "orange"
+                                stroke = "orange"
+                                strokeWidth = {4}
                             />
                         );
                     })}
