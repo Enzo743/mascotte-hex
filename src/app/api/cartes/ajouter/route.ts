@@ -100,7 +100,6 @@ export async function POST(req: Request) {
 
         if (tyrolienne) {
             json.connexions = json.connexions.filter((connexion: { type: string, tuiles: never[] }) => {
-                // On ne touche pas aux connexions qui ne sont pas des rivières
                 if (connexion.type !== "riviere") return true;
 
                 const estEnConflit = connexion.tuiles.some((tuileRiviere: never[]) =>
