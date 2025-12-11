@@ -1,22 +1,63 @@
+/* Page editeur/modifier */
+
+.editeur {
+    height: 100vh;
+    display: flex;
+    flex-direction: row;
+    overflow: hidden;
+}
+
+.editeur .sidebar-left {
+    width: 25%;
+    min-width: 300px;
+    padding: 1rem;
+    border-right: 1px solid #ccc;
+    overflow-y: auto;
+}
+
+.editeur .sidebar-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.editeur .sidebar-right .grille {
+    flex: 5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f9f9f9;
+    overflow: hidden;
+}
+
+.editeur .sidebar-right .messages {
+    flex: 1;
+    border-top: 2px solid #e0e0e0;
+    padding: 1rem;
+    background-color: #fff;
+}
+
+/* Composant LigneGestionnaire */
+
 .ligne-gestionnaire {
-  display: flex;
-  align-items: center;
-  gap: 4rem;
+    display: flex;
+    align-items: center;
+    gap: 4rem;
 }
 
 .ligne-gestionnaire .col-nom {
-  flex: 0 0 10rem;
-  text-align: center;
+    flex: 0 0 10rem;
+    text-align: center;
 }
 
 .ligne-gestionnaire .col-infos {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .ligne-gestionnaire .col-lignes,
 .ligne-gestionnaire .col-colonnes {
-  width: 3rem;
-  text-align: center;
+    width: 3rem;
+    text-align: center;
 }
