@@ -1,6 +1,10 @@
 import fs from "node:fs/promises";
 import {NextResponse} from "next/server";
 
+/**
+ * route → /api/cartes/ajouter
+ * Route en POST prenant les modifications effectuées dans l'éditeur de cartes et modifie le fichier JSON correspondant en conséquence
+ */
 export async function POST(req: Request) {
     try {
         const jsonReq = await req.json();

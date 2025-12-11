@@ -1,6 +1,10 @@
 import fs from "node:fs/promises";
 import {NextResponse} from "next/server";
 
+/**
+ * route → /api/cartes/noms
+ * Renvoie un fichier JSON comprenant l'ensemble des noms de cartes existants et leurs tailles respectives
+ */
 export async function GET(req: Request) {
     try {
         const fichiers = await fs.readdir("./public/json");

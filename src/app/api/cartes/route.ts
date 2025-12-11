@@ -1,6 +1,10 @@
 import fs from "node:fs/promises";
 import {NextResponse} from "next/server";
 
+/**
+ * route → /api/cartes/
+ * Route en POST prenant dans le formulaire un nom, un nombre de lignes et de colonnes et enregistrant le fichier JSON correspondant dans le dossier public/json/
+ */
 export async function POST(req: Request) {
     try {
         const formData = await req.formData();

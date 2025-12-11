@@ -1,6 +1,10 @@
 import fs from "node:fs/promises";
 import {NextResponse} from "next/server";
 
+/**
+ * route → /api/cartes/get/[id] où [id] est le nom de la carte
+ * Route en GET qui prend un nom de carte et renvoie le fichier JSON correspondant
+ */
 export async function GET(req: Request, context: { params: Promise<{ id: string }> }) {
     const params = await context.params;
 
