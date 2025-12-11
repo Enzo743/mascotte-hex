@@ -9,6 +9,7 @@ export default function Page() {
     const searchParams = useSearchParams();
     const show = searchParams.get("show");
     const showVisualisation = searchParams.get("showVisu");
+    const showModification = searchParams.get("showModif");
 
     return (
         <main className="container">
@@ -21,11 +22,13 @@ export default function Page() {
             <div className={"grid"}>
                 <Link id="btnNouveau" href="/editeur?show=true" role="button">Nouveau</Link>
                 <Link id="btnVisualiser" href="/editeur?showVisu=true" role="button">Visualiser</Link>
-                <button id="btnModifier">Modifier</button>
+                <Link id="btnModifier" href="/editeur?showModif=true" role="button">Modifier</Link>
             </div>
 
             {show && <NouveauPopUpModal/>}
-            {showVisualisation && <GestionnaireModal />}
+            {showVisualisation && <GestionnaireModal prefixe="/editeur/visualiser"/>}
+            {showModification && <GestionnaireModal prefixe="/editeur/modifier"/>}
+
         </main>
     );
 };

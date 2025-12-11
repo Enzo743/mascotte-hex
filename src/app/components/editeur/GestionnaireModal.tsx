@@ -2,8 +2,13 @@
 import Link from "next/link";
 import LigneGestionnaire from "./LigneGestionnaire";
 import { useState, useEffect } from "react";
+import React from "react";
 
-export default function GestionnaireModal() {
+interface GestionnaireModalHref {
+    prefixe : string;
+}
+
+const GestionnaireModal: React.FC<GestionnaireModalHref> = ({prefixe}) => {
 
     const [cartes, setCartes] = useState([]);
 
@@ -42,7 +47,7 @@ export default function GestionnaireModal() {
                             nomFichier = {carte.nom}
                             lignes = {carte.lignes}
                             colonnes = {carte.colonnes}
-                            href = {`/editeur/modifier?id=${carte.nom}`}
+                            href = {`${prefixe}?id=${carte.nom}`}
                         />
                     ))}
                 </main>
@@ -51,3 +56,5 @@ export default function GestionnaireModal() {
 
     );
 }
+
+export default GestionnaireModal;
