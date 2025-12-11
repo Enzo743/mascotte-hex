@@ -38,7 +38,7 @@ export default function NouveauPopUpModal() {
         formData.append("lignes", valLignes);
         formData.append("colonnes", valColonnes);
 
-        const nom_ref_slug = slugify(valNom, '_');
+        const nom_ref_slug = slugify(valNom, {replacement: '_', remove: /[*+~.()'"!:@]/g});
         formData.append("nom", nom_ref_slug);
 
         if (force) {
