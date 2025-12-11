@@ -1,12 +1,14 @@
 "use client";
 import Link from "next/link";
 import { useRef } from "react";
+import { useRouter } from 'next/navigation'
 
 export default function NouveauPopUpModal()
 {
     const ligne_ref = useRef<HTMLFormElement>(null);
     const colonne_ref = useRef<HTMLFormElement>(null);
     const nom_ref = useRef<HTMLFormElement>(null);
+    const router = useRouter();
 
     async function envoiFormulaire(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -23,6 +25,8 @@ export default function NouveauPopUpModal()
 
         const resultat = await reponse.json();
         console.log(resultat);
+
+        router.push(`/editeur/modifier?id=${nom_ref.current?.value}`);
     }
 
     return (
