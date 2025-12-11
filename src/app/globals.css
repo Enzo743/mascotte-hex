@@ -37,6 +37,42 @@
     background-color: #fff;
 }
 
+/* Composant MessagePopUpModal */
+
+.titre-message-modal {
+    text-align: center;
+    margin: 0;
+}
+
+.link-message-modal {
+    float: right;
+    margin-top: 5px;
+}
+
+/* Composant ErreurPopUpModal */
+
+.titre-erreur-modal {
+    text-align: center;
+    margin: 0;
+    color: #D93526;
+}
+
+.text-erreur-modal {
+    text-align: justify;
+}
+
+.buttons-erreur-modal {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1rem;
+}
+
+.button-red-modal {
+    background-color: #D93526;
+    color: #fff;
+}
+
 /* Composant LigneGestionnaire */
 
 .ligne-gestionnaire {
