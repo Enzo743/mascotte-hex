@@ -3,10 +3,12 @@ import Link from "next/link";
 import {useSearchParams} from 'next/navigation';
 import NouveauPopUpModal from "../components/editeur/NouveauPopUpModal";
 import "../globals.css";
+import GestionnaireModal from "../components/editeur/GestionnaireModal";
 
 export default function Page() {
     const searchParams = useSearchParams();
     const show = searchParams.get("show");
+    const showVisualisation = searchParams.get("showVisu");
 
     return (
         <main className="container">
@@ -18,11 +20,12 @@ export default function Page() {
             </header>
             <div className={"grid"}>
                 <Link id="btnNouveau" href="/editeur?show=true" role="button">Nouveau</Link>
-                <button id="btnVisualiser">Visualiser</button>
+                <Link id="btnVisualiser" href="/editeur?showVisu=true" role="button">Visualiser</Link>
                 <button id="btnModifier">Modifier</button>
             </div>
 
             {show && <NouveauPopUpModal/>}
+            {showVisualisation && <GestionnaireModal />}
         </main>
     );
 };
