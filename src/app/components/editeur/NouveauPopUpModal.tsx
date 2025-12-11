@@ -38,7 +38,7 @@ export default function NouveauPopUpModal() {
         formData.append("lignes", valLignes);
         formData.append("colonnes", valColonnes);
 
-        const nom_ref_slug = slugify(valNom, '_');
+        const nom_ref_slug = slugify(valNom, {replacement: '_', remove: /[*+~.()'"!:@]/g});
         formData.append("nom", nom_ref_slug);
 
         if (force) {
@@ -69,9 +69,8 @@ export default function NouveauPopUpModal() {
             <dialog open>
                 <article>
                     <header>
-                        <Link href="/editeur" aria-label="Close" className="close"
-                              style={{float: 'right', marginTop: '5px'}}/>
-                        <h3 style={{textAlign: 'center', margin: 0}}>Nouvelle carte</h3>
+                        <Link href="/editeur" aria-label="Close" className="close link-message-modal"/>
+                        <h3 className={"titre-message-modal"}>Nouvelle carte</h3>
                     </header>
                     <form onSubmit={onFormSubmit}>
                         <label htmlFor="nom">Nom du fichier :</label>
@@ -92,7 +91,7 @@ export default function NouveauPopUpModal() {
             {showErreur && <ErreurPopUpModal
                 titre={"Erreur"}
                 description={"Le nom que vous avez passé existe déjà ! Voulez-vous toujours créer une nouvelle carte, cela écrasera l'ancienne carte ?"}
-                onCloseRoute={"editeur?show=true"}
+                onClickButton={() => router.push("/editeur?show=true")}
                 sndButton={true}
                 sndButtonLabel={"Oui"}
                 onClickSndButton={() => traiterFormulaire(true)}

@@ -1,11 +1,10 @@
 import React from "react";
-import Link from "next/link";
 
 // Interface des différentes propriétés du composant
 interface ErreurPopUpModalProps {
     titre: string;
     description: string;
-    onCloseRoute: string;
+    onClickButton: () => void;
     sndButton?: boolean;
     sndButtonLabel?: string;
     onClickSndButton?: () => void;
@@ -14,7 +13,7 @@ interface ErreurPopUpModalProps {
 const ErreurPopUpModal: React.FC<ErreurPopUpModalProps> = ({
                                                                titre,
                                                                description,
-                                                               onCloseRoute,
+                                                               onClickButton,
                                                                sndButton,
                                                                sndButtonLabel,
                                                                onClickSndButton,
@@ -25,15 +24,14 @@ const ErreurPopUpModal: React.FC<ErreurPopUpModalProps> = ({
         <dialog open>
             <article>
                 <header>
-                    <Link href={onCloseRoute} aria-label="Close" className="close"
-                          style={{float: 'right', marginTop: '5px'}}/>
-                    <h3 style={{textAlign: 'center', margin: 0, color: '#D93526'}}>{titre}</h3>
+                    <h3 className={"titre-erreur-modal"}>{titre}</h3>
                 </header>
-                <p style={{textAlign: 'justify'}}>{description}</p>
+                <p className={"text-erreur-modal"}>{description}</p>
                 {sndButton &&
-                    <div style={{textAlign: 'center'}}>
-                        <button type="button" className={"secondary"}
+                    <div className={"buttons-erreur-modal"}>
+                        <button type="button"
                                 onClick={onClickSndButton}>{sndButtonLabel}</button>
+                        <button type={"button"} className={"button-red-modal"} onClick={onClickButton}>Annuler</button>
                     </div>}
             </article>
         </dialog>
