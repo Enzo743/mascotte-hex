@@ -12,6 +12,8 @@ Enfin les arrêtes des rivières, avec leurs règles associées
 
 Code peu lisible, j'y retournerais pour l'optimiser, d'autant plus qu'un appel à la fonction Terrain me parait un peu exessif
 (Utilisation en trop de ressources)
+
+Egalement corriger un bug d'adjacence avec les rivières (et code tout autant peu lisible)
 */
 export class Graphe {
     carte: Carte;
@@ -76,4 +78,15 @@ export class Graphe {
             console.log(voisin);   
         });
     }
+
+    verifier(actuel: [number, number], futur: [number, number]) {
+        const truc = this.graphe.find(obj => (obj.position.x === actuel[0]) && (obj.position.y === actuel[1]));
+        if (truc) {
+            return truc.voisins.some(voisin => 
+                voisin[0] === futur[0] && voisin[1] === futur[1]
+            );
+        }
+        return false;
+    }
+
 }
