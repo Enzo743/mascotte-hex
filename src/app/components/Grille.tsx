@@ -1,5 +1,5 @@
 "use client";
-import {Arrow, Stage, Layer, Path, RegularPolygon, Group} from "react-konva";
+import {Arrow, Stage, Layer, Path, RegularPolygon, Group, Star} from "react-konva";
 import {Connexion, Carte, Case} from "./Structure";
 
 /*
@@ -59,6 +59,12 @@ export default function Grille({rayon, carte}: {rayon: number; carte: Carte}) {
         }
     });
 
+    // Affectaytion des mascottes de "carte" à la Grille
+    const mascotteInfo = hexagons.find(hex => hex.id === `${carte.résidences.info[0]}-${carte.résidences.info[1]}`);
+    const mascotteBio = hexagons.find(hex => hex.id === `${carte.résidences.bio[0]}-${carte.résidences.bio[1]}`);
+    if (!mascotteInfo || !mascotteBio) return null;
+
+
     // Affichage de la Grille
     return (
         <Stage width={rayon * 2 * carte.grille.colonnes} height={rayon * 2 * carte.grille.lignes}>
@@ -75,6 +81,26 @@ export default function Grille({rayon, carte}: {rayon: number; carte: Carte}) {
                             stroke = {"black"}
                         />
                     ))}
+                    <Star 
+                        key= {"m-info"}
+                        x = {mascotteInfo.position.x}
+                        y = {mascotteInfo.position.y}
+                        numPoints = {6}
+                        innerRadius = {rayon/2.5}
+                        outerRadius = {rayon}
+                        fill = {"#9486E1"}
+                        stroke = {"black"}
+                    />
+                    <Star 
+                        key= {"m-bio"}
+                        x={mascotteBio.position.x}
+                        y={mascotteBio.position.y}
+                        numPoints = {6}
+                        innerRadius={rayon/2.5}
+                        outerRadius={rayon}
+                        fill={"#F17961"}
+                        stroke={"black"}
+                    />
                     {rivieres.map((connexion) => {
                         const path = [];
                         const start = hexagons.find(hex => hex.id === `${connexion.tuiles[0][0]}-${connexion.tuiles[0][1]}`);
@@ -104,8 +130,8 @@ export default function Grille({rayon, carte}: {rayon: number; carte: Carte}) {
                                 points = {[start.position.x, start.position.y, end.position.x, end.position.y]}
                                 pointerLength = {30}
                                 pointerWidth = {30}
-                                fill = "orange"
-                                stroke = "orange"
+                                fill = "#FFA23A"
+                                stroke = "#FFA23A"
                                 strokeWidth = {4}
                             />
                         );
