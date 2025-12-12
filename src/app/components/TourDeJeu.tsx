@@ -67,13 +67,7 @@ function estTyrolienne({tabTyroliennes, caseCible}: {tabTyroliennes: Connexion[]
     return caseArrivee;
 }
 
-// Renvoie un message de victoire si une mascotte est dans la résidence adverse
-function victoire({residenceInfo, residenceBio, mascotteInfo, mascotteBio}: {residenceInfo: Case; residenceBio: Case; mascotteInfo: Case; mascotteBio: Case}) {
-    if (mascotteBio.position.x == residenceInfo.position.x && mascotteBio.position.y == residenceInfo.position.y) {
-        return "Victoire des informaticiens !";
-    }
-    if (mascotteInfo.position.x == residenceBio.position.x && mascotteInfo.position.y == residenceBio.position.y) {
-        return "Victoire des biologistes !";
-    }
-    return "Partie en cours";
+// Renvoie true de si les coordonnées de la mascotte sont les mêmes que ceux de la résidence et false sinon 
+export function memePos({objet1, objet2}: {objet1: [number, number]; objet2: [number, number]}) {
+    return objet1[0] == objet2[0] && objet1[1] == objet2[1];
 }
