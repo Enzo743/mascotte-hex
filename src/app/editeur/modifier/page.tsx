@@ -25,9 +25,11 @@ export default function Page() {
     const router = useRouter();
 
     // State relatif à la carte
-    const [jsonData, setJsonData] = useState(null);
     const [isLoaded, setIsLoaded] = useState(false);
     const [rayon, setRayon] = useState(45);
+    const [hexagones, setHexagones] = useState<Case[]>([]);
+    const [tyroliennes, setTyroliennes] = useState<Connexion[]>([]);
+    const [rivieres, setRivieres] = useState<Connexion[]>([]);
 
     // State relatif à la gestion des onglets de l'éditeur
     const [estTerrainOuvert, setEstTerrainOuvert] = useState(false);
@@ -37,25 +39,29 @@ export default function Page() {
     const [estConnexionsOuverte, setEstConnexionsOuverte] = useState(false);
     const [connexionsSelectionnee, setConnexionsSelectionnee] = useState<string | null>(null);
 
+    const appliquerCarte = (json, rayon) => {
+        setIsLoaded(true);
+        setHexagones(Terrain(json, rayon));
+
+        const connexions = json.connexions ?? [];
+        setTyroliennes(connexions.filter((c: Connexion) => c.type === "tyrolienne"));
+        setRivieres(connexions.filter((c: Connexion) => c.type === "riviere"));
+    };
+
     // Permet le chargement de la carte
     useEffect(() => {
-        if (carteId) {
-            getCarte(carteId).then(json => {
-                if (json && !json.error) {
-                    setJsonData(json);
-                    setIsLoaded(true);
-                }
-            });
-        }
-    }, [carteId]);
+        if (!carteId) return;
+
+        getCarte(carteId).then((json: any) => {
+            if (json && !json.error) {
+                appliquerCarte(json, rayon);
+            }
+        });
+    }, [carteId, rayon]);
 
     if (!isLoaded) {
         return <div>Chargement de la carte...</div>;
     } else {
-        const hexagones: Case[] = Terrain(jsonData, rayon);
-        const tyroliennes: Connexion[] = jsonData.connexions.filter(c => c.type === "tyrolienne");
-        const rivieres: Connexion[] = jsonData.connexions.filter(c => c.type === "riviere");
-
         return (
             <div className={"container-fluid editeur"}>
                 {/* Partie de gauche : Sidebar */}
@@ -164,6 +170,7 @@ export default function Page() {
                             tyroliennes={tyroliennes}
                             onClick={(hex) => {
                                 console.log(hex.id);
+
                             }}
                         />
                     </div>
