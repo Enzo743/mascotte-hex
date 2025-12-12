@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import LigneGestionnaire from "./LigneGestionnaire";
+import LigneGestionnaire from "../LigneGestionnaire";
 import React, {useEffect, useState} from "react";
 
 interface GestionnaireModalHref {

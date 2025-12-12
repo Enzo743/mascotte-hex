@@ -1,9 +1,9 @@
 "use client";
 import Link from "next/link";
 import {useSearchParams} from 'next/navigation';
-import NouveauPopUpModal from "../components/editeur/NouveauPopUpModal";
+import NouveauPopUpModal from "../components/editeur/modals/NouveauPopUpModal";
 import "../globals.css";
-import GestionnaireModal from "../components/editeur/GestionnaireModal";
+import GestionnaireModal from "../components/editeur/modals/GestionnaireModal";
 
 export default function Page() {
     const searchParams = useSearchParams();

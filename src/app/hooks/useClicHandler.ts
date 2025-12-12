@@ -1,0 +1,151 @@
+import {Case} from "@/app/components/Structure";
+import {getHexagonesEntreDeuxPoints, getVoisins} from "@/app/utils/hexagoneUtils";
+import {setTuiles} from "@/app/actions/setTuiles";
+import {getCarte} from "@/app/actions/getCarte";
+
+interface useClicHandlerProps {
+    carteId: string | null;
+    rayon: number;
+    hexagones: Case[];
+    posInfo: Case | null;
+    posBio: Case | null;
+    terrainSelectionne: string | null;
+    residenceSelectionnee: string | null;
+    connexionsSelectionnee: string | null;
+    tyrolienneStart: [number, number] | null;
+    setTyrolienneStart: (value: [number, number] | null) => void;
+    pushMsg: (text: string, level: "ok" | "erreur") => void;
+    appliquerCarte: (json: any, rayon: number) => void;
+}
+
+export function useClicHandler(props: useClicHandlerProps) {
+    // Fonction qui s'occupe de toutes les vérifications nécessaires à la gestion des résidences
+    const verifResidences = (hex: Case, date: string, pos: any): string => {
+        if (hex.type === "ocean" || hex.type === "montagne") {
+            props.pushMsg("[" + date + `] - Vous ne pouvez pas mettre une résidence sur une case de type ${hex.type}`, "erreur");
+            return "Erreur";
+        }
+
+        if (hex.id === pos.id) {
+            props.pushMsg("[" + date + `] - Vous ne pouvez pas mettre une résidence sur cette case, il y a déjà une résidence`, "erreur");
+            return "Erreur";
+        }
+
+        const voisins = getVoisins(hex, props.hexagones);
+
+        for (let i = 0; i < voisins.length; i++) {
+            if (voisins[i].id === pos.id) {
+                props.pushMsg("[" + date + `] - Vous ne pouvez pas mettre une résidence sur cette case, il y a déjà une résidence dans une case adjacente`, "erreur");
+                return "Erreur";
+            }
+        }
+
+        return "Super";
+    }
+
+    // Fonction qui gère les actions lors du clic sur un terrain d'un onglet
+    const handleTerrainClic = async (type: string, x: number, y: number, date: string) => {
+        const reponse = await setTuiles(JSON.stringify({
+            "nom": `${props.carteId}`,
+            [type]: [x, y]
+        }));
+
+        if (reponse.status === "success") {
+            const json: Promise<any> = await getCarte(props.carteId);
+
+            if (json && !json.error) {
+                props.appliquerCarte(json, props.rayon);
+                props.pushMsg("[" + date + `] - Ajout d'un terrain ${type} en position (` + x + ", " + y + ")", "ok");
+            } else {
+                props.pushMsg("[" + date + `] - Erreur lors de l'ajout d'un terrain ${type} en position ` + x + ", " + y + ")", "erreur");
+            }
+        }
+    }
+
+    // Fonction est gère les actions lors du clic sur une résidence d'un onglet
+    const handleResidenceClic = async (type: string, hex: Case, x: number, y: number, date: string) => {
+        const posAutre: any = type === "info" ? props.posBio : props.posInfo;
+
+        if (verifResidences(hex, date, posAutre) === "Erreur") {
+            return;
+        }
+
+        const label: string = type === "info" ? "d'informaticien" : "de biologiste";
+        const reponse: any = await setTuiles(JSON.stringify({
+            "nom": `${props.carteId}`,
+            [type]: [x, y]
+        }));
+
+        if (reponse.status === "success") {
+            const json: Promise<any> = await getCarte(props.carteId);
+
+            if (json && !json.error) {
+                console.log(json);
+                props.appliquerCarte(json, props.rayon);
+                props.pushMsg("[" + date + `] - Ajout d'une résidence ${label} en position (` + x + ", " + y + ")", "ok");
+            } else {
+                props.pushMsg("[" + date + `] - Erreur lors de l'ajout d'une résidence ${label} en position (` + x + ", " + y + ")", "erreur");
+            }
+        }
+    }
+
+    // Fonction qui gère les actions lors du clic sur une tyrolienne d'un onglet
+    const handleTyrolienneClic = async (hex: Case, x: number, y: number, date: string) => {
+        if (props.tyrolienneStart === null) {
+            if (hex.type !== "foret") {
+                props.pushMsg("[" + date + "] - Erreur, vous ne pouvez débuter une tyrolienne que depuis une forêt", "erreur");
+                props.setTyrolienneStart(null);
+                return;
+            }
+
+            props.setTyrolienneStart([x, y]);
+            props.pushMsg("[" + date + "] - Point A sélectionné pour la tyrolienne : (" + x + ", " + y + "). Cliquez maintenant sur le point B.", "ok");
+            return;
+        }
+
+        const [ax, ay]: [number, number] = props.tyrolienneStart;
+
+        if (ax === x && ay === y) {
+            props.pushMsg("[" + date + "] - Erreur, le point B doit être différent du point A", "erreur");
+            props.setTyrolienneStart(null);
+            return;
+        }
+
+        if (hex.type === "ocean" || hex.type === "montagne") {
+            props.pushMsg("[" + date + "] - Erreur, vous ne pouvez pas mettre une tyrolienne sur une case de type " + hex.type, "erreur");
+            props.setTyrolienneStart(null);
+            return;
+        }
+
+        const casesTraversees: Case[] = getHexagonesEntreDeuxPoints([ax, ay], [x, y], props.hexagones);
+        const estCasesMontagne: boolean = casesTraversees.some((c: Case) => c.type === "montagne");
+
+        if (estCasesMontagne) {
+            props.pushMsg("[" + date + "] - Erreur, vous ne pouvez pas passer en tyrolienne sur une case de type montagne", "erreur");
+            props.setTyrolienneStart(null);
+            return;
+        }
+
+        const reponse: any = await setTuiles(JSON.stringify({
+            "nom": `${props.carteId}`,
+            "tyrolienne": [[ax, ay], [x, y]]
+        }));
+
+        if (reponse.status === "success") {
+            const json: any = await getCarte(props.carteId);
+
+            if (json && !json.error) {
+                props.appliquerCarte(json, props.rayon);
+                props.pushMsg("[" + date + "] - Ajout d'une tyrolienne, whouuuuuu", "ok");
+            }
+        }
+
+        props.setTyrolienneStart(null);
+    }
+
+    return {
+        handleTerrainClic,
+        handleResidenceClic,
+        handleTyrolienneClic,
+    };
+}

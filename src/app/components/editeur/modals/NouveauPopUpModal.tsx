@@ -3,7 +3,7 @@ import Link from "next/link";
 import {FormEvent, useRef} from "react";
 import {useRouter, useSearchParams} from 'next/navigation';
 import slugify from 'slugify';
-import ErreurPopUpModal from "@/app/components/editeur/ErreurPopUpModal";
+import ErreurPopUpModal from "@/app/components/editeur/modals/ErreurPopUpModal";
 
 export default function NouveauPopUpModal() {
     // Références aux éléments du formulaire
