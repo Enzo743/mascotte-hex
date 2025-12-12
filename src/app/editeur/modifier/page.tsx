@@ -16,6 +16,7 @@ import {Terrain} from "@/app/components/Terrain";
 import GrilleEditeur from "@/app/components/editeur/GrilleEditeur";
 import {TbZoom} from "react-icons/tb";
 import {setTuiles} from "@/app/actions/setTuiles";
+import LogTextarea, {LogMessage} from "@/app/components/editeur/LogTextarea";
 
 export default function Page() {
     // Gestion des params présents dans l'URL
@@ -41,6 +42,13 @@ export default function Page() {
     const [residenceSelectionnee, setResidenceSelectionnee] = useState<string | null>(null);
     const [estConnexionsOuverte, setEstConnexionsOuverte] = useState(false);
     const [connexionsSelectionnee, setConnexionsSelectionnee] = useState<string | null>(null);
+    const [messages, setMessages] = useState<LogMessage[]>([]);
+
+    const pushMsg = (text: string, level: LogMessage["level"] = "ok") => {
+        setMessages((prev) =>
+            [...prev, {id: crypto.randomUUID(), text, level}].slice(-50)
+        );
+    };
 
     // Fonction qui permet d'ouvrir / fermer les onglets de la sidebar, et d'avoir la sélection des "objets"
     const selectionner = (
@@ -227,6 +235,8 @@ export default function Page() {
                                 let y = Number(coordonnees_hex[1]);
                                 console.log("x = " + x);
                                 console.log("y = " + y);
+                                const log = document.querySelector("textarea[name='log']");
+                                const date = new Date().toLocaleString().toString();
 
                                 // On gère chacun des cas possibles d'onglets
                                 if (terrainSelectionne === "plaine") {
@@ -238,10 +248,11 @@ export default function Page() {
                                             getCarte(carteId).then((json: any) => {
                                                 if (json && !json.error) {
                                                     appliquerCarte(json, rayon);
+                                                    pushMsg("[" + date + "] - Ajout d'un terrain 'Plaine' en position (" + x + ", " + y + ")", "ok");
                                                 }
                                             });
                                         } else {
-                                            console.log("error : " + r);
+                                            pushMsg("[" + date + "] - Erreur lors de l'ajout d'un terrain 'Plaine' en position (" + x + ", " + y + ")", "erreur");
                                         }
                                     });
                                 } else if (terrainSelectionne === "foret") {
@@ -253,10 +264,11 @@ export default function Page() {
                                             getCarte(carteId).then((json: any) => {
                                                 if (json && !json.error) {
                                                     appliquerCarte(json, rayon);
+                                                    pushMsg("[" + date + "] - Ajout d'un terrain 'Forêt' en position (" + x + ", " + y + ")", "ok");
                                                 }
                                             });
                                         } else {
-                                            console.log("error : " + r);
+                                            pushMsg("[" + date + "] - Erreur lors de l'ajout d'un terrain 'Forêt' en position (" + x + ", " + y + ")", "erreur");
                                         }
                                     });
                                 } else if (terrainSelectionne === "montagne") {
@@ -268,10 +280,11 @@ export default function Page() {
                                             getCarte(carteId).then((json: any) => {
                                                 if (json && !json.error) {
                                                     appliquerCarte(json, rayon);
+                                                    pushMsg("[" + date + "] - Ajout d'un terrain 'Montagne' en position (" + x + ", " + y + ")", "ok");
                                                 }
                                             });
                                         } else {
-                                            console.log("error : " + r);
+                                            pushMsg("[" + date + "] - Erreur lors de l'ajout d'un terrain 'Montagne' en position (" + x + ", " + y + ")", "erreur");
                                         }
                                     });
                                 } else if (terrainSelectionne === "ocean") {
@@ -283,10 +296,11 @@ export default function Page() {
                                             getCarte(carteId).then((json: any) => {
                                                 if (json && !json.error) {
                                                     appliquerCarte(json, rayon);
+                                                    pushMsg("[" + date + "] - Ajout d'un terrain 'Océan' en position (" + x + ", " + y + ")", "ok");
                                                 }
                                             });
                                         } else {
-                                            console.log("error : " + r);
+                                            pushMsg("[" + date + "] - Erreur lors de l'ajout d'un terrain 'Océan' en position (" + x + ", " + y + ")", "erreur");
                                         }
                                     });
                                 } else if (residenceSelectionnee === "info") {
@@ -298,10 +312,11 @@ export default function Page() {
                                             getCarte(carteId).then((json: any) => {
                                                 if (json && !json.error) {
                                                     appliquerCarte(json, rayon);
+                                                    pushMsg("[" + date + "] - Ajout d'une résidence d'informaticien en position (" + x + ", " + y + ")", "ok");
                                                 }
                                             });
                                         } else {
-                                            console.log("error : " + r);
+                                            pushMsg("[" + date + "] - Erreur lors de l'ajout d'une résidence d'informaticien en position (" + x + ", " + y + ")", "erreur");
                                         }
                                     });
                                 } else if (residenceSelectionnee === "bio") {
@@ -313,10 +328,11 @@ export default function Page() {
                                             getCarte(carteId).then((json: any) => {
                                                 if (json && !json.error) {
                                                     appliquerCarte(json, rayon);
+                                                    pushMsg("[" + date + "] - Ajout d'une résidence de biologiste en position (" + x + ", " + y + ")", "ok");
                                                 }
                                             });
                                         } else {
-                                            console.log("error : " + r);
+                                            pushMsg("[" + date + "] - Erreur lors de l'ajout d'une résidence de biologiste en position (" + x + ", " + y + ")", "erreur");
                                         }
                                     });
                                 } else if (connexionsSelectionnee === "tyrolienne") {
@@ -328,9 +344,13 @@ export default function Page() {
                         />
                     </div>
 
-                    {/* Zone des messages pour les tyroliennes et les rivières */}
+                    {/* Zone des messages pour les logs de chaque changement dans l'éditeur */}
                     <div className={"messages"}>
-                        <p>Test des messages</p>
+                        <LogTextarea
+                            messages={messages}
+                            maxVisible={5}
+                            rows={6}
+                        />
                     </div>
                 </div>
             </div>
