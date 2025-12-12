@@ -37,22 +37,44 @@
     flex: 1;
     display: flex;
     flex-direction: column;
+    height: 100%;
+    overflow: hidden;
 }
 
 .editeur .sidebar-right .grille {
-    flex: 5;
+    flex: 1;
     display: flex;
     justify-content: center;
     align-items: center;
     background-color: #f9f9f9;
     overflow: hidden;
+    min-height: 0;
+    position: relative;
 }
 
 .editeur .sidebar-right .messages {
-    flex: 1;
+    height: 25vh; 
+    min-height: 150px; 
+    max-height: 300px;
+    
+    flex-shrink: 0; 
     border-top: 2px solid #e0e0e0;
     padding: 1rem;
     background-color: #fff;
+    box-sizing: border-box;
+}
+
+.editeur .sidebar-right .messages div,
+.editeur .sidebar-right .messages label,
+.editeur .sidebar-right .messages textarea {
+    height: 100%;
+    width: 100%;
+    display: block;
+    box-sizing: border-box;
+}
+
+.editeur .sidebar-right .messages textarea {
+    resize: none;
 }
 
 .sousCat {
