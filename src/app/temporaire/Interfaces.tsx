@@ -1,5 +1,5 @@
 /*
-Interfaces utiles (pour simplifier la lecture)
+=== Interfaces utiles (pour simplifier la lecture) ===
 */
 export interface Position {
     x: number;
@@ -7,7 +7,7 @@ export interface Position {
 }
 
 /*
-Interfaces pour le Graphe orienté
+=== Interfaces pour le Graphe orienté ===
 */
 export interface Noeud {
     x: number;
@@ -20,7 +20,7 @@ export interface Arc {
 }
 
 /*
-Interfaces de la structure des fichiers json
+=== Interfaces de la structure des fichiers json ===
 
 CarteJSON est délicat, car le fichier JSON fourni peut être interprété de plusieurs manières.
 J'ai considéré que les coordonnées de la forme [x, y] sont des tuples de nombres et non pas une liste de nombres.
@@ -51,12 +51,31 @@ export interface CarteJSON {
 }
 
 /*
-Interfaces pour l'affichage de la carte
+=== Interfaces pour le jeu ===
 */
+export interface Joueur {
+    position: Position;
+    mascotte: boolean;
+}
+
+/*
+=== Interfaces pour l'affichage de la carte ===
+*/
+export interface AffichageParams {
+    contexte: Contexte;
+    rayon: number;
+    tour: number;
+    joueurInfo: Joueur;
+    joueurBio: Joueur;
+    deplacement?: (position: Position) => void;
+}
+
 export interface Case {
     id: string;
     positionMatrice: Position;
     positionCanvas: Position;
+    residenceInfo: boolean;
+    residenceBio: boolean;
     riviere: boolean;
     type: string;
     couleur: string
@@ -69,7 +88,7 @@ export interface Tyrolienne {
 
 export interface Riviere {
     parcours: Position[];
-    embouchure: Position
+    embouchure: Position // Séparation de la dernière case de chaque rivière, utile pour son traitement.
 }
 
 export interface Carte {
@@ -78,22 +97,16 @@ export interface Carte {
         colonnes: number;
     };
     cases: Case[];
+    residenceInfo: Position;
+    residenceBio: Position;
     tyroliennes: Tyrolienne[];
     rivieres: Riviere[];
 }
 
 /*
-Interfaces pour le traitement
+=== Interfaces pour le traitement ===
 */
 export interface Contexte {
     carte: Carte;
     graphe: Arc[];
-}
-
-/*
-Interfaces pour l'affichage
-*/
-export interface AffichageParams {
-    contexte: Contexte;
-    rayon: number;
 }
