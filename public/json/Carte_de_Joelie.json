@@ -3,26 +3,27 @@
     "lignes": "10",
     "colonnes": "10"
   },
-  "résidences": {},
+  "résidences": {
+    "residenceInfo": [
+      6,
+      4
+    ]
+  },
   "terrains": {
     "plaine": [
       [
-        3,
-        3
+        1,
+        1
       ],
       [
-        6,
-        4
+        2,
+        2
       ]
     ],
     "foret": [
       [
-        2,
-        5
-      ],
-      [
-        2,
-        4
+        3,
+        2
       ]
     ],
     "montagne": []

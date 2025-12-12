@@ -15,6 +15,7 @@ import {Case, Connexion} from "@/app/components/Structure";
 import {Terrain} from "@/app/components/Terrain";
 import GrilleEditeur from "@/app/components/editeur/GrilleEditeur";
 import {TbZoom} from "react-icons/tb";
+import { setTuiles } from "@/app/actions/setTuiles";
 
 export default function Page() {
     // Gestion des params présents dans l'URL
@@ -72,7 +73,7 @@ export default function Page() {
 
                     {/* Onglet du terrain */}
                     <Categorie
-                        icon={IoIosArrowForward} label={"Terrain"}
+                        icon={IoIosArrowForward} label={"Terrains"}
                         className={`menu-item ${estTerrainOuvert ? "open" : ""}`}
                         onClick={() => setEstTerrainOuvert(!estTerrainOuvert)}/>
 
@@ -169,8 +170,140 @@ export default function Page() {
                             rivieres={rivieres}
                             tyroliennes={tyroliennes}
                             onClick={(hex) => {
-                                console.log(hex.id);
+                                let coordonnees_hex = hex.id.split("-");
+                                let x = Number(coordonnees_hex[0]);
+                                let y = Number(coordonnees_hex[1]);
+                                console.log("x = " + x);
+                                console.log("y = " + y);
 
+                                if (terrainSelectionne === "plaine")
+                                {
+                                    setTuiles(JSON.stringify({
+                                        "nom": `${carteId}`,
+                                        "plaine": [x, y]
+                                    })).then(r => {
+                                        if (r.status === "success")
+                                        {
+                                            getCarte(carteId).then((json: any) => {
+                                                if (json && !json.error) {
+                                                    appliquerCarte(json, rayon);
+                                                }
+                                            });
+                                        }
+                                        else
+                                        {
+                                            console.log("error : " + r);
+                                        }
+                                    });
+                                }
+                                else if (terrainSelectionne === "foret")
+                                {
+                                    setTuiles(JSON.stringify({
+                                        "nom": `${carteId}`,
+                                        "foret": [x, y]
+                                    })).then(r => {
+                                        if (r.status === "success")
+                                        {
+                                            getCarte(carteId).then((json: any) => {
+                                                if (json && !json.error) {
+                                                    appliquerCarte(json, rayon);
+                                                }
+                                            });
+                                        }
+                                        else
+                                        {
+                                            console.log("error : " + r);
+                                        }
+                                    });
+                                }
+                                else if (terrainSelectionne === "montagne")
+                                {
+                                    setTuiles(JSON.stringify({
+                                        "nom": `${carteId}`,
+                                        "montagne": [x, y]
+                                    })).then(r => {
+                                        if (r.status === "success")
+                                        {
+                                            getCarte(carteId).then((json: any) => {
+                                                if (json && !json.error) {
+                                                    appliquerCarte(json, rayon);
+                                                }
+                                            });
+                                        }
+                                        else
+                                        {
+                                            console.log("error : " + r);
+                                        }
+                                    });
+                                }
+                                else if (terrainSelectionne === "ocean")
+                                {
+                                    setTuiles(JSON.stringify({
+                                        "nom": `${carteId}`,
+                                        "ocean": [x, y]
+                                    })).then(r => {
+                                        if (r.status === "success")
+                                        {
+                                            getCarte(carteId).then((json: any) => {
+                                                if (json && !json.error) {
+                                                    appliquerCarte(json, rayon);
+                                                }
+                                            });
+                                        }
+                                        else
+                                        {
+                                            console.log("error : " + r);
+                                        }
+                                    });
+                                }
+                                else if (residenceSelectionnee === "info")
+                                {
+                                    setTuiles(JSON.stringify({
+                                        "nom": `${carteId}`,
+                                        "residenceInfo": [x, y]
+                                    })).then(r => {
+                                        if (r.status === "success")
+                                        {
+                                            getCarte(carteId).then((json: any) => {
+                                                if (json && !json.error) {
+                                                    appliquerCarte(json, rayon);
+                                                }
+                                            });
+                                        }
+                                        else
+                                        {
+                                            console.log("error : " + r);
+                                        }
+                                    });
+                                }
+                                else if (residenceSelectionnee === "bio")
+                                {
+                                    setTuiles(JSON.stringify({
+                                        "nom": `${carteId}`,
+                                        "residenceBio": [x, y]
+                                    })).then(r => {
+                                        if (r.status === "success")
+                                        {
+                                            getCarte(carteId).then((json: any) => {
+                                                if (json && !json.error) {
+                                                    appliquerCarte(json, rayon);
+                                                }
+                                            });
+                                        }
+                                        else
+                                        {
+                                            console.log("error : " + r);
+                                        }
+                                    });
+                                }
+                                else if (connexionsSelectionnee === "tyrolienne")
+                                {
+                                    console.log("tyrolienne");
+                                }
+                                else if (connexionsSelectionnee === "riviere")
+                                {
+                                    console.log("riviere");
+                                }                                
                             }}
                         />
                     </div>
