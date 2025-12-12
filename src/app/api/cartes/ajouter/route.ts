@@ -26,11 +26,11 @@ export async function POST(req: Request) {
                     nom = jsonReq[key];
                     break;
                 }
-                case "residenceInfo": {
+                case "info": {
                     residenceInfo = jsonReq[key];
                     break;
                 }
-                case "residenceBio": {
+                case "bio": {
                     residenceBio = jsonReq[key];
                     break;
                 }
@@ -72,11 +72,11 @@ export async function POST(req: Request) {
 
         // Gestion de la sauvegarde des résidences
         if (residenceInfo) {
-            json.résidences.residenceInfo = residenceInfo;
+            json.résidences.info = residenceInfo;
         }
 
         if (residenceBio) {
-            json.résidences.residenceBio = residenceBio;
+            json.résidences.bio = residenceBio;
         }
 
         // Fonction qui permet de voir si deux tuiles sont identiques (en JSON)

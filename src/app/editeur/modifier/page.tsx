@@ -95,12 +95,12 @@ export default function Page() {
         const nextHexagones = Terrain(json, rayon) as Case[];
         setHexagones(nextHexagones);
 
-        const info = json.résidences?.residenceInfo ?? null;
-        const bio = json.résidences?.residenceBio ?? null;
+        const infoo = json.résidences?.info ?? null;
+        const bioo = json.résidences?.bio ?? null;
 
         // On transforme [x,y] -> "x-y" pour comparer simplement
-        const infoId = info ? `${info[0]}-${info[1]}` : null;
-        const bioId = bio ? `${bio[0]}-${bio[1]}` : null;
+        const infoId = infoo ? `${infoo[0]}-${infoo[1]}` : null;
+        const bioId = bioo ? `${bioo[0]}-${bioo[1]}` : null;
 
         setPosInfo(infoId ? (nextHexagones.find(h => h.id === infoId) ?? null) : null);
         setPosBio(bioId ? (nextHexagones.find(h => h.id === bioId) ?? null) : null);
@@ -369,11 +369,12 @@ export default function Page() {
 
                                     setTuiles(JSON.stringify({
                                         "nom": `${carteId}`,
-                                        "residenceInfo": [x, y]
+                                        "info": [x, y]
                                     })).then(r => {
                                         if (r.status === "success") {
                                             getCarte(carteId).then((json: any) => {
                                                 if (json && !json.error) {
+                                                    console.log(json);
                                                     appliquerCarte(json, rayon);
                                                     pushMsg("[" + date + "] - Ajout d'une résidence d'informaticien en position (" + x + ", " + y + ")", "ok");
                                                 }
@@ -386,10 +387,10 @@ export default function Page() {
                                     if (verifResidences(hex, date, posInfo) === "Erreur") {
                                         return;
                                     }
-                                    
+
                                     setTuiles(JSON.stringify({
                                         "nom": `${carteId}`,
-                                        "residenceBio": [x, y]
+                                        "bio": [x, y]
                                     })).then(r => {
                                         if (r.status === "success") {
                                             getCarte(carteId).then((json: any) => {
