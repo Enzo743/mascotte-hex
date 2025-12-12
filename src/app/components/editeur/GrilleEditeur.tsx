@@ -1,25 +1,24 @@
 // Dépendances
-import { Arrow, Stage, Layer, Path, RegularPolygon, Group, Star } from "react-konva";
-import { Case, Connexion } from "../components/Structure";
+import {Arrow, Group, Layer, Path, RegularPolygon, Stage, Star} from "react-konva";
+import {Case, Connexion} from "../Structure";
 // Au cas ou
-import { Graphe } from "../components/Graphe";
 
-export default function Grille(
+export default function GrilleEditeur(
     {
-    rayon,
-    hexagones,
-    mascotteInfo,
-    mascotteBio,
-    rivieres,
-    tyroliennes,
-}: {
-    rayon: number;
-    hexagones: Case[];
-    mascotteInfo: null | Case;
-    mascotteBio: null | Case;
-    rivieres: Connexion[];
-    tyroliennes: Connexion[];
-}) {
+        rayon,
+        hexagones,
+        mascotteInfo,
+        mascotteBio,
+        rivieres,
+        tyroliennes,
+    }: {
+        rayon: number;
+        hexagones: Case[];
+        mascotteInfo: null | Case;
+        mascotteBio: null | Case;
+        rivieres: Connexion[];
+        tyroliennes: Connexion[];
+    }) {
     const width = Math.max.apply(0, hexagones.map((h) => h.position.x)) + rayon;
     const height = Math.max.apply(0, hexagones.map((h) => h.position.y)) + rayon;
 
@@ -29,17 +28,17 @@ export default function Grille(
                 <Group>
                     {/* --- CASES (VISUEL DU TERRAIN) --- */}
                     {hexagones.map((hexagone) => (
-                        <RegularPolygon
-                            key = {"v-" + hexagone.id}
-                            x = {hexagone.position.x}
-                            y = {hexagone.position.y}
-                            sides = {6}
-                            radius = {rayon}
-                            fill = {hexagone.couleur}
-                            stroke = {"black"}
-                        />
+                            <RegularPolygon
+                                key={"v-" + hexagone.id}
+                                x={hexagone.position.x}
+                                y={hexagone.position.y}
+                                sides={6}
+                                radius={rayon}
+                                fill={hexagone.couleur}
+                                stroke={"black"}
+                            />
                         )
-                    )}  
+                    )}
 
                     {/* --- MASCOTTE INFO --- */}
                     {mascotteInfo ? (
@@ -57,13 +56,13 @@ export default function Grille(
                     {/* --- MASCOTTE BIO --- */}
                     {mascotteBio ? (
                         <Star
-                            x = {mascotteBio.position.x}
-                            y = {mascotteBio.position.y}
-                            numPoints = {6}
-                            innerRadius = {rayon / 2.5}
-                            outerRadius = {rayon}
-                            fill = "#F17961"
-                            stroke = "black"
+                            x={mascotteBio.position.x}
+                            y={mascotteBio.position.y}
+                            numPoints={6}
+                            innerRadius={rayon / 2.5}
+                            outerRadius={rayon}
+                            fill="#F17961"
+                            stroke="black"
                         />
                     ) : null}
 
@@ -76,14 +75,16 @@ export default function Grille(
                         for (let k = 1; k < connexion.tuiles.length; k++) {
                             const tuile = connexion.tuiles[k];
                             const hexagone = hexagones.find((h) => h.id === `${tuile[0]}-${tuile[1]}`);
-                            if (hexagone) { path.push(`L ${hexagone.position.x} ${hexagone.position.y}`); }
+                            if (hexagone) {
+                                path.push(`L ${hexagone.position.x} ${hexagone.position.y}`);
+                            }
                         }
                         return (
                             <Path
-                                key = {`r-${i}`}
-                                data = {path.join(" ")}
-                                stroke = "#748BF8"
-                                strokeWidth = {4}
+                                key={`r-${i}`}
+                                data={path.join(" ")}
+                                stroke="#748BF8"
+                                strokeWidth={4}
                             />
                         );
                     })}
@@ -95,18 +96,18 @@ export default function Grille(
                         if (!start || !end) return null;
                         return (
                             <Arrow
-                                key = {`t-${i}`}
-                                points = {[
+                                key={`t-${i}`}
+                                points={[
                                     start.position.x,
                                     start.position.y,
                                     end.position.x,
                                     end.position.y
                                 ]}
-                                pointerLength = {30}
-                                pointerWidth = {30}
-                                fill = "#FFA23A"
-                                stroke = "#FFA23A"
-                                strokeWidth = {4}
+                                pointerLength={30}
+                                pointerWidth={30}
+                                fill="#FFA23A"
+                                stroke="#FFA23A"
+                                strokeWidth={4}
                             />
                         );
                     })}
@@ -114,12 +115,13 @@ export default function Grille(
                     {/* CASES (FONCTIONNEL)*/}
                     {hexagones.map((hexagone) => (
                         <RegularPolygon
-                            key = {hexagone.id}
-                            x = {hexagone.position.x}
-                            y = {hexagone.position.y}
-                            sides = {6}
-                            radius = {rayon}
-                            onClick = {() => {}}
+                            key={hexagone.id}
+                            x={hexagone.position.x}
+                            y={hexagone.position.y}
+                            sides={6}
+                            radius={rayon}
+                            onClick={() => {
+                            }}
                         />
                     ))}
                 </Group>
