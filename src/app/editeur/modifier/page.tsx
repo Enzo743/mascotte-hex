@@ -42,6 +42,43 @@ export default function Page() {
     const [estConnexionsOuverte, setEstConnexionsOuverte] = useState(false);
     const [connexionsSelectionnee, setConnexionsSelectionnee] = useState<string | null>(null);
 
+    // Fonction qui permet d'ouvrir / fermer les onglets de la sidebar, et d'avoir la sélection des "objets"
+    const selectionner = (
+        mode: "terrain" | "residence" | "connexion",
+        valeur: string | null
+    ) => {
+        if (mode === "terrain") {
+            setTerrainSelectionne(valeur);
+            setResidenceSelectionnee(null);
+            setConnexionsSelectionnee(null);
+
+            setEstTerrainOuvert(true);
+            setEstResidenceOuverte(false);
+            setEstConnexionsOuverte(false);
+        }
+
+        if (mode === "residence") {
+            setResidenceSelectionnee(valeur);
+            setTerrainSelectionne(null);
+            setConnexionsSelectionnee(null);
+
+            setEstResidenceOuverte(true);
+            setEstTerrainOuvert(false);
+            setEstConnexionsOuverte(false);
+        }
+
+        if (mode === "connexion") {
+            setConnexionsSelectionnee(valeur);
+            setTerrainSelectionne(null);
+            setResidenceSelectionnee(null);
+
+            setEstConnexionsOuverte(true);
+            setEstTerrainOuvert(false);
+            setEstResidenceOuverte(false);
+        }
+    };
+
+    // Fonction qui permet de recharger la carte avec les changements effectués
     const appliquerCarte = (json, rayon) => {
         setIsLoaded(true);
 
@@ -96,16 +133,16 @@ export default function Page() {
                         <div className={"sousCat"}>
                             <Categorie icon={LuFlower} label={"Plaine"}
                                        className={`menu-item ${terrainSelectionne === "plaine" ? "active" : ""}`}
-                                       onClick={() => setTerrainSelectionne(terrainSelectionne === "plaine" ? null : "plaine")}/>
+                                       onClick={() => selectionner("terrain", terrainSelectionne === "plaine" ? null : "plaine")}/>
                             <Categorie icon={MdOutlineForest} label={"Forêt"}
                                        className={`menu-item ${terrainSelectionne === "foret" ? "active" : ""}`}
-                                       onClick={() => setTerrainSelectionne(terrainSelectionne === "foret" ? null : "foret")}/>
+                                       onClick={() => selectionner("terrain", terrainSelectionne === "foret" ? null : "foret")}/>
                             <Categorie icon={LuMountain} label={"Montagne"}
                                        className={`menu-item ${terrainSelectionne === "montagne" ? "active" : ""}`}
-                                       onClick={() => setTerrainSelectionne(terrainSelectionne === "montagne" ? null : "montagne")}/>
+                                       onClick={() => selectionner("terrain", terrainSelectionne === "montagne" ? null : "montagne")}/>
                             <Categorie icon={LuWaves} label={"Océan"}
                                        className={`menu-item ${terrainSelectionne === "ocean" ? "active" : ""}`}
-                                       onClick={() => setTerrainSelectionne(terrainSelectionne === "ocean" ? null : "ocean")}/>
+                                       onClick={() => selectionner("terrain", terrainSelectionne === "ocean" ? null : "ocean")}/>
                         </div>
                     )}
 
@@ -119,10 +156,10 @@ export default function Page() {
                         <div className={"sousCat"}>
                             <Categorie icon={GiPenguin} label={"Résidence des informaticiens"}
                                        className={`menu-item ${residenceSelectionnee === "info" ? "active" : ""}`}
-                                       onClick={() => setResidenceSelectionnee(residenceSelectionnee === "info" ? null : "info")}/>
+                                       onClick={() => selectionner("residence", residenceSelectionnee === "info" ? null : "info")}/>
                             <Categorie icon={GiBroccoli} label={"Résidence des biologistes"}
                                        className={`menu-item ${residenceSelectionnee === "bio" ? "active" : ""}`}
-                                       onClick={() => setResidenceSelectionnee(residenceSelectionnee === "bio" ? null : "bio")}/>
+                                       onClick={() => selectionner("residence", residenceSelectionnee === "bio" ? null : "bio")}/>
                         </div>
                     )}
 
@@ -136,10 +173,10 @@ export default function Page() {
                         <div className={"sousCat"}>
                             <Categorie icon={GiCarabiner} label={"Tyrolienne"}
                                        className={`menu-item ${connexionsSelectionnee === "tyrolienne" ? "active" : ""}`}
-                                       onClick={() => setConnexionsSelectionnee(connexionsSelectionnee === "tyrolienne" ? null : "tyrolienne")}/>
+                                       onClick={() => selectionner("connexion", connexionsSelectionnee === "tyrolienne" ? null : "tyrolienne")}/>
                             <Categorie icon={GiRiver} label={"Rivière"}
                                        className={`menu-item ${connexionsSelectionnee === "riviere" ? "active" : ""}`}
-                                       onClick={() => setConnexionsSelectionnee(connexionsSelectionnee === "riviere" ? null : "riviere")}/>
+                                       onClick={() => selectionner("connexion", connexionsSelectionnee === "riviere" ? null : "riviere")}/>
                         </div>
                     )}
 
@@ -152,6 +189,7 @@ export default function Page() {
                     {show && <GestionnaireModal prefixe={`/editeur/modifier`}
                                                 onCloseHref={`/editeur/modifier?id=${carteId}`}/>}
 
+                    {/* Slider pour gérer le zoom de la carte */}
                     <form className="zoom-form menu-item">
                         <label className="zoom-row">
                             <span className="zoom-icon">
@@ -190,6 +228,7 @@ export default function Page() {
                                 console.log("x = " + x);
                                 console.log("y = " + y);
 
+                                // On gère chacun des cas possibles d'onglets
                                 if (terrainSelectionne === "plaine") {
                                     setTuiles(JSON.stringify({
                                         "nom": `${carteId}`,
