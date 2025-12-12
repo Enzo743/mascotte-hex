@@ -1,5 +1,5 @@
 // Dépendances
-import { Arrow, Stage, Layer, Path, RegularPolygon, Group, Star, Circle } from "react-konva";
+import { Arrow, Stage, Layer, Path, RegularPolygon, Group, Star, Circle} from "react-konva";
 import { Case, Connexion } from "./Structure";
 import { Graphe } from "./Graphe";
 
@@ -11,6 +11,8 @@ export default function Grille(
     ennemi,
     mascotteInfo,
     mascotteBio,
+    residenceInfo,
+    residenceBio,
     rivieres,
     tyroliennes,
     graphe,
@@ -23,6 +25,8 @@ export default function Grille(
     ennemi: Case;
     mascotteInfo: Case;
     mascotteBio: Case;
+    residenceInfo: Case;
+    residenceBio: Case;
     rivieres: Connexion[];
     tyroliennes: Connexion[];
     graphe: Graphe;
@@ -74,10 +78,10 @@ export default function Grille(
                         )
                     })}     
 
-                    {/* --- MASCOTTE INFO --- */}
+                    {/* --- RESIDENCE INFO --- */}
                     <Star
-                        x = {mascotteInfo.position.x}
-                        y = {mascotteInfo.position.y}
+                        x = {residenceInfo.position.x}
+                        y = {residenceInfo.position.y}
                         numPoints = {6}
                         innerRadius = {rayon / 2.5}
                         outerRadius = {rayon}
@@ -85,10 +89,10 @@ export default function Grille(
                         stroke = "black"
                     />
 
-                    {/* --- MASCOTTE BIO --- */}
+                    {/* --- RESIDENCE BIO --- */}
                     <Star
-                        x = {mascotteBio.position.x}
-                        y = {mascotteBio.position.y}
+                        x = {residenceBio.position.x}
+                        y = {residenceBio.position.y}
                         numPoints = {6}
                         innerRadius = {rayon / 2.5}
                         outerRadius = {rayon}
@@ -140,7 +144,7 @@ export default function Grille(
                         );
                     })}
 
-                    {/* Joueurs */}
+                    {/* JOUEURS */}
                     <Circle
                         x = {joueur.position.x}
                         y = {joueur.position.y}
@@ -148,13 +152,33 @@ export default function Grille(
                         fill = "#9486E1"
                         stroke = "black"
                     />
+
+                    {/* ENNEMI */}
                     <Circle
                         x = {ennemi.position.x}
                         y = {ennemi.position.y}
                         radius = {rayon/2}
                         fill = "#F17961"
                         stroke = "black"
-                    />   
+                    />
+
+                    {/* MASCOTTE INFO */}
+                    <RegularPolygon
+                            x = {mascotteInfo.position.x}
+                            y = {mascotteInfo.position.y}
+                            sides = {3}
+                            radius = {rayon/2}
+                            stroke = {"blue"}
+                    />
+
+                    {/* MASCOTTE BIO */}
+                    <RegularPolygon
+                            x = {mascotteBio.position.x}
+                            y = {mascotteBio.position.y}
+                            sides = {3}
+                            radius = {rayon/2}
+                            stroke = {"purple"}
+                    />
 
                     {/* CASES (FONCTIONNEL)*/}
                     {hexagones.map((hexagone) => (

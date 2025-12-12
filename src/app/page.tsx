@@ -74,12 +74,13 @@ export default function Home() {
                     ennemi={partie.position(posEnnemi)} 
                     mascotteInfo={partie.position(posMascotteInfo)}
                     mascotteBio={partie.position(posMascotteBio)}
+                    residenceInfo={partie.position(posResidenceInfo)}
+                    residenceBio={partie.position(posResidenceBio)}
                     rivieres={partie.rivieres}
                     tyroliennes={partie.tyroliennes}
                     graphe={graphe}
                     posJoueurCourant={posJoueurCourant}
                     deplacement={(position) => {
-                        console.log("jeton : " + jeton);
                         if (!partieFinie) {
                             if (graphe.verifier(posJoueurCourant, position)) {
                                 if (jeton == 0) {
