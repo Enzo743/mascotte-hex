@@ -28,6 +28,11 @@ Il faut donc convertir le JSON pour qu'il n'y ait pas d'erreurs à la compilatio
 import carteBrute from "exemple.json" assert {type: "json"};
 const carteJSON: CarteJSON = carteBrute as CarteJSON;
 */
+export interface Connexion {
+    type: string;
+    tuiles: [number, number][]    
+}
+
 export interface CarteJSON {
     grille: {
         lignes: number;
@@ -42,10 +47,7 @@ export interface CarteJSON {
         foret: [number, number][]; 
         montagne: [number, number][]
     };
-    connexions: {
-        type: string;
-        tuiles: [number, number][]
-    }[]
+    connexions: Connexion[]
 }
 
 /*
@@ -54,18 +56,18 @@ Interfaces pour l'affichage de la carte
 export interface Case {
     id: string;
     positionMatrice: Position;
-    positionCanva: Position;
+    positionCanvas: Position;
     riviere: boolean;
     type: string;
     couleur: string
 }
 
-export interface tyrolienne {
+export interface Tyrolienne {
     entree: Position;
     sortie: Position
 }
 
-export interface riviere {
+export interface Riviere {
     parcours: Position[];
     embouchure: Position
 }
@@ -76,8 +78,8 @@ export interface Carte {
         colonnes: number;
     };
     cases: Case[];
-    tyroliennes: tyrolienne[];
-    rivieres: riviere[];
+    tyroliennes: Tyrolienne[];
+    rivieres: Riviere[];
 }
 
 /*
@@ -86,4 +88,12 @@ Interfaces pour le traitement
 export interface Contexte {
     carte: Carte;
     graphe: Arc[];
+}
+
+/*
+Interfaces pour l'affichage
+*/
+export interface AffichageParams {
+    contexte: Contexte;
+    rayon: number;
 }
