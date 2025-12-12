@@ -53,8 +53,8 @@ export default function Page() {
         return <div>Chargement de la carte...</div>;
     } else {
         const hexagones: Case[] = Terrain(jsonData, rayon);
-        const tyroliennes: Connexion[] = [];
-        const rivieres: Connexion[] = [];
+        const tyroliennes: Connexion[] = jsonData.connexions.filter(c => c.type === "tyrolienne");
+        const rivieres: Connexion[] = jsonData.connexions.filter(c => c.type === "riviere");
 
         return (
             <div className={"container-fluid editeur"}>
