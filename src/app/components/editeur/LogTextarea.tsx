@@ -1,6 +1,7 @@
 "use client";
 
 import React, {useEffect, useMemo, useRef} from "react";
+import "../../globals.css";
 
 export type LogLevel = "ok" | "erreur"; // Interface pour les types de logs possibles
 export type LogMessage = {
@@ -65,7 +66,6 @@ export default function LogTextarea({
                     rows={rows}
                     aria-invalid={ariaInvalid}
                     aria-live="polite"
-                    style={{resize: "none"}}
                 />
             </label>
         </div>

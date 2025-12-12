@@ -265,3 +265,7 @@ dialog article header .close {
     transform: translateY(-50%);
     margin: 0;
 }
+
+textarea {
+    resize: none;
+}
