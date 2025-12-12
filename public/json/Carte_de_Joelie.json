@@ -1,1 +1,23 @@
-{"grille":{"lignes":"10","colonnes":"10"},"résidences":{},"terrains":{"plaine":[],"foret":[],"montagne":[]},"connexions":[]}
+{
+  "grille": {
+    "lignes": "10",
+    "colonnes": "10"
+  },
+  "résidences": {},
+  "terrains": {
+    "plaine": [
+      [
+        3,
+        3
+      ]
+    ],
+    "foret": [
+      [
+        2,
+        5
+      ]
+    ],
+    "montagne": []
+  },
+  "connexions": []
+}
