@@ -1,74 +1,65 @@
 "use client";
 import {useEffect, useState} from "react";
-import Grille from "../../components/Grille";
-import {Jeu} from "../../components/Jeu";
 import {useSearchParams} from "next/navigation";
 import {Graphe} from "../../components/Graphe";
 import {getCarte} from "@/app/actions/getCarte";
-
+import Link from "next/link";
+import GrilleEditeur from "@/app/components/editeur/GrilleEditeur";
+import { Case, Connexion } from "@/app/components/Structure";
+import { Terrain } from "@/app/components/Terrain";
 
 export default function Home() {
-    const searchParams = useSearchParams();
+   const searchParams = useSearchParams();
     const carteId = searchParams.get("id");
-
-    const [partie, setPartie] = useState<any>(null);
-    const [posInfo, setPosInfo] = useState(null);
-    const [posBio, setPosBio] = useState(null);
-    const [posJoueur, setPosJoueur] = useState(null);
     const [jsonData, setJsonData] = useState(null);
+    const [isLoaded, setIsLoaded] = useState(false);
 
     useEffect(() => {
         if (carteId) {
             getCarte(carteId).then(json => {
                 if (json && !json.error) {
-                    const nouvellePartie = new Jeu(json, 40);
-                    setPartie(nouvellePartie);
-
-                    setPosInfo(nouvellePartie.mascotteInfo);
-                    setPosBio(nouvellePartie.mascotteBio);
-                    setPosJoueur(nouvellePartie.joueur);
-
                     setJsonData(json);
+                    setIsLoaded(true);
                 }
             });
         }
     }, [carteId]);
 
-    if (!partie || !posJoueur) {
+    if (!isLoaded) {
         return <div>Chargement de la carte...</div>;
     } else {
-        const graphe = new Graphe(jsonData);
-        graphe.actualiserGraphe();
+        const rayon: number = 60;
+        const hexagones: Case[] = Terrain(jsonData, rayon);
+        const tyroliennes: Connexion[] = [];
+        const rivieres: Connexion[] = [];
+
         return (
             <>
                 <header className={"head"}>
                     <h1 className={"titre-head"}>{`Rendu de la carte "${carteId}"`}</h1>
                 </header>
-                <div className={"container-fluid editeur"}>
-                    <div className={"sidebar-right"}>
-                        {/* Zone du jeu */}
-                        <div className={"grille2"}>
-                            <Grille
-                                rayon={partie.rayon}
-                                hexagones={partie.hexagones}
-                                joueur={partie.position(posJoueur)}
-                                ennemi={partie.position(partie.ennemi)}
-                                mascotteInfo={partie.position(posInfo)}
-                                mascotteBio={partie.position(posBio)}
-                                rivieres={partie.rivieres}
-                                tyroliennes={partie.tyroliennes}
-                                graphe={graphe}
-                                deplacement={(position) => {
-                                    if (graphe.verifier(posJoueur, position)) {
-                                        setPosJoueur(position);
-                                    }
-                                }}
-                            />
+                <main>
+                    <div className={"container-fluid editeur"}>
+                        <div className={"sidebar-right"}>
+                            <div className={"grille2"}>
+                                {/* Appel de la GrilleEditeur */}
+                                <GrilleEditeur
+                                    rayon={rayon}
+                                    hexagones={hexagones}
+                                    mascotteInfo={null}
+                                    mascotteBio={null}
+                                    rivieres={rivieres}
+                                    tyroliennes={tyroliennes}
+                                />
+                            </div>
                         </div>
                     </div>
-                </div>
+                    <br/>
+                    <div className="titre-head">
+                        <Link id="btnRevenir" href="/editeur" role="button">Revenir à l'accueil</Link>
+                    </div>
+                </main>
             </>
-            
         );
     }
 }
