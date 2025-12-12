@@ -17,6 +17,7 @@ import GrilleEditeur from "@/app/components/editeur/GrilleEditeur";
 import {TbZoom} from "react-icons/tb";
 import {setTuiles} from "@/app/actions/setTuiles";
 import LogTextarea, {LogMessage} from "@/app/components/editeur/LogTextarea";
+import {Graphe} from "@/app/components/Graphe";
 
 export default function Page() {
     // Gestion des params présents dans l'URL
@@ -34,6 +35,7 @@ export default function Page() {
     const [rivieres, setRivieres] = useState<Connexion[]>([]);
     const [posInfo, setPosInfo] = useState(null);
     const [posBio, setPosBio] = useState(null);
+    const [jsonData, setJsonData] = useState(null);
 
     // State relatif à la gestion des onglets de l'éditeur
     const [estTerrainOuvert, setEstTerrainOuvert] = useState(false);
@@ -43,6 +45,8 @@ export default function Page() {
     const [estConnexionsOuverte, setEstConnexionsOuverte] = useState(false);
     const [connexionsSelectionnee, setConnexionsSelectionnee] = useState<string | null>(null);
     const [messages, setMessages] = useState<LogMessage[]>([]);
+
+    const [tyrolienneStart, setTyrolienneStart] = useState<[number, number] | null>(null);
 
     const pushMsg = (text: string, level: LogMessage["level"] = "ok") => {
         setMessages((prev) =>
@@ -93,12 +97,12 @@ export default function Page() {
         const nextHexagones = Terrain(json, rayon) as Case[];
         setHexagones(nextHexagones);
 
-        const info = json.résidences?.residenceInfo ?? null;
-        const bio = json.résidences?.residenceBio ?? null;
+        const infoo = json.résidences?.info ?? null;
+        const bioo = json.résidences?.bio ?? null;
 
         // On transforme [x,y] -> "x-y" pour comparer simplement
-        const infoId = info ? `${info[0]}-${info[1]}` : null;
-        const bioId = bio ? `${bio[0]}-${bio[1]}` : null;
+        const infoId = infoo ? `${infoo[0]}-${infoo[1]}` : null;
+        const bioId = bioo ? `${bioo[0]}-${bioo[1]}` : null;
 
         setPosInfo(infoId ? (nextHexagones.find(h => h.id === infoId) ?? null) : null);
         setPosBio(bioId ? (nextHexagones.find(h => h.id === bioId) ?? null) : null);
@@ -108,6 +112,93 @@ export default function Page() {
         setRivieres(connexions.filter((c: Connexion) => c.type === "riviere"));
     };
 
+    // Fonction qui donne toutes les cases adjacentes à une case passée en paramètre
+    const getVoisins = (caseActuelle: Case, hexagones: Case[]): Case[] => {
+        const voisins: Case[] = [];
+
+        // Extraire les coordonnées logiques depuis l'ID (format "q-r")
+        const [q, r] = caseActuelle.id.split("-").map(Number);
+
+        // Les 6 directions pour un hexagone en coordonnées axiales
+        const directions = [
+            [1, 0],   // Droite
+            [0, -1],  // Haut-droite
+            [-1, -1],  // Haut-gauche
+            [-1, 0],  // Gauche
+            [-1, 1],  // Bas-gauche
+            [0, 1]    // Bas-droite
+        ];
+
+        // Pour chaque direction, vérifier si le voisin existe
+        for (const [dq, dr] of directions) {
+            const idVoisin = `${q + dq}-${r + dr}`;
+            const voisin = hexagones.find(h => h.id === idVoisin);
+
+            if (voisin) {
+                voisins.push(voisin);
+            }
+        }
+
+        return voisins;
+    };
+
+    // Fonction qui s'occupe de toutes les vérifications nécessaires à la gestion des résidences
+    const verifResidences = (hex, date, pos) => {
+        if (hex.type === "ocean" || hex.type === "montagne") {
+            pushMsg("[" + date + `] - Vous ne pouvez pas mettre une résidence sur une case de type ${hex.type}`, "erreur");
+            return "Erreur";
+        }
+
+        if (hex.id === pos.id) {
+            pushMsg("[" + date + `] - Vous ne pouvez pas mettre une résidence sur cette case, il y a déjà une résidence`, "erreur");
+            return "Erreur";
+        }
+
+        const voisins = getVoisins(hex, hexagones);
+
+        for (let i = 0; i < voisins.length; i++) {
+            if (voisins[i].id === pos.id) {
+                pushMsg("[" + date + `] - Vous ne pouvez pas mettre une résidence sur cette case, il y a déjà une résidence dans une case adjacente`, "erreur");
+                return "Erreur";
+            }
+        }
+
+        return "Super";
+    }
+
+    // Fonction pour interpoler entre deux hexagones et retourner toutes les cases traversées
+    const getHexagonesEntreDeuxPoints = (pointA: [number, number], pointB: [number, number], hexagones: Case[]): Case[] => {
+        const [q1, r1] = pointA;
+        const [q2, r2] = pointB;
+
+        // Calculer la distance (nombre d'étapes)
+        const distance = Math.max(
+            Math.abs(q2 - q1),
+            Math.abs(r2 - r1),
+            Math.abs((q2 + r2) - (q1 + r1))
+        );
+
+        const casesTraversees: Case[] = [];
+
+        // Interpoler pour chaque étape
+        for (let i = 0; i <= distance; i++) {
+            const t = distance === 0 ? 0 : i / distance;
+
+            // Interpolation linéaire
+            const q = Math.round(q1 + (q2 - q1) * t);
+            const r = Math.round(r1 + (r2 - r1) * t);
+
+            const caseId = `${q}-${r}`;
+            const caseActuelle = hexagones.find(h => h.id === caseId);
+
+            if (caseActuelle && !casesTraversees.find(c => c.id === caseId)) {
+                casesTraversees.push(caseActuelle);
+            }
+        }
+
+        return casesTraversees;
+    };
+
     // Permet le chargement de la carte
     useEffect(() => {
         if (!carteId) return;
@@ -115,6 +206,7 @@ export default function Page() {
         getCarte(carteId).then((json: any) => {
             if (json && !json.error) {
                 appliquerCarte(json, rayon);
+                setJsonData(json);
             }
         });
     }, [carteId, rayon]);
@@ -122,6 +214,8 @@ export default function Page() {
     if (!isLoaded) {
         return <div>Chargement de la carte...</div>;
     } else {
+        const graphe = new Graphe(jsonData);
+        graphe.actualiserGraphe();
         return (
             <div className={"container-fluid editeur"}>
                 {/* Partie de gauche : Sidebar */}
@@ -229,13 +323,13 @@ export default function Page() {
                             mascotteBio={posBio}
                             rivieres={rivieres}
                             tyroliennes={tyroliennes}
+                            graphe={graphe}
                             onClick={(hex) => {
                                 let coordonnees_hex = hex.id.split("-");
                                 let x = Number(coordonnees_hex[0]);
                                 let y = Number(coordonnees_hex[1]);
                                 console.log("x = " + x);
                                 console.log("y = " + y);
-                                const log = document.querySelector("textarea[name='log']");
                                 const date = new Date().toLocaleString().toString();
 
                                 // On gère chacun des cas possibles d'onglets
@@ -304,13 +398,18 @@ export default function Page() {
                                         }
                                     });
                                 } else if (residenceSelectionnee === "info") {
+                                    if (verifResidences(hex, date, posBio) === "Erreur") {
+                                        return;
+                                    }
+
                                     setTuiles(JSON.stringify({
                                         "nom": `${carteId}`,
-                                        "residenceInfo": [x, y]
+                                        "info": [x, y]
                                     })).then(r => {
                                         if (r.status === "success") {
                                             getCarte(carteId).then((json: any) => {
                                                 if (json && !json.error) {
+                                                    console.log(json);
                                                     appliquerCarte(json, rayon);
                                                     pushMsg("[" + date + "] - Ajout d'une résidence d'informaticien en position (" + x + ", " + y + ")", "ok");
                                                 }
@@ -320,9 +419,13 @@ export default function Page() {
                                         }
                                     });
                                 } else if (residenceSelectionnee === "bio") {
+                                    if (verifResidences(hex, date, posInfo) === "Erreur") {
+                                        return;
+                                    }
+
                                     setTuiles(JSON.stringify({
                                         "nom": `${carteId}`,
-                                        "residenceBio": [x, y]
+                                        "bio": [x, y]
                                     })).then(r => {
                                         if (r.status === "success") {
                                             getCarte(carteId).then((json: any) => {
@@ -336,7 +439,56 @@ export default function Page() {
                                         }
                                     });
                                 } else if (connexionsSelectionnee === "tyrolienne") {
-                                    console.log("tyrolienne");
+                                    if (tyrolienneStart === null) {
+                                        if (hex.type !== "foret") {
+                                            pushMsg("[" + date + "] - Erreur, vous ne pouvez débuter une tyrolienne que depuis une forêt", "erreur");
+                                            setTyrolienneStart(null);
+                                            return;
+                                        }
+
+                                        setTyrolienneStart([x, y]);
+                                        pushMsg("[" + date + "] - Point A sélectionné pour la tyrolienne : (" + x + ", " + y + "). Cliquez maintenant sur le point B.", "ok");
+                                        return;
+                                    }
+
+                                    const [ax, ay] = tyrolienneStart;
+
+                                    if (ax === x && ay === y) {
+                                        pushMsg("[" + date + "] - Erreur, le point B doit être différent du point A", "erreur");
+                                        setTyrolienneStart(null);
+                                        return;
+                                    }
+
+                                    if (hex.type === "ocean" || hex.type === "montagne") {
+                                        pushMsg("[" + date + "] - Erreur, vous ne pouvez pas mettre une tyrolienne sur une case de type " + hex.type, "erreur");
+                                        setTyrolienneStart(null);
+                                        return;
+                                    }
+
+                                    const casesTraversees = getHexagonesEntreDeuxPoints([ax, ay], [x, y], hexagones);
+                                    const estCasesMontagne = casesTraversees.some(c => c.type === "montagne");
+
+                                    if (estCasesMontagne) {
+                                        pushMsg("[" + date + "] - Erreur, vous ne pouvez pas passer en tyrolienne sur une case de type montagne", "erreur");
+                                        setTyrolienneStart(null);
+                                        return;
+                                    }
+
+                                    setTuiles(JSON.stringify({
+                                        "nom": `${carteId}`,
+                                        "tyrolienne": [[ax, ay], [x, y]]
+                                    })).then(r => {
+                                        if (r.status === "success") {
+                                            getCarte(carteId).then((json: any) => {
+                                                if (json && !json.error) {
+                                                    appliquerCarte(json, rayon);
+                                                    pushMsg("[" + date + "] - Ajout d'une tyrolienne, whouuuuuu", "ok");
+                                                }
+                                            });
+                                        }
+                                    });
+
+                                    setTyrolienneStart(null);
                                 } else if (connexionsSelectionnee === "riviere") {
                                     console.log("riviere");
                                 }

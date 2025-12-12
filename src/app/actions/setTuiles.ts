@@ -5,8 +5,8 @@ export async function setTuiles(collection) {
 
     const tuiles = JSON.stringify({
         "nom": json.nom,
-        "residenceInfo": json?.residenceInfo,
-        "residenceBio": json?.residenceBio,
+        "info": json?.info,
+        "bio": json?.bio,
         "montagne": json?.montagne,
         "foret": json?.foret,
         "ocean": json?.ocean,

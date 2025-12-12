@@ -39,7 +39,7 @@ export default function Home() {
                     <h1 className={"titre-head"}>{`Rendu de la carte "${carteId}"`}</h1>
                 </header>
                 <main>
-                    <div className={"container-fluid editeur"}>
+                    <div className={"container-fluid visualiser"}>
                         <div className={"sidebar-right"}>
                             <div className={"grille2"}>
                                 <div className={"contenu-visu"}>
@@ -60,13 +60,13 @@ export default function Home() {
                         </div>
                     </div>
 
-                    <div className="zoom">
-                        <div className="zoom-icon">
+                    <div className="zoom-vertical">
+                        <div className="zoom-vertical-icon">
                             <TbZoom size={24} />
                         </div>
 
                         <input
-                            className="zoom-range"
+                            className="zoom-vertical-range"
                             type={"range"}
                             min={20}
                             max={65}
@@ -75,7 +75,7 @@ export default function Home() {
                             onChange={(e) => setRayon(Number(e.currentTarget.value))}
                         />
 
-                        <div className="zoom-value">
+                        <div className="zoom-vertical-value">
                             {rayon}
                         </div>
                     </div>

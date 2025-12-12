@@ -1,7 +1,7 @@
 // Dépendances
 import {Arrow, Group, Layer, Path, RegularPolygon, Stage, Star} from "react-konva";
 import {Case, Connexion} from "../Structure";
-// Au cas ou
+import {Graphe} from "@/app/components/Graphe";
 
 export default function GrilleEditeur(
     {
@@ -11,6 +11,7 @@ export default function GrilleEditeur(
         mascotteBio,
         rivieres,
         tyroliennes,
+        graphe,
         onClick,
     }: {
         rayon: number;
@@ -19,6 +20,7 @@ export default function GrilleEditeur(
         mascotteBio: null | Case;
         rivieres: Connexion[];
         tyroliennes: Connexion[];
+        graphe: Graphe;
         onClick: (hex: Case) => void;
     }) {
     const width = Math.max.apply(0, hexagones.map((h) => h.position.x)) + rayon;

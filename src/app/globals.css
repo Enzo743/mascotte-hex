@@ -15,7 +15,7 @@
 /* Page /editeur/modifier */
 
 .editeur {
-    height: calc(100vh - 80px);
+    height: 100vh;
     display: flex;
     flex-direction: row;
     overflow: hidden;
@@ -37,22 +37,44 @@
     flex: 1;
     display: flex;
     flex-direction: column;
+    height: 100%;
+    overflow: hidden;
 }
 
 .editeur .sidebar-right .grille {
-    flex: 5;
+    flex: 1;
     display: flex;
     justify-content: center;
     align-items: center;
     background-color: #f9f9f9;
     overflow: hidden;
+    min-height: 0;
+    position: relative;
 }
 
 .editeur .sidebar-right .messages {
-    flex: 1;
+    height: 25vh; 
+    min-height: 150px; 
+    max-height: 300px;
+    
+    flex-shrink: 0; 
     border-top: 2px solid #e0e0e0;
     padding: 1rem;
     background-color: #fff;
+    box-sizing: border-box;
+}
+
+.editeur .sidebar-right .messages div,
+.editeur .sidebar-right .messages label,
+.editeur .sidebar-right .messages textarea {
+    height: 100%;
+    width: 100%;
+    display: block;
+    box-sizing: border-box;
+}
+
+.editeur .sidebar-right .messages textarea {
+    resize: none;
 }
 
 .sousCat {
@@ -65,21 +87,30 @@
     margin-bottom: 0 !important;
 }
 
-.editeur .sidebar-right .grille2 {
+.visualiser {
+    min-height: calc(100vh - 80px);
+    display: flex;
+    flex-direction: row;
+    overflow: hidden;
+}
+
+.visualiser .sidebar-right {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.visualiser .sidebar-right .grille2 {
     flex: 5;
     display: flex;
     justify-content: center;
-    
     align-items: flex-start;
     
     background-color: #fff;
-    overflow-y: auto;
-
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+    overflow: visible;
 }
 
-.editeur .sidebar-right .grille2::-webkit-scrollbar {
+.visualiser .sidebar-right .grille2::-webkit-scrollbar {
     display: none;
 }
 
@@ -201,7 +232,42 @@
 
 /* Composant slider */
 
-.zoom {
+.zoom-form {
+    margin: 0 !important;
+    padding: 10px;
+}
+
+.zoom-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    margin: 0;
+}
+
+.zoom-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 30px;
+}
+
+.zoom-range {
+    flex-grow: 1;
+    margin: 0 !important;
+    vertical-align: middle;
+    cursor: pointer;
+    height: 100%;
+}
+
+.zoom-value {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    min-width: 30px;
+}
+
+.zoom-vertical {
     position: fixed;
     right: 1.5rem;
     top: 50%;
@@ -224,7 +290,7 @@
 }
 
 
-.zoom-range {
+.zoom-vertical-range {
     max-width: none !important;
     flex-shrink: 0;
     width: 150px !important;
@@ -233,7 +299,7 @@
     cursor: grab;
 }
 
-.zoom-icon .zoom-value {
+.zoom-vertical-icon .zoom-vertical-value {
     display: flex;
     justify-content: center;
     align-items: center;
