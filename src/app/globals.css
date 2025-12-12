@@ -211,14 +211,14 @@
 /* Composant slider */
 
 .zoom-form {
-    margin: 0;
+    margin: 0 !important;
+    padding: 10px;
 }
 
 .zoom-row {
     display: flex;
     align-items: center;
     gap: 10px;
-    white-space: nowrap;
     width: 100%;
     margin: 0;
 }
@@ -226,21 +226,23 @@
 .zoom-icon {
     display: flex;
     align-items: center;
-    line-height: 1;
+    justify-content: center;
+    height: 30px;
 }
 
 .zoom-range {
-    flex: 1 1 auto;
-    min-width: 80px;
-    margin: 0;
+    flex-grow: 1;
+    margin: 0 !important;
+    vertical-align: middle;
+    cursor: pointer;
+    height: 100%;
 }
 
 .zoom-value {
     display: flex;
     align-items: center;
-    line-height: 1;
-    min-width: 3ch;
     justify-content: flex-end;
+    min-width: 30px;
 }
 
 .zoom-vertical {
