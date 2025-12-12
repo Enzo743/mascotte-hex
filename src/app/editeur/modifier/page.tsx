@@ -17,6 +17,7 @@ import GrilleEditeur from "@/app/components/editeur/GrilleEditeur";
 import {TbZoom} from "react-icons/tb";
 import {setTuiles} from "@/app/actions/setTuiles";
 import LogTextarea, {LogMessage} from "@/app/components/editeur/LogTextarea";
+import {Graphe} from "@/app/components/Graphe";
 
 export default function Page() {
     // Gestion des params présents dans l'URL
@@ -34,6 +35,7 @@ export default function Page() {
     const [rivieres, setRivieres] = useState<Connexion[]>([]);
     const [posInfo, setPosInfo] = useState(null);
     const [posBio, setPosBio] = useState(null);
+    const [jsonData, setJsonData] = useState(null);
 
     // State relatif à la gestion des onglets de l'éditeur
     const [estTerrainOuvert, setEstTerrainOuvert] = useState(false);
@@ -108,6 +110,60 @@ export default function Page() {
         setRivieres(connexions.filter((c: Connexion) => c.type === "riviere"));
     };
 
+    // Fonction qui donne toutes les cases adjacentes à une case passée en paramètre
+    const getVoisins = (caseActuelle: Case, hexagones: Case[]): Case[] => {
+        const voisins: Case[] = [];
+
+        // Extraire les coordonnées logiques depuis l'ID (format "q-r")
+        const [q, r] = caseActuelle.id.split("-").map(Number);
+
+        // Les 6 directions pour un hexagone en coordonnées axiales
+        const directions = [
+            [1, 0],   // Droite
+            [0, -1],  // Haut-droite
+            [-1, -1],  // Haut-gauche
+            [-1, 0],  // Gauche
+            [-1, 1],  // Bas-gauche
+            [0, 1]    // Bas-droite
+        ];
+
+        // Pour chaque direction, vérifier si le voisin existe
+        for (const [dq, dr] of directions) {
+            const idVoisin = `${q + dq}-${r + dr}`;
+            const voisin = hexagones.find(h => h.id === idVoisin);
+
+            if (voisin) {
+                voisins.push(voisin);
+            }
+        }
+
+        return voisins;
+    };
+
+    // Fonction qui s'occupe de toutes les vérifications nécessaires à la gestion des résidences
+    const verifResidences = (hex, date, pos) => {
+        if (hex.type === "ocean" || hex.type === "montagne") {
+            pushMsg("[" + date + `] - Vous ne pouvez pas mettre une résidence sur une case de type ${hex.type}`, "erreur");
+            return "Erreur";
+        }
+
+        if (hex.id === pos.id) {
+            pushMsg("[" + date + `] - Vous ne pouvez pas mettre une résidence sur cette case, il y a déjà une résidence`, "erreur");
+            return "Erreur";
+        }
+
+        const voisins = getVoisins(hex, hexagones);
+
+        for (let i = 0; i < voisins.length; i++) {
+            if (voisins[i].id === pos.id) {
+                pushMsg("[" + date + `] - Vous ne pouvez pas mettre une résidence sur cette case, il y a déjà une résidence dans une case adjacente`, "erreur");
+                return "Erreur";
+            }
+        }
+
+        return "Super";
+    }
+
     // Permet le chargement de la carte
     useEffect(() => {
         if (!carteId) return;
@@ -115,6 +171,7 @@ export default function Page() {
         getCarte(carteId).then((json: any) => {
             if (json && !json.error) {
                 appliquerCarte(json, rayon);
+                setJsonData(json);
             }
         });
     }, [carteId, rayon]);
@@ -122,6 +179,8 @@ export default function Page() {
     if (!isLoaded) {
         return <div>Chargement de la carte...</div>;
     } else {
+        const graphe = new Graphe(jsonData);
+        graphe.actualiserGraphe();
         return (
             <div className={"container-fluid editeur"}>
                 {/* Partie de gauche : Sidebar */}
@@ -229,13 +288,13 @@ export default function Page() {
                             mascotteBio={posBio}
                             rivieres={rivieres}
                             tyroliennes={tyroliennes}
+                            graphe={graphe}
                             onClick={(hex) => {
                                 let coordonnees_hex = hex.id.split("-");
                                 let x = Number(coordonnees_hex[0]);
                                 let y = Number(coordonnees_hex[1]);
                                 console.log("x = " + x);
                                 console.log("y = " + y);
-                                const log = document.querySelector("textarea[name='log']");
                                 const date = new Date().toLocaleString().toString();
 
                                 // On gère chacun des cas possibles d'onglets
@@ -304,6 +363,10 @@ export default function Page() {
                                         }
                                     });
                                 } else if (residenceSelectionnee === "info") {
+                                    if (verifResidences(hex, date, posBio) === "Erreur") {
+                                        return;
+                                    }
+
                                     setTuiles(JSON.stringify({
                                         "nom": `${carteId}`,
                                         "residenceInfo": [x, y]
@@ -320,6 +383,10 @@ export default function Page() {
                                         }
                                     });
                                 } else if (residenceSelectionnee === "bio") {
+                                    if (verifResidences(hex, date, posInfo) === "Erreur") {
+                                        return;
+                                    }
+                                    
                                     setTuiles(JSON.stringify({
                                         "nom": `${carteId}`,
                                         "residenceBio": [x, y]

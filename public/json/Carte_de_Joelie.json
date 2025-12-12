@@ -6,11 +6,11 @@
   "résidences": {
     "residenceInfo": [
       4,
-      1
+      0
     ],
     "residenceBio": [
       5,
-      8
+      7
     ]
   },
   "terrains": {
@@ -18,10 +18,6 @@
       [
         1,
         1
-      ],
-      [
-        2,
-        2
       ],
       [
         4,
