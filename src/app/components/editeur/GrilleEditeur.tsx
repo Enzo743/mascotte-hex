@@ -11,6 +11,7 @@ export default function GrilleEditeur(
         mascotteBio,
         rivieres,
         tyroliennes,
+        onClick,
     }: {
         rayon: number;
         hexagones: Case[];
@@ -18,6 +19,7 @@ export default function GrilleEditeur(
         mascotteBio: null | Case;
         rivieres: Connexion[];
         tyroliennes: Connexion[];
+        onClick: (hex: Case) => void;
     }) {
     const width = Math.max.apply(0, hexagones.map((h) => h.position.x)) + rayon;
     const height = Math.max.apply(0, hexagones.map((h) => h.position.y)) + rayon;
@@ -120,8 +122,7 @@ export default function GrilleEditeur(
                             y={hexagone.position.y}
                             sides={6}
                             radius={rayon}
-                            onClick={() => {
-                            }}
+                            onClick={() => onClick?.(hexagone)}
                         />
                     ))}
                 </Group>

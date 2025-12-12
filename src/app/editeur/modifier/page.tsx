@@ -162,6 +162,9 @@ export default function Page() {
                             mascotteBio={null}
                             rivieres={rivieres}
                             tyroliennes={tyroliennes}
+                            onClick={(hex) => {
+                                console.log(hex.id);
+                            }}
                         />
                     </div>
 
