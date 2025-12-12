@@ -1,17 +1,35 @@
 // Dépendances
-import { CarteJSON, Contexte} from "./Interfaces";
-import { TraitementTotal } from "./Traitement";
+"use client";
+import {Affichage} from "./Affichage";
+import {CarteJSON, Contexte} from "./Interfaces";
+import {useEffect, useState} from "react";
+import {TraitementTotal} from "./Traitement";
 import carteBrute from "./carte.json" assert {type: "json"};
 const carteJSON: CarteJSON = carteBrute as CarteJSON;
 
 export default function Home() {
-    const rayon: number = 60;
-    const contexte: Contexte = TraitementTotal(carteJSON, rayon);
+    const [rayon, definirRayon] = useState(60);
+    const [contexte, setContexte] = useState<Contexte>(TraitementTotal(carteJSON, rayon));
 
-    // Pas eu le temps d'implémenter la Grille
+    useEffect(() => {
+        setContexte(TraitementTotal(carteJSON, rayon));
+    }, [rayon]);
+
     return (
         <>
-
+            <input 
+                type="range"
+                min={5}
+                max={200}
+                value={rayon}
+                onChange={(event) => {
+                    definirRayon(Number(event.target.value));
+                }}
+            />
+            <Affichage
+                contexte = {contexte}
+                rayon = {rayon}
+            />
         </>
     );
 }
