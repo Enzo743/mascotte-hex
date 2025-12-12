@@ -7,6 +7,7 @@ import {useSearchParams} from "next/navigation";
 import {Graphe} from "./components/Graphe"
 import {getCarte} from "@/app/actions/getCarte";
 
+let jeton = 0;
 
 export default function Home() {
     const searchParams = useSearchParams();
@@ -16,7 +17,11 @@ export default function Home() {
     const [posInfo, setPosInfo] = useState(null);
     const [posBio, setPosBio] = useState(null);
     const [posJoueur, setPosJoueur] = useState(null);
+    const [posEnnemi, setPosEnnemi] = useState(null);
     const [jsonData, setJsonData] = useState(null);
+
+    
+    let posJoueurCourant;
 
     useEffect(() => {
         if (carteId) {
@@ -27,7 +32,8 @@ export default function Home() {
 
                     setPosInfo(nouvellePartie.mascotteInfo);
                     setPosBio(nouvellePartie.mascotteBio);
-                    setPosJoueur(nouvellePartie.joueur);
+                    setPosJoueur(nouvellePartie.joueur); 
+                    setPosEnnemi(nouvellePartie.ennemi);
 
                     setJsonData(json);
                 }
@@ -35,7 +41,10 @@ export default function Home() {
         }
     }, [carteId]);
 
-    if (!partie || !posJoueur) {
+    if (jeton == 0) posJoueurCourant = posJoueur;
+    else posJoueurCourant = posEnnemi;
+
+    if (!partie || !posJoueurCourant) {
         return <div>Chargement de la carte...</div>;
     } else {
         const graphe = new Graphe(jsonData);
@@ -46,16 +55,25 @@ export default function Home() {
                 <Grille
                     rayon={partie.rayon}
                     hexagones={partie.hexagones}
-                    joueur={partie.position(posJoueur)}
-                    ennemi={partie.position(partie.ennemi)}
+                    joueur={partie.position(posJoueur)} 
+                    ennemi={partie.position(posEnnemi)} 
                     mascotteInfo={partie.position(posInfo)}
                     mascotteBio={partie.position(posBio)}
                     rivieres={partie.rivieres}
                     tyroliennes={partie.tyroliennes}
                     graphe={graphe}
+                    posJoueurCourant={posJoueurCourant}
                     deplacement={(position) => {
-                        if (graphe.verifier(posJoueur, position)) {
-                            setPosJoueur(position);
+                        console.log("jeton après : " + jeton);
+                        if (graphe.verifier(posJoueurCourant, position)) {
+                            if (jeton == 0) {
+                                setPosJoueur(position);
+                                jeton = 1;
+                            }
+                            else {
+                                setPosEnnemi(position);
+                                jeton = 0;
+                            }    
                         }
                     }}
                 />

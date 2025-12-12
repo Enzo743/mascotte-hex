@@ -14,6 +14,7 @@ export default function Grille(
     rivieres,
     tyroliennes,
     graphe,
+    posJoueurCourant,
     deplacement
 }: {
     rayon: number;
@@ -25,17 +26,16 @@ export default function Grille(
     rivieres: Connexion[];
     tyroliennes: Connexion[];
     graphe: Graphe;
+    posJoueurCourant: [number, number]
     deplacement: (pos: [number, number]) => void;
 }) {
     const width = Math.max.apply(0, hexagones.map((h) => h.position.x)) + rayon;
     const height = Math.max.apply(0, hexagones.map((h) => h.position.y)) + rayon;
 
-    const [jx, jy] = joueur.id.split("-").map(Number);
-
     const voisins = graphe.graphe.find(g => 
-        g.position.x === jx && g.position.y === jy
+        g.position.x === posJoueurCourant[0] && g.position.y === posJoueurCourant[1]
     )?.voisins || [];
-    voisins.push([jx, jy]);
+    voisins.push(posJoueurCourant); 
 
     return (
         <Stage width={width} height={height}>
