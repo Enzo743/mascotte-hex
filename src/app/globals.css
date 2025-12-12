@@ -15,7 +15,7 @@
 /* Page /editeur/modifier */
 
 .editeur {
-    height: 100vh;
+    height: calc(100vh - 80px);
     display: flex;
     flex-direction: row;
     overflow: hidden;
@@ -58,6 +58,36 @@
 .sousCat {
     padding-left: 40px;
     margin-top: 4px;
+}
+
+/* Page /editeur/visualiser */
+.head-compact {
+    margin-bottom: 0 !important;
+}
+
+.editeur .sidebar-right .grille2 {
+    flex: 5;
+    display: flex;
+    justify-content: center;
+    
+    align-items: flex-start;
+    
+    background-color: #fff;
+    overflow-y: auto;
+
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.editeur .sidebar-right .grille2::-webkit-scrollbar {
+    display: none;
+}
+
+.contenu-visu {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
 }
 
 /* Composant MessagePopUpModal */
@@ -171,37 +201,44 @@
 
 /* Composant slider */
 
-.zoom-form {
-    margin: 0;
+.zoom {
+    position: fixed;
+    right: 1.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+
+    height: 300px;
+    width: 60px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; 
+    align-items: center;
+    padding: 20px 0;
+  
+    background-color: var(--pico-background-color, #fff);
+    border: 1px solid var(--pico-muted-border-color, #ccc);
+    border-radius: 50px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 1000;
 }
 
-.zoom-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    white-space: nowrap;
-    width: 100%;
-    margin: 0;
-}
-
-.zoom-icon {
-    display: flex;
-    align-items: center;
-    line-height: 1;
-}
 
 .zoom-range {
-    flex: 1 1 auto;
-    min-width: 80px;
-    margin: 0;
+    max-width: none !important;
+    flex-shrink: 0;
+    width: 150px !important;
+    transform: rotate(-90deg);
+    margin-top: 20px;
+    cursor: grab;
 }
 
-.zoom-value {
+.zoom-icon .zoom-value {
     display: flex;
+    justify-content: center;
     align-items: center;
-    line-height: 1;
-    min-width: 3ch;
-    justify-content: flex-end;
+    font-weight: bold;
+    color: var(--pico-primary);
 }
 
 /* Commun (croix de fermeture) */

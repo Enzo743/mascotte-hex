@@ -35,48 +35,50 @@ export default function Home() {
 
         return (
             <>
-                <header className={"head"}>
+                <header className={"head-compact"}>
                     <h1 className={"titre-head"}>{`Rendu de la carte "${carteId}"`}</h1>
                 </header>
                 <main>
                     <div className={"container-fluid editeur"}>
                         <div className={"sidebar-right"}>
                             <div className={"grille2"}>
-                                {/* Appel de la GrilleEditeur */}
-                                <GrilleEditeur
-                                    rayon={rayon}
-                                    hexagones={hexagones}
-                                    mascotteInfo={null}
-                                    mascotteBio={null}
-                                    rivieres={rivieres}
-                                    tyroliennes={tyroliennes}
-                                />
+                                <div className={"contenu-visu"}>
+                                    {/* Appel de la GrilleEditeur */}
+                                    <GrilleEditeur
+                                        rayon={rayon}
+                                        hexagones={hexagones}
+                                        mascotteInfo={null}
+                                        mascotteBio={null}
+                                        rivieres={rivieres}
+                                        tyroliennes={tyroliennes}
+                                        onClick={(hex) => {}}
+                                    />
+                                    <br/>
+                                    <Link id="btnRevenir" href="/editeur" role="button">Revenir à l'accueil</Link>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <br/>
-                    <div className="titre-head">
-                        <Link id="btnRevenir" href="/editeur" role="button">Revenir à l'accueil</Link>
+
+                    <div className="zoom">
+                        <div className="zoom-icon">
+                            <TbZoom size={24} />
+                        </div>
+
+                        <input
+                            className="zoom-range"
+                            type={"range"}
+                            min={20}
+                            max={65}
+                            step={1}
+                            value={rayon}
+                            onChange={(e) => setRayon(Number(e.currentTarget.value))}
+                        />
+
+                        <div className="zoom-value">
+                            {rayon}
+                        </div>
                     </div>
-                    <form className="zoom-form menu-item">
-                        <label className="zoom-row">
-                            <span className="zoom-icon">
-                                <TbZoom size={30}/>
-                            </span>
-
-                            <input
-                                className="zoom-range"
-                                type={"range"}
-                                min={20}
-                                max={65}
-                                step={1}
-                                value={rayon}
-                                onChange={(e) => setRayon(Number(e.currentTarget.value))}
-                            />
-
-                            <span className="zoom-value">{rayon}</span>
-                        </label>
-                    </form>
                 </main>
             </>
         );
