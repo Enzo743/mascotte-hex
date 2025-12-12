@@ -46,6 +46,8 @@ export default function Page() {
     const [connexionsSelectionnee, setConnexionsSelectionnee] = useState<string | null>(null);
     const [messages, setMessages] = useState<LogMessage[]>([]);
 
+    const [tyrolienneStart, setTyrolienneStart] = useState<[number, number] | null>(null);
+
     const pushMsg = (text: string, level: LogMessage["level"] = "ok") => {
         setMessages((prev) =>
             [...prev, {id: crypto.randomUUID(), text, level}].slice(-50)
@@ -163,6 +165,39 @@ export default function Page() {
 
         return "Super";
     }
+
+    // Fonction pour interpoler entre deux hexagones et retourner toutes les cases traversées
+    const getHexagonesEntreDeuxPoints = (pointA: [number, number], pointB: [number, number], hexagones: Case[]): Case[] => {
+        const [q1, r1] = pointA;
+        const [q2, r2] = pointB;
+
+        // Calculer la distance (nombre d'étapes)
+        const distance = Math.max(
+            Math.abs(q2 - q1),
+            Math.abs(r2 - r1),
+            Math.abs((q2 + r2) - (q1 + r1))
+        );
+
+        const casesTraversees: Case[] = [];
+
+        // Interpoler pour chaque étape
+        for (let i = 0; i <= distance; i++) {
+            const t = distance === 0 ? 0 : i / distance;
+
+            // Interpolation linéaire
+            const q = Math.round(q1 + (q2 - q1) * t);
+            const r = Math.round(r1 + (r2 - r1) * t);
+
+            const caseId = `${q}-${r}`;
+            const caseActuelle = hexagones.find(h => h.id === caseId);
+
+            if (caseActuelle && !casesTraversees.find(c => c.id === caseId)) {
+                casesTraversees.push(caseActuelle);
+            }
+        }
+
+        return casesTraversees;
+    };
 
     // Permet le chargement de la carte
     useEffect(() => {
@@ -404,7 +439,56 @@ export default function Page() {
                                         }
                                     });
                                 } else if (connexionsSelectionnee === "tyrolienne") {
-                                    console.log("tyrolienne");
+                                    if (tyrolienneStart === null) {
+                                        if (hex.type !== "foret") {
+                                            pushMsg("[" + date + "] - Erreur, vous ne pouvez débuter une tyrolienne que depuis une forêt", "erreur");
+                                            setTyrolienneStart(null);
+                                            return;
+                                        }
+
+                                        setTyrolienneStart([x, y]);
+                                        pushMsg("[" + date + "] - Point A sélectionné pour la tyrolienne : (" + x + ", " + y + "). Cliquez maintenant sur le point B.", "ok");
+                                        return;
+                                    }
+
+                                    const [ax, ay] = tyrolienneStart;
+
+                                    if (ax === x && ay === y) {
+                                        pushMsg("[" + date + "] - Erreur, le point B doit être différent du point A", "erreur");
+                                        setTyrolienneStart(null);
+                                        return;
+                                    }
+
+                                    if (hex.type === "ocean" || hex.type === "montagne") {
+                                        pushMsg("[" + date + "] - Erreur, vous ne pouvez pas mettre une tyrolienne sur une case de type " + hex.type, "erreur");
+                                        setTyrolienneStart(null);
+                                        return;
+                                    }
+
+                                    const casesTraversees = getHexagonesEntreDeuxPoints([ax, ay], [x, y], hexagones);
+                                    const estCasesMontagne = casesTraversees.some(c => c.type === "montagne");
+
+                                    if (estCasesMontagne) {
+                                        pushMsg("[" + date + "] - Erreur, vous ne pouvez pas passer en tyrolienne sur une case de type montagne", "erreur");
+                                        setTyrolienneStart(null);
+                                        return;
+                                    }
+
+                                    setTuiles(JSON.stringify({
+                                        "nom": `${carteId}`,
+                                        "tyrolienne": [[ax, ay], [x, y]]
+                                    })).then(r => {
+                                        if (r.status === "success") {
+                                            getCarte(carteId).then((json: any) => {
+                                                if (json && !json.error) {
+                                                    appliquerCarte(json, rayon);
+                                                    pushMsg("[" + date + "] - Ajout d'une tyrolienne, whouuuuuu", "ok");
+                                                }
+                                            });
+                                        }
+                                    });
+
+                                    setTyrolienneStart(null);
                                 } else if (connexionsSelectionnee === "riviere") {
                                     console.log("riviere");
                                 }
