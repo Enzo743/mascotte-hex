@@ -9,18 +9,29 @@ import {getCarte} from "@/app/actions/getCarte";
 
 let jeton = 0;
 
+let partieFinie = false;
+
+let mascotteInfoVolle = false;
+let mascotteBioVolle = false;
+
+
 export default function Home() {
     const searchParams = useSearchParams();
     const carteId = searchParams.get("id");
 
     const [partie, setPartie] = useState<any>(null);
-    const [posInfo, setPosInfo] = useState(null);
-    const [posBio, setPosBio] = useState(null);
+
+    const [posMascotteInfo, setPosMascotteInfo] = useState(null);
+    const [posMascotteBio, setPosMascotteBio] = useState(null);
+
+    const [posResidenceInfo, setPosResidenceInfo] = useState(null);
+    const [posResidenceBio, setPosResidenceBio] = useState(null);
+
     const [posJoueur, setPosJoueur] = useState(null);
     const [posEnnemi, setPosEnnemi] = useState(null);
+
     const [jsonData, setJsonData] = useState(null);
 
-    
     let posJoueurCourant;
 
     useEffect(() => {
@@ -30,8 +41,12 @@ export default function Home() {
                     const nouvellePartie = new Jeu(json, 40);
                     setPartie(nouvellePartie);
 
-                    setPosInfo(nouvellePartie.mascotteInfo);
-                    setPosBio(nouvellePartie.mascotteBio);
+                    setPosMascotteInfo(nouvellePartie.mascotteInfo);
+                    setPosMascotteBio(nouvellePartie.mascotteBio);
+
+                    setPosResidenceInfo(nouvellePartie.mascotteInfo);
+                    setPosResidenceBio(nouvellePartie.mascotteBio);
+
                     setPosJoueur(nouvellePartie.joueur); 
                     setPosEnnemi(nouvellePartie.ennemi);
 
@@ -57,23 +72,41 @@ export default function Home() {
                     hexagones={partie.hexagones}
                     joueur={partie.position(posJoueur)} 
                     ennemi={partie.position(posEnnemi)} 
-                    mascotteInfo={partie.position(posInfo)}
-                    mascotteBio={partie.position(posBio)}
+                    mascotteInfo={partie.position(posMascotteInfo)}
+                    mascotteBio={partie.position(posMascotteBio)}
                     rivieres={partie.rivieres}
                     tyroliennes={partie.tyroliennes}
                     graphe={graphe}
                     posJoueurCourant={posJoueurCourant}
                     deplacement={(position) => {
-                        console.log("jeton après : " + jeton);
-                        if (graphe.verifier(posJoueurCourant, position)) {
-                            if (jeton == 0) {
-                                setPosJoueur(position);
-                                jeton = 1;
+                        console.log("jeton : " + jeton);
+                        if (!partieFinie) {
+                            if (graphe.verifier(posJoueurCourant, position)) {
+                                if (jeton == 0) {
+                                    setPosJoueur(position);
+
+                                    if (position[0] == posMascotteBio[0] && position[1] == posMascotteBio[1]) mascotteBioVolle = true;
+                                    if (mascotteBioVolle) {
+                                        setPosMascotteBio(position);
+
+                                        if (position[0] == posResidenceInfo[0] && position[1] == posResidenceInfo[1]) partieFinie = true;
+                                    }
+
+                                    jeton = 1;
+                                }
+                                else {
+                                    setPosEnnemi(position);
+                                    
+                                    if (position[0] == posMascotteInfo[0] && position[1] == posMascotteInfo[1]) mascotteInfoVolle = true;
+                                    if (mascotteInfoVolle) {
+                                        setPosMascotteInfo(position);
+
+                                        if (position[0] == posResidenceBio[0] && position[1] == posResidenceBio[1]) partieFinie = true;
+                                    }
+
+                                    jeton = 0;
+                                }
                             }
-                            else {
-                                setPosEnnemi(position);
-                                jeton = 0;
-                            }    
                         }
                     }}
                 />
