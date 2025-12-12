@@ -29,6 +29,10 @@
     overflow-y: auto;
 }
 
+.editeur .sidebar-left p {
+    margin-bottom: 0;
+}
+
 .editeur .sidebar-right {
     flex: 1;
     display: flex;
@@ -49,6 +53,11 @@
     border-top: 2px solid #e0e0e0;
     padding: 1rem;
     background-color: #fff;
+}
+
+.sousCat {
+    padding-left: 40px;
+    margin-top: 4px;
 }
 
 /* Composant MessagePopUpModal */
@@ -93,12 +102,12 @@
 .ligne-gestionnaire {
     display: flex;
     align-items: center;
-    gap: 0; 
+    gap: 0;
     padding: 0.5rem 0;
 }
 
 .col-nom {
-    flex: 1; 
+    flex: 1;
     text-align: left;
     padding-left: 1rem;
     padding-right: 1rem;
@@ -134,10 +143,36 @@
     border-right: 1px solid var(--pico-muted-border-color);
 }
 
+/* Composant Categorie */
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.menu-item:hover, .menu-item.active {
+    background-color: rgba(0, 0, 0, 0.05);
+    border-color: #bbb;
+}
+
+.menu-item svg {
+    transition: transform 0.3s ease;
+}
+
+.menu-item.open svg {
+    transform: rotate(90deg);
+}
+
 /* Commun (croix de fermeture) */
 
 dialog article header {
-    position: relative; 
+    position: relative;
     display: flex;
     justify-content: center;
     align-items: center;

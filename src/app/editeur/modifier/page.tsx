@@ -1,73 +1,155 @@
 "use client"
 
-import {useSearchParams} from "next/navigation";
+import {useRouter, useSearchParams} from "next/navigation";
 import {useEffect, useState} from "react";
 import {getCarte} from "@/app/actions/getCarte";
-import {Jeu} from "@/app/components/Jeu";
-import Grille from "@/app/components/Grille";
 import "../../globals.css";
+import {LuFlower, LuMountain, LuWaves} from "react-icons/lu";
+import Categorie from "@/app/components/editeur/Categorie";
+import {IoIosArrowForward} from "react-icons/io";
+import {MdOutlineForest} from "react-icons/md";
+import {GiBroccoli, GiCarabiner, GiPenguin, GiRiver} from "react-icons/gi";
+import {HiOutlineSave} from "react-icons/hi";
+import GestionnaireModal from "@/app/components/editeur/GestionnaireModal";
+import {Case, Connexion} from "@/app/components/Structure";
+import {Terrain} from "@/app/components/Terrain";
+import GrilleEditeur from "@/app/components/editeur/GrilleEditeur";
 
 export default function Page() {
+    // Gestion des params présents dans l'URL
     const searchParams = useSearchParams();
     const carteId = searchParams.get("id");
+    const show = searchParams.get("show");
 
-    const [partie, setPartie] = useState<any>(null);
-    const [posInfo, setPosInfo] = useState(null);
-    const [posBio, setPosBio] = useState(null);
-    const [posJoueur, setPosJoueur] = useState(null);
+    const router = useRouter();
 
+    // State relatif à la carte
+    const [jsonData, setJsonData] = useState(null);
+    const [isLoaded, setIsLoaded] = useState(false);
+
+    // State relatif à la gestion des onglets de l'éditeur
+    const [estTerrainOuvert, setEstTerrainOuvert] = useState(false);
+    const [terrainSelectionne, setTerrainSelectionne] = useState<string | null>(null);
+    const [estResidenceOuverte, setEstResidenceOuverte] = useState(false);
+    const [residenceSelectionnee, setResidenceSelectionnee] = useState<string | null>(null);
+    const [estConnexionsOuverte, setEstConnexionsOuverte] = useState(false);
+    const [connexionsSelectionnee, setConnexionsSelectionnee] = useState<string | null>(null);
+
+    // Permet le chargement de la carte
     useEffect(() => {
         if (carteId) {
             getCarte(carteId).then(json => {
                 if (json && !json.error) {
-                    const nouvellePartie = new Jeu(json, 40);
-
-                    setPartie(nouvellePartie);
-
-                    setPosInfo(nouvellePartie.mascotteInfo);
-                    setPosBio(nouvellePartie.mascotteBio);
-                    setPosJoueur(nouvellePartie.joueur);
+                    setJsonData(json);
+                    setIsLoaded(true);
                 }
             });
         }
     }, [carteId]);
 
-    if (!partie || !posJoueur) {
+    if (!isLoaded) {
         return <div>Chargement de la carte...</div>;
+    } else {
+        const rayon: number = 45;
+        const hexagones: Case[] = Terrain(jsonData, rayon);
+        const tyroliennes: Connexion[] = [];
+        const rivieres: Connexion[] = [];
+
+        return (
+            <div className={"container-fluid editeur"}>
+                {/* Partie de gauche : Sidebar */}
+                <div className={"sidebar-left"}>
+                    <h1>
+                        Edition de la carte &#34;{carteId}&#34;
+                    </h1>
+
+                    {/* Onglet du terrain */}
+                    <Categorie
+                        icon={IoIosArrowForward} label={"Terrain"}
+                        className={`menu-item ${estTerrainOuvert ? "open" : ""}`}
+                        onClick={() => setEstTerrainOuvert(!estTerrainOuvert)}/>
+
+                    {/* Contenu présent quand on clique sur l'onglet du terrain */}
+                    {estTerrainOuvert && (
+                        <div className={"sousCat"}>
+                            <Categorie icon={LuFlower} label={"Plaine"}
+                                       className={`menu-item ${terrainSelectionne === "plaine" ? "active" : ""}`}
+                                       onClick={() => setTerrainSelectionne(terrainSelectionne === "plaine" ? null : "plaine")}/>
+                            <Categorie icon={MdOutlineForest} label={"Forêt"}
+                                       className={`menu-item ${terrainSelectionne === "foret" ? "active" : ""}`}
+                                       onClick={() => setTerrainSelectionne(terrainSelectionne === "foret" ? null : "foret")}/>
+                            <Categorie icon={LuMountain} label={"Montagne"}
+                                       className={`menu-item ${terrainSelectionne === "montagne" ? "active" : ""}`}
+                                       onClick={() => setTerrainSelectionne(terrainSelectionne === "montagne" ? null : "montagne")}/>
+                            <Categorie icon={LuWaves} label={"Océan"}
+                                       className={`menu-item ${terrainSelectionne === "ocean" ? "active" : ""}`}
+                                       onClick={() => setTerrainSelectionne(terrainSelectionne === "ocean" ? null : "ocean")}/>
+                        </div>
+                    )}
+
+                    {/* Onglet des résidences */}
+                    <Categorie icon={IoIosArrowForward} label={"Résidences"}
+                               className={`menu-item ${estResidenceOuverte ? "open" : ""}`}
+                               onClick={() => setEstResidenceOuverte(!estResidenceOuverte)}/>
+
+                    {/* Contenu présent quand on clique sur l'onglet des résidences */}
+                    {estResidenceOuverte && (
+                        <div className={"sousCat"}>
+                            <Categorie icon={GiPenguin} label={"Résidence des informaticiens"}
+                                       className={`menu-item ${residenceSelectionnee === "info" ? "active" : ""}`}
+                                       onClick={() => setResidenceSelectionnee(residenceSelectionnee === "info" ? null : "info")}/>
+                            <Categorie icon={GiBroccoli} label={"Résidence des biologistes"}
+                                       className={`menu-item ${residenceSelectionnee === "bio" ? "active" : ""}`}
+                                       onClick={() => setResidenceSelectionnee(residenceSelectionnee === "bio" ? null : "bio")}/>
+                        </div>
+                    )}
+
+                    {/* Onglet des connexions */}
+                    <Categorie icon={IoIosArrowForward} label={"Connexions"}
+                               className={`menu-item ${estConnexionsOuverte ? "open" : ""}`}
+                               onClick={() => setEstConnexionsOuverte(!estConnexionsOuverte)}/>
+
+                    {/* Contenu présent quand on clique sur l'onglet des connexions */}
+                    {estConnexionsOuverte && (
+                        <div className={"sousCat"}>
+                            <Categorie icon={GiCarabiner} label={"Tyrolienne"}
+                                       className={`menu-item ${connexionsSelectionnee === "tyrolienne" ? "active" : ""}`}
+                                       onClick={() => setConnexionsSelectionnee(connexionsSelectionnee === "tyrolienne" ? null : "tyrolienne")}/>
+                            <Categorie icon={GiRiver} label={"Rivière"}
+                                       className={`menu-item ${connexionsSelectionnee === "riviere" ? "active" : ""}`}
+                                       onClick={() => setConnexionsSelectionnee(connexionsSelectionnee === "riviere" ? null : "riviere")}/>
+                        </div>
+                    )}
+
+                    {/* Onglet pour changer de carte */}
+                    <Categorie icon={HiOutlineSave} label={"Changer de carte"}
+                               className={"menu-item"}
+                               onClick={() => router.push(`/editeur/modifier?id=${carteId}&show=true`)}/>
+
+                    {/* Modal qui s'ouvre quand on clique sur l'onglet pour changer de carte */}
+                    {show && <GestionnaireModal prefixe={`/editeur/modifier`}
+                                                onCloseHref={`/editeur/modifier?id=${carteId}`}/>}
+                </div>
+
+                {/* Partie de droite : Conteneur vertical (GrilleEditeur en haut / Messages en bas) */}
+                <div className={"sidebar-right"}>
+                    <div className={"grille"}>
+                        <GrilleEditeur
+                            rayon={rayon}
+                            hexagones={hexagones}
+                            mascotteInfo={null}
+                            mascotteBio={null}
+                            rivieres={rivieres}
+                            tyroliennes={tyroliennes}
+                        />
+                    </div>
+
+                    {/* Zone des messages pour les tyroliennes et les rivières */}
+                    <div className={"messages"}>
+                        <p>Test des messages</p>
+                    </div>
+                </div>
+            </div>
+        )
     }
-
-    return (
-        <div className={"container-fluid editeur"}>
-            {/* Partie de gauche : Sidebar */}
-            <div className={"sidebar-left"}>
-                <h1>
-                    Edition de la carte &#34;{carteId}&#34;
-                </h1>
-                <p>Contrôles...</p>
-            </div>
-
-            {/* Partie de droite : Conteneur vertical (Grille en haut / Messages en bas) */}
-            <div className={"sidebar-right"}>
-                {/* Zone du jeu */}
-                <div className={"grille"}>
-                    <Grille
-                        rayon={partie.rayon}
-                        hexagones={partie.hexagones}
-                        joueur={partie.position(posJoueur)}
-                        ennemi={partie.position(partie.ennemi)}
-                        mascotteInfo={partie.position(posInfo)}
-                        mascotteBio={partie.position(posBio)}
-                        rivieres={partie.rivieres}
-                        tyroliennes={partie.tyroliennes}
-                        deplacement={(position) => setPosJoueur(position)}
-                    />
-                </div>
-
-                {/* Zone des messages pour les tyroliennes et les rivières */}
-                <div className={"messages"}>
-                    <p>Test des messages</p>
-                </div>
-            </div>
-        </div>
-    )
 };
