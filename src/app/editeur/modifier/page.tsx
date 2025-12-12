@@ -14,6 +14,7 @@ import GestionnaireModal from "@/app/components/editeur/GestionnaireModal";
 import {Case, Connexion} from "@/app/components/Structure";
 import {Terrain} from "@/app/components/Terrain";
 import GrilleEditeur from "@/app/components/editeur/GrilleEditeur";
+import {TbZoom} from "react-icons/tb";
 
 export default function Page() {
     // Gestion des params présents dans l'URL
@@ -26,6 +27,7 @@ export default function Page() {
     // State relatif à la carte
     const [jsonData, setJsonData] = useState(null);
     const [isLoaded, setIsLoaded] = useState(false);
+    const [rayon, setRayon] = useState(45);
 
     // State relatif à la gestion des onglets de l'éditeur
     const [estTerrainOuvert, setEstTerrainOuvert] = useState(false);
@@ -50,7 +52,6 @@ export default function Page() {
     if (!isLoaded) {
         return <div>Chargement de la carte...</div>;
     } else {
-        const rayon: number = 45;
         const hexagones: Case[] = Terrain(jsonData, rayon);
         const tyroliennes: Connexion[] = [];
         const rivieres: Connexion[] = [];
@@ -129,6 +130,26 @@ export default function Page() {
                     {/* Modal qui s'ouvre quand on clique sur l'onglet pour changer de carte */}
                     {show && <GestionnaireModal prefixe={`/editeur/modifier`}
                                                 onCloseHref={`/editeur/modifier?id=${carteId}`}/>}
+
+                    <form className="zoom-form menu-item">
+                        <label className="zoom-row">
+                            <span className="zoom-icon">
+                                <TbZoom size={30}/>
+                            </span>
+
+                            <input
+                                className="zoom-range"
+                                type={"range"}
+                                min={20}
+                                max={65}
+                                step={1}
+                                value={rayon}
+                                onChange={(e) => setRayon(Number(e.currentTarget.value))}
+                            />
+
+                            <span className="zoom-value">{rayon}</span>
+                        </label>
+                    </form>
                 </div>
 
                 {/* Partie de droite : Conteneur vertical (GrilleEditeur en haut / Messages en bas) */}

@@ -169,6 +169,41 @@
     transform: rotate(90deg);
 }
 
+/* Composant slider */
+
+.zoom-form {
+    margin: 0;
+}
+
+.zoom-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    white-space: nowrap;
+    width: 100%;
+    margin: 0;
+}
+
+.zoom-icon {
+    display: flex;
+    align-items: center;
+    line-height: 1;
+}
+
+.zoom-range {
+    flex: 1 1 auto;
+    min-width: 80px;
+    margin: 0;
+}
+
+.zoom-value {
+    display: flex;
+    align-items: center;
+    line-height: 1;
+    min-width: 3ch;
+    justify-content: flex-end;
+}
+
 /* Commun (croix de fermeture) */
 
 dialog article header {
