@@ -23,6 +23,6 @@ export interface Case {
 }
 
 export interface Voisins {
-    position: {x: number; y:number};
+    position: {x: number; y: number};
     voisins: number[][];
 }

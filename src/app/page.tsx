@@ -14,6 +14,7 @@ let partieFinie = false;
 let mascotteInfoVolle = false;
 let mascotteBioVolle = false;
 
+let tabJoueurs = [];
 
 export default function Home() {
     const searchParams = useSearchParams();
@@ -32,7 +33,8 @@ export default function Home() {
 
     const [jsonData, setJsonData] = useState(null);
 
-    let posJoueurCourant;
+    let posJoueurCourant = [-1, -1];
+ 
 
     useEffect(() => {
         if (carteId) {
@@ -56,10 +58,12 @@ export default function Home() {
         }
     }, [carteId]);
 
-    if (jeton == 0) posJoueurCourant = posJoueur;
-    else posJoueurCourant = posEnnemi;
+    tabJoueurs = [posJoueur, posEnnemi];
 
-    if (!partie || !posJoueurCourant) {
+    if (jeton == 1) posJoueurCourant = posJoueur;
+    if (jeton == 2) posJoueurCourant = posEnnemi;
+
+    if (!partie) {
         return <div>Chargement de la carte...</div>;
     } else {
         const graphe = new Graphe(jsonData);
@@ -79,11 +83,28 @@ export default function Home() {
                     rivieres={partie.rivieres}
                     tyroliennes={partie.tyroliennes}
                     graphe={graphe}
+                    jeton={jeton}
                     posJoueurCourant={posJoueurCourant}
+                    tabJoueurs={tabJoueurs}
                     deplacement={(position) => {
                         if (!partieFinie) {
+
+                            // Premier tour et on ne sait pas quel joueur commence
+                            if (jeton == 0) {
+                                if (graphe.verifier(posJoueur, position)) {
+                                    console.log("Vérif");
+                                    jeton = 1;
+                                    posJoueurCourant = posJoueur;
+                                }
+                                if (graphe.verifier(posEnnemi, position)) {
+                                    jeton = 2;
+                                    posJoueurCourant = posEnnemi;
+                                }
+                            }
+                            
                             if (graphe.verifier(posJoueurCourant, position)) {
-                                if (jeton == 0) {
+
+                                if (jeton == 1) {
                                     setPosJoueur(position);
 
                                     if (position[0] == posMascotteBio[0] && position[1] == posMascotteBio[1]) mascotteBioVolle = true;
@@ -93,7 +114,7 @@ export default function Home() {
                                         if (position[0] == posResidenceInfo[0] && position[1] == posResidenceInfo[1]) partieFinie = true;
                                     }
 
-                                    jeton = 1;
+                                    jeton = 2;
                                 }
                                 else {
                                     setPosEnnemi(position);
@@ -105,7 +126,7 @@ export default function Home() {
                                         if (position[0] == posResidenceBio[0] && position[1] == posResidenceBio[1]) partieFinie = true;
                                     }
 
-                                    jeton = 0;
+                                    jeton = 1;
                                 }
                             }
                         }

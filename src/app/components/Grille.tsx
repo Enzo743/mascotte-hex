@@ -16,7 +16,9 @@ export default function Grille(
     rivieres,
     tyroliennes,
     graphe,
+    jeton,
     posJoueurCourant,
+    tabJoueurs,
     deplacement
 }: {
     rayon: number;
@@ -30,17 +32,32 @@ export default function Grille(
     rivieres: Connexion[];
     tyroliennes: Connexion[];
     graphe: Graphe;
-    posJoueurCourant: [number, number]
+    jeton: number;
+    posJoueurCourant: number[];
+    tabJoueurs: number[][]
     deplacement: (pos: [number, number]) => void;
 }) {
     const width = Math.max.apply(0, hexagones.map((h) => h.position.x)) + rayon;
     const height = Math.max.apply(0, hexagones.map((h) => h.position.y)) + rayon;
 
-    const voisins = graphe.graphe.find(g => 
-        g.position.x === posJoueurCourant[0] && g.position.y === posJoueurCourant[1]
-    )?.voisins || [];
-    voisins.push(posJoueurCourant); 
+    let voisins = graphe.graphe.find(g => 
+            g.position.x === posJoueurCourant[0] && g.position.y === posJoueurCourant[1]
+        )?.voisins || [];
+    
+    if (jeton == 0) {
+        voisins = graphe.graphe.find(g => 
+                g.position.x === tabJoueurs[0][0] && g.position.y === tabJoueurs[0][1]
+            )?.voisins || [];
 
+        const voisins2 = graphe.graphe.find(g => 
+                g.position.x === tabJoueurs[1][0] && g.position.y === tabJoueurs[1][1]
+            )?.voisins || [];
+
+        for (let i = 0; i<voisins2.length; i++) {
+            voisins.push(voisins2[i]);
+        }
+    }
+    
     return (
         <Stage width={width} height={height}>
             <Layer>
@@ -63,8 +80,8 @@ export default function Grille(
                     {hexagones.map((hexagone) => {
                         const [x, y] = hexagone.id.split("-").map(Number);
                         const adjacent = voisins.some(
-                            (voisin) => voisin[0] === x && voisin[1] === y
-                        );
+                                (voisin) => voisin[0] === x && voisin[1] === y
+                            );
                         if (!adjacent) {return null;}
                         return (
                         <RegularPolygon
