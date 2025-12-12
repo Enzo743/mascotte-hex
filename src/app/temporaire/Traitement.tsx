@@ -1,4 +1,4 @@
-import {Carte, CarteJSON, Contexte, Arc, Case} from "./Interfaces";
+import {Arc, Carte, CarteJSON, Case, Connexion, Contexte, Position, Riviere} from "./Interfaces";
 
 /*
 --- Traitement Total ---
@@ -23,19 +23,19 @@ export function TraitementTotal(carteJSON: CarteJSON, rayon: number): Contexte {
     const graphe: Arc[] = [];
 
     // Calcul du rayon intérieur pour correctement placer les éléments sur la carte par la suite
-    const rayonInterieur = (rayon / 2) * Math.sqrt(3);
+    const rayonInterieur: number = (rayon / 2) * Math.sqrt(3);
 
     // Initialise chaque case bien positionnée pour le canvas
     // Par défaut, le type est océan
-    for (let i = 0; i < carte.taille.lignes; i++) {
-        const decalage = i % 2 === 1; // Important pour un affichage avec des hexagones
-        for (let j = 0; j < carte.taille.colonnes; j++) {
+    for (let i: number = 0; i < carte.taille.lignes; i++) {
+        const decalage: boolean = i % 2 === 1; // Important pour un affichage avec des hexagones
+        for (let j: number = 0; j < carte.taille.colonnes; j++) {
             const x: number = decalage ? rayonInterieur * 2 + j * (2 * rayonInterieur) : rayonInterieur + j * (2 * rayonInterieur);
             const y: number = rayon + i * (rayon + rayon / 2);
             carte.cases.push({
                 id: `${j}-${i}`, // sachant j (les colonnes, la largeur) alias x et i (les lignes, la hauteur) alias y, l'identifiant est représenté sous la forme (x,y)
                 positionMatrice: {x: j, y: i},
-                positionCanva: {x: x, y: y},
+                positionCanvas: {x: x, y: y},
                 riviere: false,
                 type: "ocean", // Todo : utiliser plutôt une énumération ?
                 couleur: "#748BF8" // Todo : plutôt implémenter les couleurs dans la partie visuelle.
@@ -54,6 +54,58 @@ export function TraitementTotal(carteJSON: CarteJSON, rayon: number): Contexte {
         type(carte.cases, x, y, "montagne", "#9E9E9E");
     }
 
+    // Affectation des connexions de type tyrolienne
+    carteJSON.connexions.filter(c => c.type === "tyrolienne").forEach((connexion: Connexion) => {
+        carte.tyroliennes.push({
+            entree: {
+                x: connexion.tuiles[0][0],
+                y: connexion.tuiles[0][1]
+            },
+            sortie: {
+                x: connexion.tuiles[1][0],
+                y: connexion.tuiles[1][1]
+            }
+        });
+    });
+
+    // Affectation des connexions de type riviere
+    carteJSON.connexions.filter(c => c.type === "riviere").forEach((connexion: Connexion) => {
+        const riviere: Riviere = {
+            parcours: [],
+            embouchure: {
+                x: connexion.tuiles[connexion.tuiles.length - 1][0],
+                y: connexion.tuiles[connexion.tuiles.length - 1][1]
+            }
+        }
+        for (let i: number = 0; i < connexion.tuiles.length - 2; i++) {
+            riviere.parcours.push({
+                x: connexion.tuiles[i][0],
+                y: connexion.tuiles[i][1]
+            })
+            const affectation: Case | undefined = carte.cases.find(c => c.id === `${connexion.tuiles[i][0]}-${connexion.tuiles[i][1]}`);
+            if (affectation) {
+                affectation.riviere = true;
+            }
+        }
+        carte.rivieres.push(riviere);
+    });
+
+    // Cas où une rivière se jette dans une autre
+    carte.rivieres.forEach((riviere: Riviere) => {
+        const embouchure: Position = riviere.embouchure;
+        const caseEmbouchure: Case | undefined = carte.cases.find(c => c.id === `${embouchure.x}-${embouchure.y}`);
+        if (!caseEmbouchure || !caseEmbouchure.riviere) return;
+        const extension: Riviere | undefined = carte.rivieres.find(r =>
+            r.parcours.some(p => p.x === embouchure.x && p.y === embouchure.y)
+        );
+        if (!extension) return;
+        const indice: number = extension.parcours.findIndex(p => p.x === embouchure.x && p.y === embouchure.y);
+        if (indice === -1) return;
+        const suite: Position[] = extension.parcours.slice(indice);
+        riviere.parcours.push(...suite);
+        riviere.embouchure = extension.embouchure;
+    });
+
     // On retourne l'objet Contexte
     return {
         carte: carte,
@@ -63,7 +115,7 @@ export function TraitementTotal(carteJSON: CarteJSON, rayon: number): Contexte {
 
 // Fonction d'affectation des types d'environnements à une case par son id
 function type(cases: Case[], x: number, y: number, type: string, couleur: string) : void {
-    const affectation = cases.find(c => c.id === `${x}-${y}`);
+    const affectation: Case | undefined = cases.find(c => c.id === `${x}-${y}`);
     if (affectation) {
         affectation.type = type;
         affectation.couleur = couleur;
