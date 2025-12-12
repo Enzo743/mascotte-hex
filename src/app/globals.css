@@ -15,7 +15,7 @@
 /* Page /editeur/modifier */
 
 .editeur {
-    height: calc(100vh - 80px);
+    height: 100vh;
     display: flex;
     flex-direction: row;
     overflow: hidden;
@@ -65,21 +65,30 @@
     margin-bottom: 0 !important;
 }
 
-.editeur .sidebar-right .grille2 {
+.visualiser {
+    min-height: calc(100vh - 80px);
+    display: flex;
+    flex-direction: row;
+    overflow: hidden;
+}
+
+.visualiser .sidebar-right {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.visualiser .sidebar-right .grille2 {
     flex: 5;
     display: flex;
     justify-content: center;
-    
     align-items: flex-start;
     
     background-color: #fff;
-    overflow-y: auto;
-
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+    overflow: visible;
 }
 
-.editeur .sidebar-right .grille2::-webkit-scrollbar {
+.visualiser .sidebar-right .grille2::-webkit-scrollbar {
     display: none;
 }
 
@@ -201,7 +210,40 @@
 
 /* Composant slider */
 
-.zoom {
+.zoom-form {
+    margin: 0;
+}
+
+.zoom-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    white-space: nowrap;
+    width: 100%;
+    margin: 0;
+}
+
+.zoom-icon {
+    display: flex;
+    align-items: center;
+    line-height: 1;
+}
+
+.zoom-range {
+    flex: 1 1 auto;
+    min-width: 80px;
+    margin: 0;
+}
+
+.zoom-value {
+    display: flex;
+    align-items: center;
+    line-height: 1;
+    min-width: 3ch;
+    justify-content: flex-end;
+}
+
+.zoom-vertical {
     position: fixed;
     right: 1.5rem;
     top: 50%;
@@ -224,7 +266,7 @@
 }
 
 
-.zoom-range {
+.zoom-vertical-range {
     max-width: none !important;
     flex-shrink: 0;
     width: 150px !important;
@@ -233,7 +275,7 @@
     cursor: grab;
 }
 
-.zoom-icon .zoom-value {
+.zoom-vertical-icon .zoom-vertical-value {
     display: flex;
     justify-content: center;
     align-items: center;
