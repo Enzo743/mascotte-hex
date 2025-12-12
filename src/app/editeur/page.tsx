@@ -26,9 +26,8 @@ export default function Page() {
             </div>
 
             {show && <NouveauPopUpModal/>}
-            {showVisualisation && <GestionnaireModal prefixe="/editeur/visualiser"/>}
-            {showModification && <GestionnaireModal prefixe="/editeur/modifier"/>}
-
+            {showVisualisation && <GestionnaireModal prefixe="/editeur/visualiser" onCloseHref={"/editeur"}/>}
+            {showModification && <GestionnaireModal prefixe="/editeur/modifier" onCloseHref={"/editeur"}/>}
         </main>
     );
 };

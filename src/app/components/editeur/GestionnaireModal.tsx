@@ -1,14 +1,14 @@
 "use client";
 import Link from "next/link";
 import LigneGestionnaire from "./LigneGestionnaire";
-import { useState, useEffect } from "react";
-import React from "react";
+import React, {useEffect, useState} from "react";
 
 interface GestionnaireModalHref {
-    prefixe : string;
+    prefixe: string;
+    onCloseHref: string;
 }
 
-const GestionnaireModal: React.FC<GestionnaireModalHref> = ({prefixe}) => {
+const GestionnaireModal: React.FC<GestionnaireModalHref> = ({prefixe, onCloseHref}) => {
 
     const [cartes, setCartes] = useState([]);
 
@@ -23,6 +23,7 @@ const GestionnaireModal: React.FC<GestionnaireModalHref> = ({prefixe}) => {
                 console.error("Erreur de chargement:", error);
             }
         }
+
         chargerDonnees();
     }, []);
 
@@ -30,7 +31,7 @@ const GestionnaireModal: React.FC<GestionnaireModalHref> = ({prefixe}) => {
         <dialog open>
             <article>
                 <header>
-                    <Link href="/editeur" aria-label="Close" className="close link-message-modal"/>
+                    <Link href={onCloseHref} aria-label="Close" className="close link-message-modal"/>
                     <h3 style={{textAlign: 'center', margin: 0}}>Gestionnaire des cartes</h3>
                 </header>
                 <main>
@@ -43,11 +44,11 @@ const GestionnaireModal: React.FC<GestionnaireModalHref> = ({prefixe}) => {
                     </div>
                     {cartes.map((carte) => (
                         <LigneGestionnaire
-                            key = {carte.nom}
-                            nomFichier = {carte.nom}
-                            lignes = {carte.lignes}
-                            colonnes = {carte.colonnes}
-                            href = {`${prefixe}?id=${carte.nom}`}
+                            key={carte.nom}
+                            nomFichier={carte.nom}
+                            lignes={carte.lignes}
+                            colonnes={carte.colonnes}
+                            href={`${prefixe}?id=${carte.nom}`}
                         />
                     ))}
                 </main>
