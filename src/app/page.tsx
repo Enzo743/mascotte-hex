@@ -92,7 +92,6 @@ export default function Home() {
                             // Premier tour et on ne sait pas quel joueur commence
                             if (jeton == 0) {
                                 if (graphe.verifier(posJoueur, position)) {
-                                    console.log("Vérif");
                                     jeton = 1;
                                     posJoueurCourant = posJoueur;
                                 }
