@@ -7,13 +7,16 @@ import {NextResponse} from "next/server";
  */
 export async function GET(req: Request) {
     try {
-        const fichiers = await fs.readdir("./public/json");
+        const cheminDossier: string = "./public/json";
+        const fichiers: string[] = await fs.readdir(cheminDossier);
         const tab: { nom: string, lignes: number, colonnes: number }[] = [];
 
         for (let i = 0; i < fichiers.length; i++) {
-            const data = await fs.readFile(`./public/json/${fichiers[i]}`, "utf8");
-            const json = JSON.parse(data);
-            const jsonGrille = {
+            if (fichiers[i].startsWith('.')) continue;
+
+            const data: string = await fs.readFile(`${cheminDossier}/${fichiers[i]}`, "utf8");
+            const json: any = JSON.parse(data);
+            const jsonGrille: { nom: string; lignes: any; colonnes: any } = {
                 "nom": fichiers[i].split(".")[0],
                 "lignes": json.grille.lignes,
                 "colonnes": json.grille.colonnes
@@ -24,6 +27,10 @@ export async function GET(req: Request) {
 
         return NextResponse.json(tab);
     } catch (error) {
-        return NextResponse.json({status: "error", error: error}, {status: 404});
+        console.error("Erreur dans /api/cartes/noms:", error);
+        return NextResponse.json(
+            {status: "error", message: error.message},
+            {status: 500}
+        );
     }
 }

@@ -10,7 +10,7 @@ interface GestionnaireModalHref {
 
 const GestionnaireModal: React.FC<GestionnaireModalHref> = ({prefixe, onCloseHref}) => {
 
-    const [cartes, setCartes] = useState([]);
+    const [cartes, setCartes] = useState<any[]>([]);
 
     useEffect(() => {
         async function chargerDonnees() {
@@ -18,9 +18,16 @@ const GestionnaireModal: React.FC<GestionnaireModalHref> = ({prefixe, onCloseHre
                 const reponse = await fetch("/api/cartes/noms");
                 const donnees = await reponse.json();
                 console.log(donnees);
-                setCartes(donnees);
+
+                if (Array.isArray(donnees)) {
+                    setCartes(donnees);
+                } else {
+                    console.error("Erreur API:", donnees);
+                    setCartes([]);
+                }
             } catch (error) {
                 console.error("Erreur de chargement:", error);
+                setCartes([]);
             }
         }
 
