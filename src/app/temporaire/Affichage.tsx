@@ -53,7 +53,7 @@ export function Affichage({contexte, rayon, tour, joueurInfo, joueurBio, deplace
                             y = {c.positionCanvas.y}
                             sides = {6}
                             radius = {rayon}
-                            stroke = {"red"}
+                            stroke = {tour === 0 ? "#9486E1" : "#F17961"}
                         />
                         )
                     })}     
@@ -109,8 +109,7 @@ export function Affichage({contexte, rayon, tour, joueurInfo, joueurBio, deplace
                                 />
                             </>
                         );
-                    })()} 
-                    
+                    })()}
 
                     {/* === VISUEL DES TYROLIENNES === */}
                     {contexte.carte.tyroliennes.map((tyrolienne: Tyrolienne) => {
@@ -135,11 +134,13 @@ export function Affichage({contexte, rayon, tour, joueurInfo, joueurBio, deplace
                         );
                     })}
 
-                    {/* JOUEURS */}
+                    {/*=== JOUEURS ET MASCOTTES === */}
                     {(() => {
+                        const mascotteInfo: Case | undefined = joueurBio.mascotte ? contexte.carte.cases.find((c) => c.id === `${joueurBio.position.x}-${joueurBio.position.y}`) : contexte.carte.cases.find((c) => c.id === `${contexte.carte.residenceInfo.x}-${contexte.carte.residenceInfo.y}`);
+                        const mascotteBio: Case | undefined = joueurInfo.mascotte ? contexte.carte.cases.find((c) => c.id === `${joueurInfo.position.x}-${joueurInfo.position.y}`) : contexte.carte.cases.find((c) => c.id === `${contexte.carte.residenceBio.x}-${contexte.carte.residenceBio.y}`);
                         const posInfo: Case | undefined = contexte.carte.cases.find((c) => c.id === `${joueurInfo.position.x}-${joueurInfo.position.y}`);
                         const posBio: Case | undefined = contexte.carte.cases.find((c) => c.id === `${joueurBio.position.x}-${joueurBio.position.y}`);
-                        if (!posInfo || !posBio) return;
+                        if (!posInfo || !posBio || !mascotteInfo || !mascotteBio) return;
                         return (
                             <>
                                 <Circle
@@ -156,14 +157,30 @@ export function Affichage({contexte, rayon, tour, joueurInfo, joueurBio, deplace
                                     fill = "#F17961"
                                     stroke = "black"
                                 />
+                                <Text
+                                    x = {mascotteBio.positionCanvas.x}
+                                    y = {mascotteBio.positionCanvas.y}
+                                    text = {joueurInfo.mascotte ? "🥦" : ""}
+                                    fontSize = {rayon/2}
+                                    offsetX = {rayon/3.5}
+                                    offsetY = {rayon/3.5}
+                                />
+                                <Text
+                                    x = {mascotteInfo.positionCanvas.x}
+                                    y = {mascotteInfo.positionCanvas.y}
+                                    text = {joueurBio.mascotte ? "🐧" : ""}
+                                    fontSize = {rayon/2}
+                                    offsetX = {rayon/3.5}
+                                    offsetY = {rayon/3.5}
+                                />
                             </>
                         );
-                    })()} 
+                    })()}
 
                     {/* === INTERACTION AVEC LES CASES === */}
                     {contexte.carte.cases.map((c: Case) => (
                     <React.Fragment key={c.id}>
-                        <Text // Texte indiquant les coordonées (x,y) de la case, utile pour le debug.
+                        {/*<Text // Texte indiquant les coordonées (x,y) de la case, utile pour le debug.
                             x = {c.positionCanvas.x}
                             y = {c.positionCanvas.y}
                             text = {`${c.positionMatrice.x},${c.positionMatrice.y}`}
@@ -171,7 +188,7 @@ export function Affichage({contexte, rayon, tour, joueurInfo, joueurBio, deplace
                             fill = "black"
                             offsetX = {10}
                             offsetY = {7}
-                        />
+                        />*/}
                         <RegularPolygon
                             x={c.positionCanvas.x}
                             y={c.positionCanvas.y}

@@ -55,7 +55,7 @@ export default function Home() {
             if (arc && arc.voisins.some(v => v.x === position.x && v.y === position.y)) {
                 setJoueurInfo({
                     position: position,
-                    mascotte: joueurInfo.mascotte
+                    mascotte: ((position.x === contexte.carte.residenceBio.x) && (position.y === contexte.carte.residenceBio.y)) ? true : joueurInfo.mascotte
                 });
                 changerTour(1);
             }
@@ -67,13 +67,24 @@ export default function Home() {
             if (arc && arc.voisins.some(v => v.x === position.x && v.y === position.y)) {
                 setJoueurBio({
                     position: position,
-                    mascotte: joueurBio.mascotte
+                    mascotte: ((position.x === contexte.carte.residenceInfo.x) && (position.y === contexte.carte.residenceInfo.y)) ? true : joueurBio.mascotte
                 });
                 changerTour(0);
             }
         }
     }
 
+    /* === Types === */
+    type ModeJeu = "" | "pvp" | "bot";
+    type PremierTour = "info" | "bio" | "random";
+    type DifficulteIA = "stupide" | "facile" | "moyen" | "difficile" | "extreme";
+
+    /* === États === */
+    const [mode, setMode] = useState<ModeJeu>("");
+    const [premierTour, setPremierTour] = useState<PremierTour>("random");
+    const [difficulte, setDifficulte] = useState<DifficulteIA>("facile");
+
+    if( false ) {
     return (
         <>
             <div className="container-fluid">
@@ -100,4 +111,153 @@ export default function Home() {
             </div>
         </>
     );
+    } else {
+return (
+    <>
+        <header className="container-fluid">
+            <h1 className="text-center">🐧/🥦 MASCOTTE HEX</h1>
+        </header>
+
+        <main className="container-fluid" style={{ height: "calc(100vh - 4rem)" }}>
+            <div className="grid" style={{ height: "100%" }}>
+                {/* === EDITEUR === */}
+                <div className="container">
+                    <article>
+                        <h3 className="text-center">🔧🗺️ EDITEUR DE CARTE</h3>
+                    </article>
+                </div>
+
+                {/* === ENTRAINEMENT === */}
+                <div className="container" style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+                    <article style={{ flex: "0 0 auto" }}>
+                        <h3 className="text-center">🎯⚔️ ENTRAINEMENT</h3>
+
+                        {/* === Sélection du mode === */}
+                        <div className="container" style={{ maxWidth: "420px", margin: "0 auto" }}>
+                            <select
+                                value={mode}
+                                onChange={(e) => setMode(e.target.value as ModeJeu)}
+                            >
+                                <option value="" disabled>
+                                    👉 CHOISIR MODE DE JEU
+                                </option>
+                                <option value="pvp">🆚 1 CONTRE 1</option>
+                                <option value="bot">🤖 CONTRE L'IA</option>
+                            </select>
+                        </div>
+
+                        <hr />
+
+                        {/* === Qui commence (1v1) === */}
+                        {mode === "pvp" && (
+                            <>
+                                <h4>Qui commence ?</h4>
+                                <div role="group">
+                                    {[
+                                        { key: "info", label: "🐧 Informaticiens", color: "#9486E1" },
+                                        { key: "bio", label: "🥦 Biologistes", color: "#F17961" },
+                                        { key: "random", label: "🎲 Aléatoire", color: "#6FC1F7" }
+                                    ].map((v) => {
+                                        const selected = premierTour === v.key;
+                                        return (
+                                            <button
+                                                key={v.key}
+                                                aria-pressed={selected}
+                                                onClick={() => setPremierTour(v.key as PremierTour)}
+                                                style={{
+                                                    fontWeight: selected ? "bold" : undefined,
+                                                    textDecoration: selected ? "underline" : undefined,
+                                                    backgroundColor: v.color,
+                                                    color: "#000"
+                                                }}
+                                            >
+                                                {v.label}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                                <hr />
+                            </>
+                        )}
+
+                        {/* === Choix de l'équipe (contre l'IA) === */}
+                        {mode === "bot" && (
+                            <>
+                                <h4>Choisir votre équipe</h4>
+                                <div role="group">
+                                    {[
+                                        { key: "info", label: "🐧 Informaticiens", color: "#9486E1" },
+                                        { key: "bio", label: "🥦 Biologistes", color: "#F17961" }
+                                    ].map((v) => {
+                                        const selected = premierTour === v.key; // stocke l'équipe choisie
+                                        return (
+                                            <button
+                                                key={v.key}
+                                                aria-pressed={selected}
+                                                onClick={() => setPremierTour(v.key as PremierTour)}
+                                                style={{
+                                                    fontWeight: selected ? "bold" : undefined,
+                                                    textDecoration: selected ? "underline" : undefined,
+                                                    backgroundColor: v.color,
+                                                    color: "#000"
+                                                }}
+                                            >
+                                                {v.label}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                                <hr />
+
+                                {/* === Difficulté IA === */}
+                                <h4>Difficulté de l’IA</h4>
+                                <div role="group">
+                                    {[
+                                        { key: "stupide", emoji: "🤪", bgColor: "#4ade80" },
+                                        { key: "facile", emoji: "🙂", bgColor: "#a3e635" },
+                                        { key: "moyen", emoji: "😐", bgColor: "#facc15" },
+                                        { key: "difficile", emoji: "😈", bgColor: "#f97316" },
+                                        { key: "extreme", emoji: "🔥", bgColor: "#ef4444" }
+                                    ].map((v) => {
+                                        const selected = difficulte === v.key;
+                                        return (
+                                            <button
+                                                key={v.key}
+                                                onClick={() => setDifficulte(v.key as DifficulteIA)}
+                                                style={{
+                                                    fontWeight: selected ? "bold" : undefined,
+                                                    textDecoration: selected ? "underline" : undefined,
+                                                    backgroundColor: v.bgColor,
+                                                    color: "#000"
+                                                }}
+                                            >
+                                                {v.emoji} {v.key.toUpperCase()}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                                <hr />
+                            </>
+                        )}
+                    </article>
+
+                    {/* === Carte + bouton Démarrer === */}
+                    <article style={{ flex: "1 1 auto", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                        <div style={{ flex: 1, backgroundColor: "#e5e7eb", border: "1px solid #ccc", margin: "1rem 0" }}>
+                        </div>
+
+                        <div style={{ display: "flex", justifyContent: "center", gap: "1rem" }}>
+                            <button disabled>Choisir une carte</button>
+                            <button disabled>▶️ Démarrer</button>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </main>
+    </>
+);
+
+
+
+    }
 }

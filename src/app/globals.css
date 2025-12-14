@@ -335,3 +335,8 @@ dialog article header .close {
 textarea {
     resize: none;
 }
+
+/* Centrer n'importe quel texte */
+.text-center {
+    text-align: center;
+}
