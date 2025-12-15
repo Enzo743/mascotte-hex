@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import {NextResponse} from "next/server";
+import {estMemeTuile} from "@/app/utils/jsonUtils";
 
 /**
  * route → /api/cartes/ajouter
@@ -78,10 +79,6 @@ export async function POST(req: Request) {
         if (residenceBio) {
             json.résidences.bio = residenceBio;
         }
-
-        // Fonction qui permet de voir si deux tuiles sont identiques (en JSON)
-        const estMemeTuile = (t1: unknown, t2: unknown) =>
-            JSON.stringify(t1) === JSON.stringify(t2);
 
         // Fonction qui permet de retirer des terrains s'ils sont déjà présents dans le JSON
         const retirerDesTerrainsSiPresent = (tuile: unknown) => {
