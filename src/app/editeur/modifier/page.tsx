@@ -33,6 +33,12 @@ export default function Page() {
     // States relatif à la gestion des clics lors de la création d'une tyrolienne
     const [tyrolienneStart, setTyrolienneStart] = useState<[number, number] | null>(null);
 
+    // States relatif à la gestion des clics lors de la création d'une rivière
+    const [riviereStart, setRiviereStart] = useState<[number, number] | null>(null);
+
+    // States relatif au stockage lors de la création d'une rivière
+    const [casesRiviere, setCasesRiviere] = useState<[number, number][]>([]);
+
     // States pour gérer le mode ajout et suppression : true pour ajout, et false pour suppression
     const [modeTyrolienne, setModeTyrolienne] = useState(true);
     const [modeRiviere, setModeRiviere] = useState(true);
@@ -88,7 +94,7 @@ export default function Page() {
     };
 
     // Import de toutes les fonctions du hook useClickHandler
-    const {handleTerrainClic, handleResidenceClic, handleTyrolienneClic} = useClicHandler({
+    const {handleTerrainClic, handleResidenceClic, handleTyrolienneClic, handleRiviereClic} = useClicHandler({
         carteId,
         rayon,
         hexagones,
@@ -98,7 +104,11 @@ export default function Page() {
         residenceSelectionnee,
         connexionsSelectionnee,
         tyrolienneStart,
+        riviereStart,
+        casesRiviere,
         setTyrolienneStart,
+        setRiviereStart,
+        setCasesRiviere,
         pushMsg,
         appliquerCarte
     });
@@ -153,7 +163,7 @@ export default function Page() {
                                 } else if (connexionsSelectionnee === "tyrolienne") {
                                     handleTyrolienneClic(hex, x, y, date, modeTyrolienne);
                                 } else if (connexionsSelectionnee === "riviere") {
-                                    console.log("riviere");
+                                    handleRiviereClic(hex, x, y, date, modeRiviere);
                                 }
                             }}
                         />

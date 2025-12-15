@@ -3,6 +3,7 @@ import {getHexagonesEntreDeuxPoints, getVoisins} from "@/app/utils/hexagoneUtils
 import {setTuiles} from "@/app/actions/setTuiles";
 import {getCarte} from "@/app/actions/getCarte";
 import {supprimerTuile} from "@/app/actions/supprimerTuile";
+import {useState} from "react";
 
 interface useClicHandlerProps {
     carteId: string | null;
@@ -14,7 +15,11 @@ interface useClicHandlerProps {
     residenceSelectionnee: string | null;
     connexionsSelectionnee: string | null;
     tyrolienneStart: [number, number] | null;
+    riviereStart: [number, number] | null;
+    casesRiviere: [number, number];
     setTyrolienneStart: (value: [number, number] | null) => void;
+    setRiviereStart: (value: [number, number] | null) => void;
+    setCasesRiviere: (value: [number, number][] | null) => void;
     pushMsg: (text: string, level: "ok" | "erreur") => void;
     appliquerCarte: (json: any, rayon: number) => void;
 }
@@ -157,9 +162,102 @@ export function useClicHandler(props: useClicHandlerProps) {
         }
     }
 
+    // Fonction qui gère les actions lors du clic sur une rivière d'un onglet
+    const handleRiviereClic = async (hex: Case, x: number, y: number, date: string, modeRiviere: boolean) => {
+        if (modeRiviere)
+        {
+            if (props.riviereStart === null) {
+                if (hex.type === "montagne")
+                {
+                    props.pushMsg("[" + date + "] - Erreur, vous ne pouvez pas placer une rivière sur une case de type montagne", "erreur");
+                    return;
+                }
+
+                if (hex.type === "ocean")
+                {
+                    props.pushMsg("[" + date + "] - Erreur, vous ne pouvez pas débuter une rivière sur une case de type océan", "erreur");
+                    return;
+                }
+
+                props.setRiviereStart([x, y]);
+                props.setCasesRiviere((casesPrecedentes) => [...casesPrecedentes, [x, y]]);
+                props.pushMsg("[" + date + "] - Point A sélectionné pour la rivière : (" + x + ", " + y + "). Cliquez maintenant sur une autre case.", "ok");
+                return;
+            }
+
+            if (hex.type === "montagne")
+            {
+                props.pushMsg("[" + date + "] - Erreur, vous ne pouvez pas placer une rivière sur une case de type montagne", "erreur");
+                return;
+            }
+
+            if (!props.casesRiviere.some(([ax, ay]) => ax === x && ay === y))
+            {
+                console.log(props.casesRiviere);
+                props.setCasesRiviere((casesPrecedentes) => [...casesPrecedentes, [x, y]]);
+                console.log(props.casesRiviere);
+
+                const response = await fetch(`/api/cartes/riviere`, {
+                    method: "POST",
+                    body: JSON.stringify({
+                        "nom": props.carteId,
+                        "tuile": {x, y}
+                    })
+                });
+
+                const {status, presence} = await response.json();     
+
+                if (hex.type === "ocean" && status === "success" && !presence)
+                {
+                    const reponse: any = await setTuiles(JSON.stringify(
+                    {
+                        "nom": `${props.carteId}`,
+                        "riviere": props.casesRiviere
+                    }));
+
+                    if (reponse.status === "success")
+                    {
+                        const json: any = await getCarte(props.carteId);
+
+                        if (json && !json.error) {
+                            props.appliquerCarte(json, props.rayon);
+                            props.pushMsg("[" + date + "] - Ajout d'une rivière, splash", "ok");
+                            props.setCasesRiviere([]);
+                            return;
+                        }
+                    } 
+                }
+
+                props.pushMsg("[" + date + "] - Case sélectionnée pour la rivière : (" + x + ", " + y + "). Cliquez maintenant sur une autre case.", "ok");
+            }
+            else
+            {
+                props.pushMsg("[" + date + "] - Erreur, cette case est déjà incluse dans la rivière", "erreur");
+                return;
+            }
+        }
+        else
+        {
+            const response = await supprimerTuile(props.carteId, x, y);
+
+            if (response.status === "success")
+            {
+                const json: any = await getCarte(props.carteId);
+
+                if (json && !json.error)
+                {
+                    props.appliquerCarte(json, props.rayon);
+                    props.pushMsg("[" + date + "] - Suppression d'une rivière, glou glou", "ok");
+                }
+            }
+        }
+        
+    }
+
     return {
         handleTerrainClic,
         handleResidenceClic,
         handleTyrolienneClic,
+        handleRiviereClic
     };
 }
