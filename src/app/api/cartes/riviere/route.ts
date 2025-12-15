@@ -17,7 +17,7 @@ export async function POST(req: Request) {
 
         const presence = json.connexions.filter(c => c.type === "riviere").some(c => c.tuiles.some(t => estMemeTuile(t, tuile)));
 
-        return NextResponse.json({status: "success"});
+        return NextResponse.json({status: "success", presence: presence});
     } catch (error) {
         console.log(error);
         return NextResponse.json({status: "error", error: error});
