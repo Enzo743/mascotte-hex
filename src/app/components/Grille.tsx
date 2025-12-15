@@ -16,9 +16,8 @@ export default function Grille(
     rivieres,
     tyroliennes,
     graphe,
-    jeton,
     posJoueurCourant,
-    tabJoueurs,
+    partieFinie,
     deplacement
 }: {
     rayon: number;
@@ -32,9 +31,8 @@ export default function Grille(
     rivieres: Connexion[];
     tyroliennes: Connexion[];
     graphe: Graphe;
-    jeton: number;
     posJoueurCourant: number[];
-    tabJoueurs: number[][]
+    partieFinie: boolean;
     deplacement: (pos: [number, number]) => void;
 }) {
     const width = Math.max.apply(0, hexagones.map((h) => h.position.x)) + rayon;
@@ -43,20 +41,10 @@ export default function Grille(
     let voisins = graphe.graphe.find(g => 
             g.position.x === posJoueurCourant[0] && g.position.y === posJoueurCourant[1]
         )?.voisins || [];
-    
-    if (jeton == 0) {
-        voisins = graphe.graphe.find(g => 
-                g.position.x === tabJoueurs[0][0] && g.position.y === tabJoueurs[0][1]
-            )?.voisins || [];
 
-        const voisins2 = graphe.graphe.find(g => 
-                g.position.x === tabJoueurs[1][0] && g.position.y === tabJoueurs[1][1]
-            )?.voisins || [];
-
-        for (let i = 0; i<voisins2.length; i++) {
-            voisins.push(voisins2[i]);
+        if (partieFinie) {
+            voisins = [];
         }
-    }
     
     return (
         <Stage width={width} height={height}>
@@ -181,20 +169,20 @@ export default function Grille(
 
                     {/* MASCOTTE INFO */}
                     <RegularPolygon
-                            x = {mascotteInfo.position.x}
-                            y = {mascotteInfo.position.y}
-                            sides = {3}
-                            radius = {rayon/2}
-                            stroke = {"blue"}
+                        x = {mascotteInfo.position.x}
+                        y = {mascotteInfo.position.y}
+                        sides = {3}
+                        radius = {rayon/2}
+                        stroke = {"purple"}
                     />
-
+                    
                     {/* MASCOTTE BIO */}
                     <RegularPolygon
-                            x = {mascotteBio.position.x}
-                            y = {mascotteBio.position.y}
-                            sides = {3}
-                            radius = {rayon/2}
-                            stroke = {"purple"}
+                        x = {mascotteBio.position.x}
+                        y = {mascotteBio.position.y}
+                        sides = {3}
+                        radius = {rayon/2}
+                        stroke = {"purple"}
                     />
 
                     {/* CASES (FONCTIONNEL)*/}
