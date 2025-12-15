@@ -1,4 +1,4 @@
-import { Arc, Noeud, Position } from "./Interfaces";
+import { Arc, DifficulteIA, Noeud, Position } from "./Interfaces";
 
 /*
 === File ===
@@ -25,13 +25,29 @@ Fonctionne dans l'état actuel, mais peut ne pas être le plus adapté pour un b
 
 Todo : Rendre le bot moins intelligent, avec plusieurs niveaux de difficulté ?
 */
-export function plusCourtChemin(graphe: Arc[], depart: Noeud, arrive: Noeud): Noeud[] | null {
-    const file = new File();
-    const visite = new Set<string>(); // Retient les nœuds déjà visités (avec un identifiant unique constitué de leurs coordonnées).
-    const precedent = new Map<string, Noeud>(); // Retient les nœuds précédents pour pouvoir reconstituer le chemin.
 
+export function plusCourtChemin(graphe: Arc[], depart: Noeud, arrive: Noeud, difficulte: DifficulteIA): Noeud[] | null {
+    const file = new File();
+    const visite = new Set<string>(); // Retient les nœuds déjà visités (avec un identifiant unique constitué de leurs coordonnées)
+    const precedent = new Map<string, Noeud>(); // Retient les nœuds précédents pour pouvoir reconstituer le chemin.
+    
     file.enfiler(depart);
     visite.add(`${depart.x},${depart.y}`);
+
+    const obtenirVoisins = (arcCourant: Arc, difficulte: DifficulteIA) => {
+        switch (difficulte) {
+            case "extreme":
+                return arcCourant.voisins;
+            case "difficile":
+                return arcCourant.voisins;
+            case "moyen":
+                return arcCourant.voisins.sort(() => Math.random() - 0.5);
+            case "facile":
+                return arcCourant.voisins;
+            case "stupide":
+                return [arcCourant.voisins[Math.floor(Math.random() * arcCourant.voisins.length)]];
+        }
+    };
 
     while (!file.estVide()) {
         const courant = file.defiler()!;
@@ -48,7 +64,10 @@ export function plusCourtChemin(graphe: Arc[], depart: Noeud, arrive: Noeud): No
         const arcCourant = graphe.find(a => a.noeud.x === courant.x && a.noeud.y === courant.y);
         if (!arcCourant) continue;
 
-        for (const voisin of arcCourant.voisins) {
+        const voisins = obtenirVoisins(arcCourant, difficulte);
+
+        if (voisins)
+        for (const voisin of voisins) {
             const key = `${voisin.x},${voisin.y}`;
             if (!visite.has(key)) {
                 visite.add(key);

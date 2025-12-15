@@ -18,7 +18,19 @@ export interface Arc {
     noeud: Noeud;
     voisins: Noeud[]
 }
+export enum Difficulte {
+    EXTREME,
+    DIFFICILE,
+    MOYEN,
+    FACILE,
+    STUPIDE
+}
 
+/*
+*/
+export type ModeJeu = "" | "pvp" | "bot";
+export type PremierTour = "info" | "bio" | "random";
+export type DifficulteIA = "stupide" | "facile" | "moyen" | "difficile" | "extreme";
 /*
 === Interfaces de la structure des fichiers json ===
 
@@ -68,6 +80,7 @@ export interface AffichageParams {
     joueurInfo: Joueur;
     joueurBio: Joueur;
     deplacement?: (position: Position) => void;
+    cheminIA: Noeud[] | undefined | null;
 }
 
 export interface Case {

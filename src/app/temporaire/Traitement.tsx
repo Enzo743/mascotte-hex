@@ -131,7 +131,7 @@ export function TraitementGraphe(carte: Carte, joueurs: [Joueur, Joueur]): Arc[]
                 const adjacents: number[][] = (j%2 == 1) ? [[i,j-1],[i+1,j-1],[i-1,j],[i+1,j],[i,j+1],[i+1,j+1]] : [[i-1,j-1],[i,j-1],[i-1,j],[i+1,j],[i-1,j+1],[i,j+1]]; // Matrice d'adjacence dans une grille d'hexagones.
                 adjacents.forEach((adjacent: number[]) => {
                     const voisin: Case | undefined = carte.cases.find(c => c.id === `${adjacent[0]}-${adjacent[1]}`);
-                    if (voisin && !(voisin.type === "ocean") && !(voisin.type === "montagne") && !(affectation.riviere && voisin.riviere)) { // Deux cases rivières n'ont pas d'arêtes ? (Dans la consigne il est indiqué que l'on peut seulement se déplacer de 3 cases dans les rivières).
+                    if (voisin && !(voisin.type === "ocean") && !(voisin.type === "montagne")) {
                         arc.voisins.push({
                             x: voisin.positionMatrice.x,
                             y: voisin.positionMatrice.y
