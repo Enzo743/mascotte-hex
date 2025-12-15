@@ -1,7 +1,7 @@
 "use client"
 
 import {ReadonlyURLSearchParams, useRouter, useSearchParams} from "next/navigation";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import "../../globals.css";
 import GrilleEditeur from "@/app/components/editeur/GrilleEditeur";
 import LogTextarea from "@/app/components/editeur/LogTextarea";
@@ -11,6 +11,7 @@ import Sidebar from "@/app/components/editeur/Sidebar";
 import {AppRouterInstance} from "next/dist/shared/lib/app-router-context.shared-runtime";
 import {useEditeurCarte} from "@/app/hooks/useEditeurCarte";
 import {useClicHandler} from "@/app/hooks/useClicHandler";
+import {useHistorique} from "@/app/hooks/useHistorique";
 
 export default function Page() {
     // Gestion des params présents dans l'URL
@@ -43,6 +44,9 @@ export default function Page() {
     const [modeTyrolienne, setModeTyrolienne] = useState(true);
     const [modeRiviere, setModeRiviere] = useState(true);
 
+    // Hook pour gérer l'historique (undo/redo)
+    const {sauvegarderState, undo, redo, peutUndo, peutRedo, indexCourant} = useHistorique(20);
+
     // Import de toutes les fonctions du hook useEditeurCarte
     const {
         isLoaded,
@@ -57,7 +61,18 @@ export default function Page() {
         appliquerCarte
     } = useEditeurCarte(carteId, rayon);
 
-    // Fonction qui permet d'ouvrir / fermer les onglets de la sidebar, et d'avoir la sélection des "objets"
+    // --- CORRECTION MAJEURE ICI ---
+    // On sauvegarde l'état initial UNE SEULE FOIS quand la carte est chargée
+    // On utilise un useRef ou une vérification sur l'index pour ne pas le faire en boucle
+    useEffect(() => {
+        // Si c'est chargé, qu'on a des données, et que l'historique est vide (état initial)
+        if (isLoaded && jsonData && indexCourant === -1) {
+            sauvegarderState(jsonData);
+        }
+    }, [isLoaded, jsonData, indexCourant, sauvegarderState]);
+    // -----------------------------
+
+    // Fonction qui permet d'ouvrir / fermer les onglets de la sidebar
     const selectionner = (
         mode: "terrain" | "residence" | "connexion",
         valeur: string | null
@@ -93,6 +108,76 @@ export default function Page() {
         }
     };
 
+    // Fonction pour gérer le undo
+    const handleUndo = async () => {
+        const statePrecedent = undo();
+        if (statePrecedent) {
+            const reponse = await fetch("/api/cartes/remplacer", {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    nom: carteId,
+                    data: statePrecedent
+                })
+            });
+
+            const resultat = await reponse.json();
+
+            if (resultat.status === "success") {
+                appliquerCarte(statePrecedent, rayon);
+                const date = new Date().toLocaleString().toString();
+                pushMsg("[" + date + "] - Annulation de la dernière action", "ok");
+            } else {
+                pushMsg("Erreur lors de l'annulation", "erreur");
+            }
+        }
+    };
+
+    // Fonction pour gérer le redo
+    const handleRedo = async () => {
+        const stateSuivant = redo();
+        if (stateSuivant) {
+            const reponse = await fetch("/api/cartes/remplacer", {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    nom: carteId,
+                    data: stateSuivant
+                })
+            });
+
+            const resultat = await reponse.json();
+
+            if (resultat.status === "success") {
+                appliquerCarte(stateSuivant, rayon);
+                const date = new Date().toLocaleString().toString();
+                pushMsg("[" + date + "] - Rétablissement de la dernière action", "ok");
+            } else {
+                pushMsg("Erreur lors du rétablissement", "erreur");
+            }
+        }
+    };
+
+    // Raccourcis clavier pour undo/redo
+    useEffect(() => {
+        const handleBoutonPressee = (e: KeyboardEvent) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+                e.preventDefault();
+                if (peutUndo) handleUndo();
+            } else if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+                e.preventDefault();
+                if (peutRedo) handleRedo();
+            }
+        };
+
+        window.addEventListener('keydown', handleBoutonPressee);
+        return () => window.removeEventListener('keydown', handleBoutonPressee);
+    }, [peutUndo, peutRedo]);
+
     // Import de toutes les fonctions du hook useClickHandler
     const {handleTerrainClic, handleResidenceClic, handleTyrolienneClic, handleRiviereClic} = useClicHandler({
         carteId,
@@ -110,7 +195,9 @@ export default function Page() {
         setRiviereStart,
         setCasesRiviere,
         pushMsg,
-        appliquerCarte
+        appliquerCarte,
+        sauvegardeHistorique: sauvegarderState,
+        jsonData
     });
 
     if (!isLoaded) {
@@ -130,7 +217,8 @@ export default function Page() {
                          setEstConnexionsOuverte={setEstConnexionsOuverte}
                          modeTyrolienne={modeTyrolienne} setModeTyrolienne={setModeTyrolienne}
                          modeRiviere={modeRiviere} setModeRiviere={setModeRiviere}
-                         onChangerCarte={() => router.push(`/editeur/modifier?id=${carteId}&show=true`)}/>
+                         onChangerCarte={() => router.push(`/editeur/modifier?id=${carteId}&show=true`)}
+                         onUndo={handleUndo} onRedo={handleRedo} peutUndo={peutUndo} peutRedo={peutRedo}/>
 
                 {/* Modal qui s'ouvre quand on clique sur l'onglet pour changer de carte */}
                 {show && <GestionnaireModal prefixe={`/editeur/modifier`}

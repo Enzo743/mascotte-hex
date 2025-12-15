@@ -5,6 +5,7 @@ import {MdOutlineForest} from "react-icons/md";
 import {GiBroccoli, GiCarabiner, GiPenguin, GiRiver} from "react-icons/gi";
 import {HiOutlineSave} from "react-icons/hi";
 import {TbZoom} from "react-icons/tb";
+import {BiRedo, BiUndo} from "react-icons/bi";
 
 interface SidebarProps {
     carteId: string | null;
@@ -25,6 +26,10 @@ interface SidebarProps {
     modeRiviere: boolean;
     setModeRiviere: (modeRiviere: boolean) => void;
     onChangerCarte: () => void;
+    onUndo?: () => void;
+    onRedo?: () => void;
+    peutUndo?: boolean;
+    peutRedo?: boolean;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -45,7 +50,11 @@ const Sidebar: React.FC<SidebarProps> = ({
                                              setModeTyrolienne,
                                              modeRiviere,
                                              setModeRiviere,
-                                             onChangerCarte
+                                             onChangerCarte,
+                                             onUndo,
+                                             onRedo,
+                                             peutUndo = false,
+                                             peutRedo = false
                                          }) => {
     return (
         <div className={"sidebar-left"}>
@@ -122,12 +131,34 @@ const Sidebar: React.FC<SidebarProps> = ({
                        className={"menu-item"}
                        onClick={onChangerCarte}/>
 
+            {/* Boutons Undo et Redo */}
+            <div className="undo-redo-container">
+                <button
+                    className={`undo-button ${!peutUndo ? 'disabled' : ''}`}
+                    onClick={onUndo}
+                    disabled={!peutUndo}
+                    title="Annuler (Ctrl+Z)"
+                >
+                    <BiUndo size={24}/>
+                    <span>Undo</span>
+                </button>
+                <button
+                    className={`redo-button ${!peutRedo ? 'disabled' : ''}`}
+                    onClick={onRedo}
+                    disabled={!peutRedo}
+                    title="Refaire (Ctrl+Y)"
+                >
+                    <BiRedo size={24}/>
+                    <span>Redo</span>
+                </button>
+            </div>
+
             {/* Slider pour gérer le zoom de la carte */}
             <form className="zoom-form menu-item">
                 <label className="zoom-row">
-                            <span className="zoom-icon">
-                                <TbZoom size={30}/>
-                            </span>
+                    <span className="zoom-icon">
+                        <TbZoom size={30}/>
+                    </span>
 
                     <input
                         className="zoom-range"

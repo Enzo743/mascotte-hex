@@ -274,6 +274,51 @@
     background-color: #dc2626;
 }
 
+.undo-redo-container {
+    display: flex;
+    gap: 8px;
+    padding: 12px;
+    margin-top: 8px;
+}
+
+.undo-button,
+.redo-button {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border: 2px solid #3b82f6;
+    background-color: #3b82f6;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.undo-button:hover:not(.disabled),
+.redo-button:hover:not(.disabled) {
+    background-color: #2563eb;
+    border-color: #2563eb;
+    transform: translateY(-1px);
+}
+
+.undo-button.disabled,
+.redo-button.disabled {
+    background-color: #9ca3af;
+    border-color: #9ca3af;
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.undo-button:active:not(.disabled),
+.redo-button:active:not(.disabled) {
+    transform: translateY(0);
+}
+
 /* Composant slider */
 
 .zoom-form {

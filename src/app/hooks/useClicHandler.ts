@@ -22,6 +22,8 @@ interface useClicHandlerProps {
     setCasesRiviere: (value: [number, number][] | null) => void;
     pushMsg: (text: string, level: "ok" | "erreur") => void;
     appliquerCarte: (json: any, rayon: number) => void;
+    sauvegardeHistorique: (jsonData: any) => void;
+    jsonData: any;
 }
 
 export function useClicHandler(props: useClicHandlerProps) {
@@ -62,6 +64,7 @@ export function useClicHandler(props: useClicHandlerProps) {
             if (json && !json.error) {
                 props.appliquerCarte(json, props.rayon);
                 props.pushMsg("[" + date + `] - Ajout d'un terrain ${type} en position (` + x + ", " + y + ")", "ok");
+                props.sauvegardeHistorique(json);
             } else {
                 props.pushMsg("[" + date + `] - Erreur lors de l'ajout d'un terrain ${type} en position ` + x + ", " + y + ")", "erreur");
             }
@@ -89,8 +92,7 @@ export function useClicHandler(props: useClicHandlerProps) {
                 console.log(json);
                 props.appliquerCarte(json, props.rayon);
                 props.pushMsg("[" + date + `] - Ajout d'une résidence ${label} en position (` + x + ", " + y + ")", "ok");
-            } else {
-                props.pushMsg("[" + date + `] - Erreur lors de l'ajout d'une résidence ${label} en position (` + x + ", " + y + ")", "erreur");
+                props.sauvegardeHistorique(json);
             }
         }
     }
@@ -144,6 +146,7 @@ export function useClicHandler(props: useClicHandlerProps) {
                 if (json && !json.error) {
                     props.appliquerCarte(json, props.rayon);
                     props.pushMsg("[" + date + "] - Ajout d'une tyrolienne, whouuuuuu", "ok");
+                    props.sauvegardeHistorique(json);
                 }
             }
 
@@ -157,6 +160,7 @@ export function useClicHandler(props: useClicHandlerProps) {
                 if (json && !json.error) {
                     props.appliquerCarte(json, props.rayon);
                     props.pushMsg("[" + date + "] - Suppression d'une tyrolienne, bouuuuuuh", "ok");
+                    props.sauvegardeHistorique(json);
                 }
             }
         }
