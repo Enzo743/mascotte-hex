@@ -5,6 +5,7 @@ import {MdOutlineForest} from "react-icons/md";
 import {GiBroccoli, GiCarabiner, GiPenguin, GiRiver} from "react-icons/gi";
 import {HiOutlineSave} from "react-icons/hi";
 import {TbZoom} from "react-icons/tb";
+import {useState} from "react";
 
 interface SidebarProps {
     carteId: string | null;
@@ -39,6 +40,10 @@ const Sidebar: React.FC<SidebarProps> = ({
                                              setEstConnexionsOuverte,
                                              onChangerCarte
                                          }) => {
+    // State pour gérer le mode ajout et suppression : true pour ajout, et false pour suppression
+    const [modeTyrolienne, setModeTyrolienne] = useState(true);
+    const [modeRiviere, setModeRiviere] = useState(true);
+
     return (
         <div className={"sidebar-left"}>
             <h1>
@@ -96,10 +101,16 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <div className={"sousCat"}>
                     <Categorie icon={GiCarabiner} label={"Tyrolienne"}
                                className={`menu-item ${connexionsSelectionnee === "tyrolienne" ? "active" : ""}`}
-                               onClick={() => selectionner("connexion", connexionsSelectionnee === "tyrolienne" ? null : "tyrolienne")}/>
+                               onClick={() => selectionner("connexion", connexionsSelectionnee === "tyrolienne" ? null : "tyrolienne")}
+                               secondaryButton={true}
+                               secondaryState={modeTyrolienne}
+                               onSecondaryClick={() => setModeTyrolienne(!modeTyrolienne)}/>
                     <Categorie icon={GiRiver} label={"Rivière"}
                                className={`menu-item ${connexionsSelectionnee === "riviere" ? "active" : ""}`}
-                               onClick={() => selectionner("connexion", connexionsSelectionnee === "riviere" ? null : "riviere")}/>
+                               onClick={() => selectionner("connexion", connexionsSelectionnee === "riviere" ? null : "riviere")}
+                               secondaryButton={true}
+                               secondaryState={modeRiviere}
+                               onSecondaryClick={() => setModeRiviere(!modeRiviere)}/>
                 </div>
             )}
 
