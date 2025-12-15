@@ -7,14 +7,12 @@ import {useSearchParams} from "next/navigation";
 import {Graphe} from "./components/Graphe"
 import {getCarte} from "@/app/actions/getCarte";
 
-let jeton = 0;
+let jeton = 0; // mettre le joueur qui commence
 
 let partieFinie = false;
 
 let mascotteInfoVolle = false;
 let mascotteBioVolle = false;
-
-let tabJoueurs = [];
 
 export default function Home() {
     const searchParams = useSearchParams();
@@ -33,8 +31,7 @@ export default function Home() {
 
     const [jsonData, setJsonData] = useState(null);
 
-    let posJoueurCourant = [-1, -1];
- 
+    let posJoueurCourant;
 
     useEffect(() => {
         if (carteId) {
@@ -58,10 +55,8 @@ export default function Home() {
         }
     }, [carteId]);
 
-    tabJoueurs = [posJoueur, posEnnemi];
-
-    if (jeton == 1) posJoueurCourant = posJoueur;
-    if (jeton == 2) posJoueurCourant = posEnnemi;
+    if (jeton == 0) posJoueurCourant = posJoueur;
+    if (jeton == 1) posJoueurCourant = posEnnemi;
 
     if (!partie) {
         return <div>Chargement de la carte...</div>;
@@ -83,37 +78,25 @@ export default function Home() {
                     rivieres={partie.rivieres}
                     tyroliennes={partie.tyroliennes}
                     graphe={graphe}
-                    jeton={jeton}
                     posJoueurCourant={posJoueurCourant}
-                    tabJoueurs={tabJoueurs}
+                    partieFinie={partieFinie}
                     deplacement={(position) => {
                         if (!partieFinie) {
-
-                            // Premier tour et on ne sait pas quel joueur commence
-                            if (jeton == 0) {
-                                if (graphe.verifier(posJoueur, position)) {
-                                    jeton = 1;
-                                    posJoueurCourant = posJoueur;
-                                }
-                                if (graphe.verifier(posEnnemi, position)) {
-                                    jeton = 2;
-                                    posJoueurCourant = posEnnemi;
-                                }
-                            }
-                            
                             if (graphe.verifier(posJoueurCourant, position)) {
 
-                                if (jeton == 1) {
+                                if (jeton == 0) { // Signifie que c'est le joueur info qui à cliquer
                                     setPosJoueur(position);
 
                                     if (position[0] == posMascotteBio[0] && position[1] == posMascotteBio[1]) mascotteBioVolle = true;
                                     if (mascotteBioVolle) {
                                         setPosMascotteBio(position);
 
-                                        if (position[0] == posResidenceInfo[0] && position[1] == posResidenceInfo[1]) partieFinie = true;
+                                        if (position[0] == posResidenceInfo[0] && position[1] == posResidenceInfo[1]) {
+                                            partieFinie = true;
+                                        }
                                     }
 
-                                    jeton = 2;
+                                    jeton = 1;
                                 }
                                 else {
                                     setPosEnnemi(position);
@@ -122,10 +105,12 @@ export default function Home() {
                                     if (mascotteInfoVolle) {
                                         setPosMascotteInfo(position);
 
-                                        if (position[0] == posResidenceBio[0] && position[1] == posResidenceBio[1]) partieFinie = true;
+                                        if (position[0] == posResidenceBio[0] && position[1] == posResidenceBio[1]) {
+                                            partieFinie = true;
+                                        }
                                     }
 
-                                    jeton = 1;
+                                    jeton = 0;
                                 }
                             }
                         }
