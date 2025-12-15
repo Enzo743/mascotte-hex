@@ -2,6 +2,10 @@ import {NextResponse} from "next/server";
 import fs from "node:fs/promises";
 import {estMemeTuile} from "@/app/utils/jsonUtils";
 
+/**
+ * route → /api/cartes/supprimer
+ * Route en POST qui supprime une tuile de la carte en fonction du type de connexion
+ */
 export async function POST(req: Request) {
     try {
         const jsonReq = await req.json();
