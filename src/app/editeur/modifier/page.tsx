@@ -33,6 +33,10 @@ export default function Page() {
     // States relatif à la gestion des clics lors de la création d'une tyrolienne
     const [tyrolienneStart, setTyrolienneStart] = useState<[number, number] | null>(null);
 
+    // States pour gérer le mode ajout et suppression : true pour ajout, et false pour suppression
+    const [modeTyrolienne, setModeTyrolienne] = useState(true);
+    const [modeRiviere, setModeRiviere] = useState(true);
+
     // Import de toutes les fonctions du hook useEditeurCarte
     const {
         isLoaded,
@@ -114,6 +118,8 @@ export default function Page() {
                          estResidenceOuverte={estResidenceOuverte} setEstResidenceOuverte={setEstResidenceOuverte}
                          estConnexionsOuverte={estConnexionsOuverte}
                          setEstConnexionsOuverte={setEstConnexionsOuverte}
+                         modeTyrolienne={modeTyrolienne} setModeTyrolienne={setModeTyrolienne}
+                         modeRiviere={modeRiviere} setModeRiviere={setModeRiviere}
                          onChangerCarte={() => router.push(`/editeur/modifier?id=${carteId}&show=true`)}/>
 
                 {/* Modal qui s'ouvre quand on clique sur l'onglet pour changer de carte */}
@@ -145,7 +151,7 @@ export default function Page() {
                                 } else if (residenceSelectionnee) {
                                     handleResidenceClic(residenceSelectionnee, hex, x, y, date);
                                 } else if (connexionsSelectionnee === "tyrolienne") {
-                                    handleTyrolienneClic(hex, x, y, date);
+                                    handleTyrolienneClic(hex, x, y, date, modeTyrolienne);
                                 } else if (connexionsSelectionnee === "riviere") {
                                     console.log("riviere");
                                 }

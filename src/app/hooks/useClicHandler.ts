@@ -2,6 +2,7 @@ import {Case} from "@/app/components/Structure";
 import {getHexagonesEntreDeuxPoints, getVoisins} from "@/app/utils/hexagoneUtils";
 import {setTuiles} from "@/app/actions/setTuiles";
 import {getCarte} from "@/app/actions/getCarte";
+import {supprimerTuile} from "@/app/actions/supprimerTuile";
 
 interface useClicHandlerProps {
     carteId: string | null;
@@ -90,57 +91,70 @@ export function useClicHandler(props: useClicHandlerProps) {
     }
 
     // Fonction qui gère les actions lors du clic sur une tyrolienne d'un onglet
-    const handleTyrolienneClic = async (hex: Case, x: number, y: number, date: string) => {
-        if (props.tyrolienneStart === null) {
-            if (hex.type !== "foret") {
-                props.pushMsg("[" + date + "] - Erreur, vous ne pouvez débuter une tyrolienne que depuis une forêt", "erreur");
+    const handleTyrolienneClic = async (hex: Case, x: number, y: number, date: string, modeTyrolienne: boolean) => {
+        if (modeTyrolienne) {
+            if (props.tyrolienneStart === null) {
+                if (hex.type !== "foret") {
+                    props.pushMsg("[" + date + "] - Erreur, vous ne pouvez débuter une tyrolienne que depuis une forêt", "erreur");
+                    props.setTyrolienneStart(null);
+                    return;
+                }
+
+                props.setTyrolienneStart([x, y]);
+                props.pushMsg("[" + date + "] - Point A sélectionné pour la tyrolienne : (" + x + ", " + y + "). Cliquez maintenant sur le point B.", "ok");
+                return;
+            }
+
+            const [ax, ay]: [number, number] = props.tyrolienneStart;
+
+            if (ax === x && ay === y) {
+                props.pushMsg("[" + date + "] - Erreur, le point B doit être différent du point A", "erreur");
                 props.setTyrolienneStart(null);
                 return;
             }
 
-            props.setTyrolienneStart([x, y]);
-            props.pushMsg("[" + date + "] - Point A sélectionné pour la tyrolienne : (" + x + ", " + y + "). Cliquez maintenant sur le point B.", "ok");
-            return;
-        }
+            if (hex.type === "ocean" || hex.type === "montagne") {
+                props.pushMsg("[" + date + "] - Erreur, vous ne pouvez pas mettre une tyrolienne sur une case de type " + hex.type, "erreur");
+                props.setTyrolienneStart(null);
+                return;
+            }
 
-        const [ax, ay]: [number, number] = props.tyrolienneStart;
+            const casesTraversees: Case[] = getHexagonesEntreDeuxPoints([ax, ay], [x, y], props.hexagones);
+            const estCasesMontagne: boolean = casesTraversees.some((c: Case) => c.type === "montagne");
 
-        if (ax === x && ay === y) {
-            props.pushMsg("[" + date + "] - Erreur, le point B doit être différent du point A", "erreur");
+            if (estCasesMontagne) {
+                props.pushMsg("[" + date + "] - Erreur, vous ne pouvez pas passer en tyrolienne sur une case de type montagne", "erreur");
+                props.setTyrolienneStart(null);
+                return;
+            }
+
+            const reponse: any = await setTuiles(JSON.stringify({
+                "nom": `${props.carteId}`,
+                "tyrolienne": [[ax, ay], [x, y]]
+            }));
+
+            if (reponse.status === "success") {
+                const json: any = await getCarte(props.carteId);
+
+                if (json && !json.error) {
+                    props.appliquerCarte(json, props.rayon);
+                    props.pushMsg("[" + date + "] - Ajout d'une tyrolienne, whouuuuuu", "ok");
+                }
+            }
+
             props.setTyrolienneStart(null);
-            return;
-        }
+        } else {
+            const response = await supprimerTuile(props.carteId, x, y);
 
-        if (hex.type === "ocean" || hex.type === "montagne") {
-            props.pushMsg("[" + date + "] - Erreur, vous ne pouvez pas mettre une tyrolienne sur une case de type " + hex.type, "erreur");
-            props.setTyrolienneStart(null);
-            return;
-        }
+            if (response.status === "success") {
+                const json: any = await getCarte(props.carteId);
 
-        const casesTraversees: Case[] = getHexagonesEntreDeuxPoints([ax, ay], [x, y], props.hexagones);
-        const estCasesMontagne: boolean = casesTraversees.some((c: Case) => c.type === "montagne");
-
-        if (estCasesMontagne) {
-            props.pushMsg("[" + date + "] - Erreur, vous ne pouvez pas passer en tyrolienne sur une case de type montagne", "erreur");
-            props.setTyrolienneStart(null);
-            return;
-        }
-
-        const reponse: any = await setTuiles(JSON.stringify({
-            "nom": `${props.carteId}`,
-            "tyrolienne": [[ax, ay], [x, y]]
-        }));
-
-        if (reponse.status === "success") {
-            const json: any = await getCarte(props.carteId);
-
-            if (json && !json.error) {
-                props.appliquerCarte(json, props.rayon);
-                props.pushMsg("[" + date + "] - Ajout d'une tyrolienne, whouuuuuu", "ok");
+                if (json && !json.error) {
+                    props.appliquerCarte(json, props.rayon);
+                    props.pushMsg("[" + date + "] - Suppression d'une tyrolienne, bouuuuuuh", "ok");
+                }
             }
         }
-
-        props.setTyrolienneStart(null);
     }
 
     return {

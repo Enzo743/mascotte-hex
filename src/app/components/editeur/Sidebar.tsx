@@ -5,7 +5,6 @@ import {MdOutlineForest} from "react-icons/md";
 import {GiBroccoli, GiCarabiner, GiPenguin, GiRiver} from "react-icons/gi";
 import {HiOutlineSave} from "react-icons/hi";
 import {TbZoom} from "react-icons/tb";
-import {useState} from "react";
 
 interface SidebarProps {
     carteId: string | null;
@@ -21,6 +20,10 @@ interface SidebarProps {
     setEstResidenceOuverte: (estResidenceOuverte: boolean) => void;
     estConnexionsOuverte: boolean;
     setEstConnexionsOuverte: (estConnexionsOuverte: boolean) => void;
+    modeTyrolienne: boolean;
+    setModeTyrolienne: (modeTyrolienne: boolean) => void;
+    modeRiviere: boolean;
+    setModeRiviere: (modeRiviere: boolean) => void;
     onChangerCarte: () => void;
 }
 
@@ -38,12 +41,12 @@ const Sidebar: React.FC<SidebarProps> = ({
                                              setEstResidenceOuverte,
                                              estConnexionsOuverte,
                                              setEstConnexionsOuverte,
+                                             modeTyrolienne,
+                                             setModeTyrolienne,
+                                             modeRiviere,
+                                             setModeRiviere,
                                              onChangerCarte
                                          }) => {
-    // State pour gérer le mode ajout et suppression : true pour ajout, et false pour suppression
-    const [modeTyrolienne, setModeTyrolienne] = useState(true);
-    const [modeRiviere, setModeRiviere] = useState(true);
-
     return (
         <div className={"sidebar-left"}>
             <h1>
