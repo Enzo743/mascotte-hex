@@ -1,6 +1,6 @@
 "use client";
 import { Arrow, Circle, Group, Layer, Path, RegularPolygon, Star, Stage, Text } from "react-konva";
-import { AffichageParams, Carte, Case, Contexte, Position, Riviere, Tyrolienne } from "./Interfaces";
+import { AffichageParams, Carte, Case, Contexte, Noeud, Position, Riviere, Tyrolienne } from "./Interfaces";
 import React from "react";
 
 
@@ -10,7 +10,7 @@ Fonction qui affiche l'intégralité des éléments disponibles de la carte.
 Affiche également les cases adjacentes du joueur à qui c'est le tour.
 Si l'on clique sur une case, la fonction déplacerJoueur est appelée (dans page.tsx).
 */
-export function Affichage({contexte, rayon, tour, joueurInfo, joueurBio, deplacement}: AffichageParams) {
+export function Affichage({contexte, rayon, tour, joueurInfo, joueurBio, deplacement, cheminIA}: AffichageParams) {
     // Largeur et hauteur du canvas en pixels.
     const largeurCanvas: number = Math.max.apply(0, contexte.carte.cases.map((c) => c.positionCanvas.x)) + rayon;
     const hauteurCanvas: number = Math.max.apply(0, contexte.carte.cases.map((c) => c.positionCanvas.y)) + rayon;
@@ -177,10 +177,32 @@ export function Affichage({contexte, rayon, tour, joueurInfo, joueurBio, deplace
                         );
                     })()}
 
+                    {/* === VISUEL DU CHEMIN DE L'IA === */}
+                    {/*(() => {
+                        if (!cheminIA) return;
+                        const chemin: string[] = [];
+                        chemin.push("M ");
+                        cheminIA.forEach((noeud: Noeud) => {
+                            const affectation: Case | undefined = contexte.carte.cases.find(c => c.id === `${noeud.x}-${noeud.y}`);
+                            if (affectation) {
+                                chemin.push(`${affectation.positionCanvas.x} ${affectation.positionCanvas.y} L `);
+                            }
+                        });
+                        return (
+                            <Path
+                                key= "chemin-ia"
+                                data = {chemin.join(" ")}
+                                stroke = "red"
+                                strokeWidth = {4}
+                            />
+                        );
+                    })()*/}
+
+
                     {/* === INTERACTION AVEC LES CASES === */}
                     {contexte.carte.cases.map((c: Case) => (
                     <React.Fragment key={c.id}>
-                        {/*<Text // Texte indiquant les coordonées (x,y) de la case, utile pour le debug.
+                        <Text // Texte indiquant les coordonées (x,y) de la case, utile pour le debug.
                             x = {c.positionCanvas.x}
                             y = {c.positionCanvas.y}
                             text = {`${c.positionMatrice.x},${c.positionMatrice.y}`}
@@ -188,7 +210,7 @@ export function Affichage({contexte, rayon, tour, joueurInfo, joueurBio, deplace
                             fill = "black"
                             offsetX = {10}
                             offsetY = {7}
-                        />*/}
+                        />
                         <RegularPolygon
                             x={c.positionCanvas.x}
                             y={c.positionCanvas.y}
