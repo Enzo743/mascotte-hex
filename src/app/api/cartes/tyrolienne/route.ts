@@ -3,8 +3,8 @@ import fs from "node:fs/promises";
 import {estMemeTuile} from "@/app/utils/jsonUtils";
 
 /**
- * route → /api/cartes/riviere
- * Route en POST qui regarde si une tuile est déjà incluse dans une rivière
+ * route → /api/cartes/tyrolienne
+ * Route en POST qui regarde si une tuile est déjà incluse dans une tyrolienne
  */
 export async function POST(req: Request) {
     try {
@@ -18,26 +18,23 @@ export async function POST(req: Request) {
         let position = null;
 
         const connexion = json.connexions.find((c: any) =>
-            c.type === "riviere" && c.tuiles.some((t: any) => estMemeTuile(t, tuile))
+            c.type === "tyrolienne" && c.tuiles.some((t: any) => estMemeTuile(t, tuile))
         );
         const presence = !!connexion;
 
         if (connexion) {
             const index = connexion.tuiles.findIndex((t: any) => estMemeTuile(t, tuile));
-            const longueur = connexion.tuiles.length;
 
             if (index === 0) {
                 position = "debut";
-            } else if (index === longueur - 1) {
+            } else if (index === 1) {
                 position = "fin";
-            } else {
-                position = "milieu";
             }
         }
 
-        return NextResponse.json({statusRiviere: "success", presenceRiviere: presence, positionRiviere: position});
+        return NextResponse.json({statusTyrolienne: "success", presenceTyrolienne: presence, positionTyrolienne: position, tuiles:connexion.tuiles});
     } catch (error) {
         console.log(error);
-        return NextResponse.json({statusRiviere: "error", errorRiviere: error});
+        return NextResponse.json({statusTyrolienne: "error", errorTyrolienne: error});
     }
 }

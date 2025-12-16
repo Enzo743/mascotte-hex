@@ -245,7 +245,7 @@ export default function Page() {
 
                                 // On gère chacun des cas possibles d'onglets
                                 if (terrainSelectionne) {
-                                    handleTerrainClic(terrainSelectionne, x, y, date);
+                                    handleTerrainClic(terrainSelectionne, hex, x, y, date);
                                 } else if (residenceSelectionnee) {
                                     handleResidenceClic(residenceSelectionnee, hex, x, y, date);
                                 } else if (connexionsSelectionnee === "tyrolienne") {

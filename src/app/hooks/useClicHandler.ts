@@ -50,25 +50,93 @@ export function useClicHandler(props: useClicHandlerProps) {
         return "Super";
     }
 
-    // Fonction qui gère les actions lors du clic sur un terrain d'un onglet
-    const handleTerrainClic = async (type: string, x: number, y: number, date: string) => {
-        const reponse = await setTuiles(JSON.stringify({
-            "nom": `${props.carteId}`,
-            [type]: [x, y]
-        }));
+    const verifResidence = (type:string, x: number, y: number, date: string) => {
 
-        if (reponse.status === "success") {
-            const json: Promise<any> = await getCarte(props.carteId);
-
-            if (json && !json.error) {
-                props.appliquerCarte(json, props.rayon);
-                props.pushMsg("[" + date + `] - Ajout d'un terrain ${type} en position (` + x + ", " + y + ")", "ok");
-                props.sauvegardeHistorique(json);
-            } else {
-                props.pushMsg("[" + date + `] - Erreur lors de l'ajout d'un terrain ${type} en position ` + x + ", " + y + ")", "erreur");
+        if ((props.posInfo?.position.x === x && props.posInfo?.position.y === y)
+            || (props.posBio?.position.x === x && props.posBio?.position.y === y))
+        {
+            if (type === "plaine" || type === "foret")
+            {
+                return true;
             }
         }
+        
+        props.pushMsg("[" + date + "] - Erreur, une résidence doit être sur une case de type plaine ou de type forêt", "erreur");
+        return false;
     }
+
+    const verifRiviere = async (type: string, x: number, y: number, date: string) => {
+        const responseRiviere = await fetch(`/api/cartes/riviere`, {
+            method: "POST",
+            body: JSON.stringify({
+                "nom": props.carteId,
+                "tuile": {x, y}
+            })
+        });
+
+        const {statusRiviere, presenceRiviere, positionRiviere} = await responseRiviere.json();
+
+        if (statusRiviere === "success")
+        {
+            if ((positionRiviere === "debut" || positionRiviere === "milieu") && (type !== "montagne" || type !== "ocean"))
+            {
+                return true;
+            }
+        }
+
+        props.pushMsg("[" + date + "] - Erreur, une rivière doit être sur des cases de type plaine ou de type forêt", "erreur");
+        return false;
+    }
+
+    const verifTyrolienne = async (type: string, hex: Case, x: number, y:number, date: string) => {
+        const responseTyrolienne = await fetch(`/api/cartes/tyrolienne`, {
+            method: "POST",
+            body: JSON.stringify({
+                "nom": props.carteId,
+                "tuile": {x, y}
+            })
+        });
+
+        const {statusTyrolienne, presenceTyrolienne, positionTyrolienne, tuiles} = await responseTyrolienne.json();
+
+        let casesMilieu = getHexagonesEntreDeuxPoints(tuiles[0], tuiles[1], props.hexagones);
+
+        if (statusTyrolienne === "success")
+        {
+            if ((positionTyrolienne === "debut" && type === "foret")
+                || (casesMilieu.includes(hex) && type !== "montagne")
+                || (positionTyrolienne === "fin" && (type === "plaine" || type === "foret")))
+            {
+                return true;
+            }
+        }
+
+        props.pushMsg("[" + date + "] - Erreur, une tyrolienne doit débuter sur une forêt et finir sur une plaine ou une forêt. Il ne peut pas y avoir de montagne au milieu", "erreur");
+        return false;
+    }
+
+    // Fonction qui gère les actions lors du clic sur un terrain d'un onglet
+    const handleTerrainClic = async (type: string, hex: Case, x: number, y: number, date: string) => {
+        if (verifResidence(type, x, y, date) || await verifRiviere(type, x, y, date) || await verifTyrolienne(type, hex, x, y, date))
+        {
+            const reponse = await setTuiles(JSON.stringify({
+                "nom": `${props.carteId}`,
+                [type]: [x, y]
+            }));
+
+            if (reponse.status === "success") {
+                const json: Promise<any> = await getCarte(props.carteId);
+
+                if (json && !json.error) {
+                    props.appliquerCarte(json, props.rayon);
+                    props.pushMsg("[" + date + `] - Ajout d'un terrain ${type} en position (` + x + ", " + y + ")", "ok");
+                    props.sauvegardeHistorique(json);
+                } else {
+                    props.pushMsg("[" + date + `] - Erreur lors de l'ajout d'un terrain ${type} en position ` + x + ", " + y + ")", "erreur");
+                }
+            }
+        }
+    }    
 
     // Fonction est gère les actions lors du clic sur une résidence d'un onglet
     const handleResidenceClic = async (type: string, hex: Case, x: number, y: number, date: string) => {
