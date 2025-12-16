@@ -16,14 +16,10 @@ export function Affichage({contexte, rayon, tour, deplacement}: AffichageParams)
     const hauteurCanvas: number = Math.max.apply(0, contexte.carte.cases.map((c) => c.positionCanvas.y)) + rayon;
 
     // "voisins" contient toutes les cartes adjacentes au joueur à qui c'est le tour.
-    let voisins = contexte.graphe.find(g => 
+    const voisins = contexte.graphe.find(g => 
         g.noeud.x === (tour === 0 ? contexte.joueurInfo.position.x : contexte.joueurBio.position.x) &&
         g.noeud.y === (tour === 0 ? contexte.joueurInfo.position.y : contexte.joueurBio.position.y)
     )?.voisins || [];
-
-    if (tour === 3 || tour === 2) {
-        voisins = [];
-    }
 
     return (
         <Stage width={largeurCanvas} height={hauteurCanvas}>
@@ -164,7 +160,7 @@ export function Affichage({contexte, rayon, tour, deplacement}: AffichageParams)
                                 <Text
                                     x = {mascotteBio.positionCanvas.x}
                                     y = {mascotteBio.positionCanvas.y}
-                                    text = {"🥦"} // {contexte.joueurInfo.mascotte ? "🥦" : ""}
+                                    text = {contexte.joueurInfo.mascotte ? "🥦" : ""}
                                     fontSize = {rayon/2}
                                     offsetX = {rayon/3.5}
                                     offsetY = {rayon/3.5}
@@ -172,7 +168,7 @@ export function Affichage({contexte, rayon, tour, deplacement}: AffichageParams)
                                 <Text
                                     x = {mascotteInfo.positionCanvas.x}
                                     y = {mascotteInfo.positionCanvas.y}
-                                    text = {"🐧"} // {contexte.joueurBio.mascotte ? "🐧" : ""}
+                                    text = {contexte.joueurBio.mascotte ? "🐧" : ""}
                                     fontSize = {rayon/2}
                                     offsetX = {rayon/3.5}
                                     offsetY = {rayon/3.5}
