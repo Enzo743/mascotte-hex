@@ -1,7 +1,6 @@
 // Dépendances
 "use client";
 import {Affichage} from "./Affichage";
-import VictoirePopUpModal from "../components/VictoirePopUpModal";
 import {plusCourtChemin} from "./Bot";
 import {Arc, CarteJSON, Contexte, DifficulteIA, Joueur, ModeJeu, Noeud, Position, PremierTour} from "./Interfaces";
 import {useEffect, useState} from "react";
@@ -11,10 +10,6 @@ import carteBrute from "./carte.json" assert {type: "json"};
 const carteJSON: CarteJSON = carteBrute as CarteJSON;
 
 export default function Home() {
-    const searchParams = useSearchParams();
-    const showVictoire = searchParams.get("showVictoire");
-    const router = useRouter();
-
     const [contexte, definirContexte] = useState<Contexte | undefined>(undefined);
     const [tour, changerTour] = useState<number>(0);
     const [rayon, definirRayon] = useState<number>(60);
@@ -24,6 +19,7 @@ export default function Home() {
     const [difficulteIA, definirDifficulteIA] = useState<DifficulteIA>("facile");
 
     const [jeuDemarre, definirJeuDemarre] = useState<boolean>(false);
+    const [victoire, definirVictoire] = useState<"info" | "bio" | null>(null);
 
     useEffect(() => {
         if (contexte) {
@@ -31,9 +27,87 @@ export default function Home() {
         }
     }, [rayon]);
 
+    useEffect(() => {
+        if (!contexte || modeJeu !== "bot") return;
+
+        const tourIA = premierTour === "info" ? 1 : 0;
+
+        if (tour === tourIA) {
+            deplacerIA();
+        }
+    }, [tour]);
+
+
+    // Affreux
     function deplacerIA() {
-        console.log("");
+        if (!contexte) return;
+
+        const iaInfo = modeJeu === "bot" && premierTour === "bio";
+        const joueurIA = iaInfo ? contexte.joueurInfo : contexte.joueurBio;
+        const joueurHumain = iaInfo ? contexte.joueurBio : contexte.joueurInfo;
+
+        // Noeud d'arrivée
+        let arrivee: Arc | undefined;
+        if (joueurIA.mascotte) {
+            const res = iaInfo ? contexte.carte.residenceInfo : contexte.carte.residenceBio;
+            arrivee = contexte.graphe.find(g => g.noeud.x === res.x && g.noeud.y === res.y);
+        } else {
+            const res = iaInfo ? contexte.carte.residenceBio : contexte.carte.residenceInfo;
+            arrivee = contexte.graphe.find(g => g.noeud.x === res.x && g.noeud.y === res.y);
+        }
+
+        if (!arrivee) return;
+
+        let chemin: Noeud[] | null = null;
+
+        const arriveeBloquee =
+            joueurHumain.position.x === arrivee.noeud.x &&
+            joueurHumain.position.y === arrivee.noeud.y;
+
+        if (arriveeBloquee) {
+            const chemins: Noeud[][] = [];
+            arrivee.voisins.forEach(voisin => { // Si l'arrivée est bloquée, trouver le plus court chemin parmis ses voisins
+                const c = plusCourtChemin(contexte.graphe, joueurIA.position, voisin, difficulteIA);
+                if (c) chemins.push(c);
+            });
+            if (chemins.length === 0) return;
+            chemin = chemins.reduce((a, b) => (a.length < b.length ? a : b));
+        } else {
+            chemin = plusCourtChemin(contexte.graphe, joueurIA.position, arrivee.noeud, difficulteIA);
+        }
+
+        if (!chemin || chemin.length < 2) return;
+
+        const prochainePosition = chemin[1];
+
+        const joueurIAUpdate: Joueur = {
+            ...joueurIA,
+            position: prochainePosition,
+            mascotte: joueurIA.mascotte || 
+                    (prochainePosition.x === (iaInfo ? contexte.carte.residenceBio.x : contexte.carte.residenceInfo.x) &&
+                    prochainePosition.y === (iaInfo ? contexte.carte.residenceBio.y : contexte.carte.residenceInfo.y))
+        };
+
+        const nouveauContexte: Contexte = {
+            ...contexte,
+            joueurInfo: iaInfo ? joueurIAUpdate : contexte.joueurInfo,
+            joueurBio: !iaInfo ? joueurIAUpdate : contexte.joueurBio
+        };
+
+        const resAdverse = iaInfo ? nouveauContexte.carte.residenceInfo : nouveauContexte.carte.residenceBio;
+        if (joueurIAUpdate.mascotte &&
+            joueurIAUpdate.position.x === resAdverse.x &&
+            joueurIAUpdate.position.y === resAdverse.y) { // Vérifier si l'IA à gagnée
+            definirContexte(nouveauContexte);
+            changerTour(iaInfo ? 2 : 3);
+            definirVictoire(iaInfo ? "info" : "bio");
+            return;
+        }
+
+        definirContexte(nouveauContexte);
+        changerTour(t => (t === 0 ? 1 : 0));
     }
+
 
     function deplacerJoueur(position: Position) {
         if (modeJeu == "bot" && ((premierTour === "info" && tour === 1) || (premierTour === "bio" && tour === 0))) return; // C'est au tour du bot de jouer
@@ -60,30 +134,30 @@ export default function Home() {
 
     function tourSuivant() {
         if (contexte) {
-            const tourIA = premierTour === "info" ? 1 : 0;
+            // On vérifie si la partie se termine (victoire d'un des joueurs)
             if (tour === 0) {
-                if (contexte.joueurInfo.position.x === contexte.carte.residenceInfo.x && contexte.joueurInfo.position.y === contexte.carte.residenceInfo.y && contexte.joueurInfo.mascotte) {
-                    changerTour(2); // Equipe Info gagne
-                    router.push("/temporaire?showVictoire=true");
-                    
+                if (contexte.joueurInfo.position.x === contexte.carte.residenceInfo.x && 
+                    contexte.joueurInfo.position.y === contexte.carte.residenceInfo.y && 
+                    contexte.joueurInfo.mascotte) {
+                    changerTour(2);
+                    definirVictoire("info");
                     return;
                 }
-                if (modeJeu === "bot" && tour === tourIA) {
-                    deplacerIA();
-                }
-                changerTour(1);
             } else if (tour === 1) {
-                if (contexte.joueurBio.position.x === contexte.carte.residenceBio.x && contexte.joueurBio.position.y === contexte.carte.residenceBio.y && contexte.joueurBio.mascotte) {
-                    changerTour(3); // Equipe Bio gagne 
-                    router.push("/temporaire?showVictoire=true");
-
+                if (contexte.joueurBio.position.x === contexte.carte.residenceBio.x && 
+                    contexte.joueurBio.position.y === contexte.carte.residenceBio.y && 
+                    contexte.joueurBio.mascotte) {
+                    changerTour(3);
+                    definirVictoire("bio");
                     return;
                 }
-                if (modeJeu === "bot" && tour === tourIA) {
-                    deplacerIA();
-                }
-                changerTour(0);
             }
+
+            // On change de tour
+            const prochainTour = tour === 0 ? 1 : 0;
+            changerTour(prochainTour);
+
+            // On met à jour le graphe (avec les nouvelles positions des joueurs)
             contexte.graphe = TraitementGraphe(contexte.carte, contexte.joueurInfo, contexte.joueurBio);
         }
     }
@@ -96,9 +170,53 @@ export default function Home() {
         }
     }
 
+    function afficherVictoire() {
+        if (!victoire) return null; // Pour l'afficher que quand c'est nécessaire
+
+        return (
+            <dialog open>
+                <article>
+                    <header style={{position: "relative"}}>
+                        <p><strong>
+                            {victoire === "info" ? "🥇🐧 Les informaticiens ont gagnés" : "🥇🥦 Les biologistes ont gagnéss"}
+                        </strong></p>
+                        <button
+                            aria-label = "Close"
+                            rel = "prev"
+                            onClick={() => definirVictoire(null)}
+                            style={{position: "absolute", top: "1rem", right: "0.5rem"}}
+                        />
+                    </header>
+
+                    <p>Bravo franchement j'applaudit 👏👏</p>
+
+                    {boutonRedemarrer()}
+                </article>
+            </dialog>
+        );
+    }
+
+    function boutonRedemarrer() {
+        if (tour < 2) return;
+
+        return (
+            <button
+                onClick={() => {
+                definirDifficulteIA("facile"); // On remet la difficulté par défaut
+                definirModeJeu("");
+                definirPremierTour(undefined);
+                definirVictoire(null); // En bref toutes les variables on les réinitialise
+                definirJeuDemarre(false); // Pour retourner sur l'écran de sélection comme neuf
+                }}
+            >🔁 Rejouer</button>
+        );
+    }
+
     if (jeuDemarre && contexte) {
         return (
             <>
+                {afficherVictoire()}
+
                 <div className="container-fluid">
                     <input 
                         type="range"
@@ -114,6 +232,8 @@ export default function Home() {
                         deplacement = {deplacerJoueur}
                     />
                 </div>
+
+                {boutonRedemarrer()}
             </>
         );
     } else {
@@ -242,16 +362,6 @@ export default function Home() {
                         </div>
                     </div>
                 </main>
-
-               {showVictoire && <VictoirePopUpModal 
-                    texte={"Victoire de l'équipe " + ((tour === 2) ? "Info" : (tour === 3 ? "Bio" : "No"))} 
-                    button={true}
-                    buttonLabel={"Revenir à la page d'accueil"}
-                    onClickButton={() => router.push("/temporaire")} // Mettre l'url de la page d'accueil 
-                    sndButton={true}
-                    sndButtonLabel={"Recommencer une partie"}
-                    onClickSndButton={() => router.push("/temporaire")} // Mettre l'url du paramétrage de la partie
-                />} 
             </>
         );
     }
