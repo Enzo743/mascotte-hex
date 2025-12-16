@@ -5,12 +5,29 @@ import {Arc, Carte, CarteJSON, Case, Connexion, Contexte, Joueur, Position, Rivi
 Génère la carte du jeu ainsi que le graphe associé.
 Appeler cette fonction uniquement en début de partie ou si changer la carte ainsi que le graphe est nécessaire.
 */
-export function TraitementTotal(carteJSON: CarteJSON, rayon: number, joueurs: [Joueur, Joueur]): Contexte {
+export function TraitementTotal(carteJSON: CarteJSON, rayon: number): Contexte {
     const carte: Carte = TraitementCarte(carteJSON, rayon);
-    const graphe: Arc[] = TraitementGraphe(carte, joueurs);
+    const joueurInfo: Joueur = {
+            position: {
+                x: carteJSON.résidences.info[0],
+                y: carteJSON.résidences.info[1]
+            },
+            mascotte: false
+    }
+    const joueurBio: Joueur = {
+            position: {
+                x: carteJSON.résidences.bio[0],
+                y: carteJSON.résidences.bio[1]
+            },
+            mascotte: false
+    }
+    const graphe: Arc[] = TraitementGraphe(carte, joueurInfo, joueurBio);
+
     return {
         carte: carte,
-        graphe: graphe
+        graphe: graphe,
+        joueurInfo,
+        joueurBio
     };
 }
 
@@ -116,7 +133,7 @@ export function TraitementCarte(carteJSON: CarteJSON, rayon: number): Carte {
 Prends en entrée la carte du jeu précédemment générée et construis un graphe orienté.
 Il représente tous les déplacements possibles, utile pour l'implémentation des règles du jeu, mais surtout pour le bot.
 */
-export function TraitementGraphe(carte: Carte, joueurs: [Joueur, Joueur]): Arc[] {
+export function TraitementGraphe(carte: Carte, joueurInfo: Joueur, joueurBio: Joueur): Arc[] {
     const graphe: Arc[] = [];
 
     // Ajout des arêtes entre les différents terrains.
@@ -292,7 +309,7 @@ export function TraitementGraphe(carte: Carte, joueurs: [Joueur, Joueur]): Arc[]
     // Retire les arêtes qui vont vers les joueurs, pour éviter qu'ils empruntent la même case.
     // Ça pose des problèmes pour le bot, qui au début de la partie ne peut pas trouver de plus court chemin si le nœud d'arrivée n'est pas accessible.
     // ^ Probablement besoin d'utiliser les cases adjacentes pour que le bot se déplace quand même.
-    const positionsJoueurs: Position[] = joueurs.map(joueur => joueur.position);
+    const positionsJoueurs: Position[] = [joueurInfo.position, joueurBio.position];
     for (const arc of graphe) {
         arc.voisins = arc.voisins.filter(voisin => 
             !positionsJoueurs.some(pos => pos.x === voisin.x && pos.y === voisin.y)

@@ -77,10 +77,7 @@ export interface AffichageParams {
     contexte: Contexte;
     rayon: number;
     tour: number;
-    joueurInfo: Joueur;
-    joueurBio: Joueur;
     deplacement?: (position: Position) => void;
-    cheminIA: Noeud[] | undefined | null;
 }
 
 export interface Case {
@@ -122,4 +119,6 @@ export interface Carte {
 export interface Contexte {
     carte: Carte;
     graphe: Arc[];
+    joueurInfo: Joueur,
+    joueurBio: Joueur
 }
