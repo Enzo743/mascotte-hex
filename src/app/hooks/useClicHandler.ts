@@ -33,7 +33,8 @@ export function useClicHandler(props: useClicHandlerProps) {
             return "Erreur";
         }
 
-        if (hex.id === pos.id) {
+        // On vérifie d'abord si 'pos' (l'autre résidence) est définie avant de lire son ID
+        if (pos && hex.id === pos.id) {
             props.pushMsg("[" + date + `] - Vous ne pouvez pas mettre une résidence sur cette case, il y a déjà une résidence`, "erreur");
             return "Erreur";
         }
@@ -41,7 +42,7 @@ export function useClicHandler(props: useClicHandlerProps) {
         const voisins = getVoisins(hex, props.hexagones);
 
         for (let i = 0; i < voisins.length; i++) {
-            if (voisins[i].id === pos.id) {
+            if (pos && voisins[i].id === pos.id) {
                 props.pushMsg("[" + date + `] - Vous ne pouvez pas mettre une résidence sur cette case, il y a déjà une résidence dans une case adjacente`, "erreur");
                 return "Erreur";
             }

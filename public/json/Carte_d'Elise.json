@@ -1,1 +1,71 @@
-{"grille":{"lignes":"12","colonnes":"12"},"résidences":{},"terrains":{"plaine":[],"foret":[],"montagne":[]},"connexions":[]}
+{
+  "grille": {
+    "lignes": "12",
+    "colonnes": "12"
+  },
+  "résidences": {
+    "info": [
+      4,
+      0
+    ],
+    "bio": [
+      5,
+      11
+    ]
+  },
+  "terrains": {
+    "plaine": [
+      [
+        5,
+        11
+      ],
+      [
+        4,
+        0
+      ],
+      [
+        5,
+        10
+      ],
+      [
+        5,
+        9
+      ],
+      [
+        5,
+        8
+      ],
+      [
+        5,
+        7
+      ],
+      [
+        5,
+        6
+      ],
+      [
+        4,
+        4
+      ],
+      [
+        4,
+        3
+      ],
+      [
+        4,
+        2
+      ],
+      [
+        4,
+        1
+      ],
+      [
+        4,
+        5
+      ]
+    ],
+    "foret": [],
+    "montagne": []
+  },
+  "connexions": []
+}

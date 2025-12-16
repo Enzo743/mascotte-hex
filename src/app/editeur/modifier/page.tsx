@@ -5,13 +5,13 @@ import {useEffect, useState} from "react";
 import "../../globals.css";
 import GrilleEditeur from "@/app/components/editeur/GrilleEditeur";
 import LogTextarea from "@/app/components/editeur/LogTextarea";
-import {Graphe} from "@/app/components/Graphe";
 import GestionnaireModal from "@/app/components/editeur/modals/GestionnaireModal";
 import Sidebar from "@/app/components/editeur/Sidebar";
 import {AppRouterInstance} from "next/dist/shared/lib/app-router-context.shared-runtime";
 import {useEditeurCarte} from "@/app/hooks/useEditeurCarte";
 import {useClicHandler} from "@/app/hooks/useClicHandler";
 import {useHistorique} from "@/app/hooks/useHistorique";
+import {useValidationGraphe} from "@/app/hooks/useValidationGraphe";
 
 export default function Page() {
     // Gestion des params présents dans l'URL
@@ -61,16 +61,53 @@ export default function Page() {
         appliquerCarte
     } = useEditeurCarte(carteId, rayon);
 
-    // --- CORRECTION MAJEURE ICI ---
-    // On sauvegarde l'état initial UNE SEULE FOIS quand la carte est chargée
-    // On utilise un useRef ou une vérification sur l'index pour ne pas le faire en boucle
+    // Validation du graphe
+    const {estValide, graphe} = useValidationGraphe(jsonData, rayon, posInfo, posBio);
+
+    // Fonction qui gère le renommage du fichier contenant la carte
+    const renommerCarte = async (ancienNom: string, nouveauNom: string) => {
+        try {
+            const reponse = await fetch("/api/cartes/renommer", {
+                method: "POST",
+                body: JSON.stringify({ancienNom, nouveauNom})
+            });
+
+            const resultat = await reponse.json();
+
+            if (resultat.status === "success") {
+                router.push(`/editeur/modifier?id=${nouveauNom}`);
+            } else {
+                pushMsg("Erreur lors du renommage de la carte", "erreur");
+            }
+        } catch (error) {
+            console.error("Erreur:", error);
+            pushMsg("Erreur lors du renommage de la carte", "erreur");
+        }
+    };
+
+    // Gestion du préfixe "invalide-"
     useEffect(() => {
-        // Si c'est chargé, qu'on a des données, et que l'historique est vide (état initial)
+        if (!isLoaded || !carteId) return;
+
+        const nomActuel = carteId;
+        const aLePrefixe = nomActuel.startsWith("invalide-");
+        const devraitAvoirLePrefixe = posInfo && posBio && !estValide;
+
+        // Si l'état du préfixe doit changer
+        if (devraitAvoirLePrefixe && !aLePrefixe) {
+            renommerCarte(nomActuel, `invalide-${nomActuel}`);
+        } else if (!devraitAvoirLePrefixe && aLePrefixe) {
+            const nomSansPrefixe = nomActuel.replace(/^invalide-/, "");
+            renommerCarte(nomActuel, nomSansPrefixe);
+        }
+    }, [estValide, posInfo, posBio, isLoaded, carteId]);
+
+    // Gestion de la sauvegarde dans la file des états de modification
+    useEffect(() => {
         if (isLoaded && jsonData && indexCourant === -1) {
             sauvegarderState(jsonData);
         }
     }, [isLoaded, jsonData, indexCourant, sauvegarderState]);
-    // -----------------------------
 
     // Fonction qui permet d'ouvrir / fermer les onglets de la sidebar
     const selectionner = (
@@ -202,71 +239,74 @@ export default function Page() {
 
     if (!isLoaded) {
         return <div>Chargement de la carte...</div>;
-    } else {
-        const graphe = new Graphe(jsonData);
-        graphe.actualiserGraphe();
-        return (
-            <div className={"container-fluid editeur"}>
-                {/* Partie de gauche : Sidebar */}
-                <Sidebar carteId={carteId} rayon={rayon} setRayon={setRayon} terrainSelectionne={terrainSelectionne}
-                         residenceSelectionnee={residenceSelectionnee}
-                         connexionsSelectionnee={connexionsSelectionnee} selectionner={selectionner}
-                         estTerrainOuvert={estTerrainOuvert} setEstTerrainOuvert={setEstTerrainOuvert}
-                         estResidenceOuverte={estResidenceOuverte} setEstResidenceOuverte={setEstResidenceOuverte}
-                         estConnexionsOuverte={estConnexionsOuverte}
-                         setEstConnexionsOuverte={setEstConnexionsOuverte}
-                         modeTyrolienne={modeTyrolienne} setModeTyrolienne={setModeTyrolienne}
-                         modeRiviere={modeRiviere} setModeRiviere={setModeRiviere}
-                         onChangerCarte={() => router.push(`/editeur/modifier?id=${carteId}&show=true`)}
-                         onUndo={handleUndo} onRedo={handleRedo} peutUndo={peutUndo} peutRedo={peutRedo}/>
+    }
 
-                {/* Modal qui s'ouvre quand on clique sur l'onglet pour changer de carte */}
-                {show && <GestionnaireModal prefixe={`/editeur/modifier`}
-                                            onCloseHref={`/editeur/modifier?id=${carteId}`}/>}
+    // Détermine la couleur du cadre
+    const couleurCadre = posInfo && posBio ? (estValide ? "#22c55e" : "#ef4444") : "#6b7280";
 
-                {/* Partie de droite : Conteneur vertical (GrilleEditeur en haut / Messages en bas) */}
-                <div className={"sidebar-right"}>
-                    <div className={"grille"}>
-                        <GrilleEditeur
-                            rayon={rayon}
-                            hexagones={hexagones}
-                            mascotteInfo={posInfo}
-                            mascotteBio={posBio}
-                            rivieres={rivieres}
-                            tyroliennes={tyroliennes}
-                            graphe={graphe}
-                            onClick={(hex) => {
-                                const coordonnees_hex: string[] = hex.id.split("-");
-                                const x: number = Number(coordonnees_hex[0]);
-                                const y: number = Number(coordonnees_hex[1]);
-                                console.log("x = " + x);
-                                console.log("y = " + y);
-                                const date: string = new Date().toLocaleString().toString();
+    return (
+        <div className={"container-fluid editeur"} style={{
+            border: `4px solid ${couleurCadre}`,
+        }}>
+            {/* Partie de gauche : Sidebar */}
+            <Sidebar carteId={carteId} rayon={rayon} posInfo={posInfo} posBio={posBio} estValide={estValide}
+                     setRayon={setRayon} terrainSelectionne={terrainSelectionne}
+                     residenceSelectionnee={residenceSelectionnee}
+                     connexionsSelectionnee={connexionsSelectionnee} selectionner={selectionner}
+                     estTerrainOuvert={estTerrainOuvert} setEstTerrainOuvert={setEstTerrainOuvert}
+                     estResidenceOuverte={estResidenceOuverte} setEstResidenceOuverte={setEstResidenceOuverte}
+                     estConnexionsOuverte={estConnexionsOuverte}
+                     setEstConnexionsOuverte={setEstConnexionsOuverte}
+                     modeTyrolienne={modeTyrolienne} setModeTyrolienne={setModeTyrolienne}
+                     modeRiviere={modeRiviere} setModeRiviere={setModeRiviere}
+                     onChangerCarte={() => router.push(`/editeur/modifier?id=${carteId}&show=true`)}
+                     onUndo={handleUndo} onRedo={handleRedo} peutUndo={peutUndo} peutRedo={peutRedo}/>
 
-                                // On gère chacun des cas possibles d'onglets
-                                if (terrainSelectionne) {
-                                    handleTerrainClic(terrainSelectionne, x, y, date);
-                                } else if (residenceSelectionnee) {
-                                    handleResidenceClic(residenceSelectionnee, hex, x, y, date);
-                                } else if (connexionsSelectionnee === "tyrolienne") {
-                                    handleTyrolienneClic(hex, x, y, date, modeTyrolienne);
-                                } else if (connexionsSelectionnee === "riviere") {
-                                    handleRiviereClic(hex, x, y, date, modeRiviere);
-                                }
-                            }}
-                        />
-                    </div>
+            {/* Modal qui s'ouvre quand on clique sur l'onglet pour changer de carte */}
+            {show && <GestionnaireModal prefixe={`/editeur/modifier`}
+                                        onCloseHref={`/editeur/modifier?id=${carteId}`}/>}
 
-                    {/* Zone des messages pour les logs de chaque changement dans l'éditeur */}
-                    <div className={"messages"}>
-                        <LogTextarea
-                            messages={messages}
-                            maxVisible={5}
-                            rows={6}
-                        />
-                    </div>
+            {/* Partie de droite : Conteneur vertical (GrilleEditeur en haut / Messages en bas) */}
+            <div className={"sidebar-right"}>
+                <div className={"grille"}>
+                    <GrilleEditeur
+                        rayon={rayon}
+                        hexagones={hexagones}
+                        mascotteInfo={posInfo}
+                        mascotteBio={posBio}
+                        rivieres={rivieres}
+                        tyroliennes={tyroliennes}
+                        onClick={(hex) => {
+                            const coordonnees_hex: string[] = hex.id.split("-");
+                            const x: number = Number(coordonnees_hex[0]);
+                            const y: number = Number(coordonnees_hex[1]);
+                            console.log("x = " + x);
+                            console.log("y = " + y);
+                            const date: string = new Date().toLocaleString().toString();
+
+                            // On gère chacun des cas possibles d'onglets
+                            if (terrainSelectionne) {
+                                handleTerrainClic(terrainSelectionne, x, y, date);
+                            } else if (residenceSelectionnee) {
+                                handleResidenceClic(residenceSelectionnee, hex, x, y, date);
+                            } else if (connexionsSelectionnee === "tyrolienne") {
+                                handleTyrolienneClic(hex, x, y, date, modeTyrolienne);
+                            } else if (connexionsSelectionnee === "riviere") {
+                                handleRiviereClic(hex, x, y, date, modeRiviere);
+                            }
+                        }}
+                    />
+                </div>
+
+                {/* Zone des messages pour les logs de chaque changement dans l'éditeur */}
+                <div className={"messages"}>
+                    <LogTextarea
+                        messages={messages}
+                        maxVisible={5}
+                        rows={6}
+                    />
                 </div>
             </div>
-        )
-    }
+        </div>
+    )
 };

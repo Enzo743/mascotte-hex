@@ -27,6 +27,7 @@ export function useEditeurCarte(carteId: string | null, rayon: number) {
     // Fonction qui permet de recharger la carte avec les changements effectués
     const appliquerCarte = (json: Carte, rayon: number): void => {
         setIsLoaded(true);
+        setJsonData(json);
 
         const nextHexagones: Case[] = Terrain(json, rayon) as Case[];
         setHexagones(nextHexagones);
