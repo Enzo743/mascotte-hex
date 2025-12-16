@@ -72,7 +72,7 @@ export function useValidationGraphe(
             mascotte: false
         };
 
-        const nouveauGraphe = TraitementGraphe(carte, [joueurInfo, joueurBio]);
+        const nouveauGraphe = TraitementGraphe(carte, joueurInfo, joueurBio);
         setGraphe(nouveauGraphe);
 
         // Vérifie s'il existe un chemin entre les deux résidences
