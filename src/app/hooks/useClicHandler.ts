@@ -51,95 +51,117 @@ export function useClicHandler(props: useClicHandlerProps) {
         return "Super";
     }
 
-    const verifResidence = (type:string, x: number, y: number, date: string) => {
-
-        if ((props.posInfo?.position.x === x && props.posInfo?.position.y === y)
-            || (props.posBio?.position.x === x && props.posBio?.position.y === y))
-        {
-            if (type === "plaine" || type === "foret")
-            {
-                return true;
-            }
+    // Fonction qui s'occupe de faire les vérifications une fois les résidences posées
+    const verifResidence = (type: string, date: string) => {
+        if (type === "montagne" || type === "ocean") {
+            props.pushMsg("[" + date + `] - Erreur, une résidence ne peut pas être sur une case de type ${type}`, "erreur");
+            return false;
         }
-        
-        props.pushMsg("[" + date + "] - Erreur, une résidence doit être sur une case de type plaine ou de type forêt", "erreur");
-        return false;
+
+        return true;
     }
 
-    const verifRiviere = async (type: string, x: number, y: number, date: string) => {
-        const responseRiviere = await fetch(`/api/cartes/riviere`, {
-            method: "POST",
-            body: JSON.stringify({
-                "nom": props.carteId,
-                "tuile": {x, y}
-            })
-        });
+    // Fonction vérifiant si la modification du terrain brise une condition des rivières existantes
+    const verifRiviere = (type: string, hex: Case, date: string) => {
+        const connexions = props.jsonData?.connexions || [];
+        const rivieres = connexions.filter((c: any) => c.type === "riviere");
 
-        const {statusRiviere, presenceRiviere, positionRiviere} = await responseRiviere.json();
+        for (const riviere of rivieres) {
+            const x = Number(hex.id.split("-")[0]);
+            const y = Number(hex.id.split("-")[1]);
+            const index = riviere.tuiles.findIndex((t: any) => t[0] === x && t[1] === y);
 
-        if (statusRiviere === "success")
-        {
-            if ((positionRiviere === "debut" || positionRiviere === "milieu") && (type !== "montagne" || type !== "ocean"))
-            {
-                return true;
+            if (index !== -1) {
+                if (type === "montagne") {
+                    props.pushMsg("[" + date + `] - Erreur, une rivière ne peut pas contenir de montagne`, "erreur");
+                    return false;
+                }
+
+                const estLaFin = index === riviere.tuiles.length - 1;
+                if (type === "ocean" && !estLaFin) {
+                    props.pushMsg("[" + date + `] - Erreur, seul le point final d'une rivière peut être un océan`, "erreur");
+                    return false;
+                }
             }
         }
-
-        props.pushMsg("[" + date + "] - Erreur, une rivière doit être sur des cases de type plaine ou de type forêt", "erreur");
-        return false;
+        return true;
     }
 
-    const verifTyrolienne = async (type: string, hex: Case, x: number, y:number, date: string) => {
-        const responseTyrolienne = await fetch(`/api/cartes/tyrolienne`, {
-            method: "POST",
-            body: JSON.stringify({
-                "nom": props.carteId,
-                "tuile": {x, y}
-            })
-        });
+    // Fonction vérifiant si la modification du terrain brise une tyrolienne existante
+    const verifTyrolienne = (type: string, hex: Case, date: string) => {
+        const connexions = props.jsonData?.connexions || [];
+        const tyroliennes = connexions.filter((c: any) => c.type === "tyrolienne");
 
-        const {statusTyrolienne, presenceTyrolienne, positionTyrolienne, tuiles} = await responseTyrolienne.json();
+        for (const tyro of tyroliennes) {
+            const [start, end] = tyro.tuiles;
+            const x = Number(hex.id.split("-")[0]);
+            const y = Number(hex.id.split("-")[1]);
 
-        let casesMilieu = getHexagonesEntreDeuxPoints(tuiles[0], tuiles[1], props.hexagones);
+            if (start[0] === x && start[1] === y) {
+                console.log("Coucou !");
+                if (type !== "foret") {
+                    props.pushMsg("[" + date + "] - Erreur, le départ d'une tyrolienne doit rester une forêt", "erreur");
+                    return false;
+                }
+            }
 
-        if (statusTyrolienne === "success")
-        {
-            if ((positionTyrolienne === "debut" && type === "foret")
-                || (casesMilieu.includes(hex) && type !== "montagne")
-                || (positionTyrolienne === "fin" && (type === "plaine" || type === "foret")))
-            {
-                return true;
+            if (end[0] === x && end[1] === y) {
+                if (type === "ocean" || type === "montagne") {
+                    props.pushMsg("[" + date + `] - Erreur, l'arrivée d'une tyrolienne ne peut pas devenir ${type}`, "erreur");
+                    return false;
+                }
             }
         }
+        return true;
+    }
 
-        props.pushMsg("[" + date + "] - Erreur, une tyrolienne doit débuter sur une forêt et finir sur une plaine ou une forêt. Il ne peut pas y avoir de montagne au milieu", "erreur");
-        return false;
+    const verifMilieuTyrolienne = (type: string, hex: Case, date: string) => {
+        const connexions = props.jsonData?.connexions || [];
+        const tyroliennes = connexions.filter((c: any) => c.type === "tyrolienne");
+
+        for (const tyro of tyroliennes) {
+            const [start, end] = tyro.tuiles;
+            const casesMilieu = getHexagonesEntreDeuxPoints(start, end, props.hexagones);
+
+            if (casesMilieu.some((c) => c.id === hex.id) && type === "montagne") {
+                props.pushMsg("[" + date + "] - Erreur, une tyrolienne ne peut pas avoir une montagne sur son chemin", "erreur");
+                return false;
+            }
+        }
+        return true;
     }
 
     // Fonction qui gère les actions lors du clic sur un terrain d'un onglet
     const handleTerrainClic = async (type: string, hex: Case, x: number, y: number, date: string) => {
-        if (verifResidence(type, x, y, date) || await verifRiviere(type, x, y, date) || await verifTyrolienne(type, hex, x, y, date))
-        {
-            const reponse = await setTuiles(JSON.stringify({
-                "nom": `${props.carteId}`,
-                [type]: [x, y]
-            }));
+        if ((props.posBio?.position.x === x && props.posBio?.position.y === y) || (props.posInfo?.position.x === x && props.posInfo?.position.y === y)) {
+            if (!verifResidence(type, date)) return;
+        }
 
-            if (reponse.status === "success") {
-                const json: Promise<any> = await getCarte(props.carteId);
+        // Vérifications basées sur le JSON actuel
+        if (!verifRiviere(type, hex, date)) return;
+        if (!verifTyrolienne(type, hex, date)) return;
+        if (!verifMilieuTyrolienne(type, hex, date)) return;
 
-                if (json && !json.error) {
-                    props.appliquerCarte(json, props.rayon);
-                    props.pushMsg("[" + date + `] - Ajout d'un terrain ${type} en position (` + x + ", " + y + ")", "ok");
-                    props.sauvegardeHistorique(json);
-                } else {
-                    props.pushMsg("[" + date + `] - Erreur lors de l'ajout d'un terrain ${type} en position ` + x + ", " + y + ")", "erreur");
-                }
+        const reponse = await setTuiles(JSON.stringify({
+            "nom": `${props.carteId}`,
+            [type]: [x, y]
+        }));
+
+        if (reponse.status === "success") {
+            const json: Promise<any> = await getCarte(props.carteId);
+
+            if (json && !json.error) {
+                props.appliquerCarte(json, props.rayon);
+                props.pushMsg("[" + date + `] - Ajout d'un terrain ${type} en position (` + x + ", " + y + ")", "ok");
+                props.sauvegardeHistorique(json);
+            } else {
+                props.pushMsg("[" + date + `] - Erreur lors de l'ajout d'un terrain ${type} en position ` + x + ", " + y + ")", "erreur");
             }
         }
-    }    
 
-    // Fonction est gère les actions lors du clic sur une résidence d'un onglet
+    }
+
+    // Fonction qui gère les actions lors du clic sur une résidence d'un onglet
     const handleResidenceClic = async (type: string, hex: Case, x: number, y: number, date: string) => {
         const posAutre: any = type === "info" ? props.posBio : props.posInfo;
 
