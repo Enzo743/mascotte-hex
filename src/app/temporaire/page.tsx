@@ -1,14 +1,20 @@
 // Dépendances
 "use client";
 import {Affichage} from "./Affichage";
+import VictoirePopUpModal from "../components/VictoirePopUpModal";
 import {plusCourtChemin} from "./Bot";
 import {Arc, CarteJSON, Contexte, DifficulteIA, Joueur, ModeJeu, Noeud, Position, PremierTour} from "./Interfaces";
 import {useEffect, useState} from "react";
+import {useSearchParams, useRouter} from "next/navigation";
 import {TraitementCarte, TraitementGraphe, TraitementTotal, TraitementJoueurInitial} from "./Traitement";
 import carteBrute from "./carte.json" assert {type: "json"};
 const carteJSON: CarteJSON = carteBrute as CarteJSON;
 
 export default function Home() {
+    const searchParams = useSearchParams();
+    const showVictoire = searchParams.get("showVictoire");
+    const router = useRouter();
+
     const [contexte, definirContexte] = useState<Contexte | undefined>(undefined);
     const [tour, changerTour] = useState<number>(0);
     const [rayon, definirRayon] = useState<number>(60);
@@ -57,7 +63,9 @@ export default function Home() {
             const tourIA = premierTour === "info" ? 1 : 0;
             if (tour === 0) {
                 if (contexte.joueurInfo.position.x === contexte.carte.residenceInfo.x && contexte.joueurInfo.position.y === contexte.carte.residenceInfo.y && contexte.joueurInfo.mascotte) {
-                    changerTour(2);
+                    changerTour(2); // Equipe Info gagne
+                    router.push("/temporaire?showVictoire=true");
+                    
                     return;
                 }
                 if (modeJeu === "bot" && tour === tourIA) {
@@ -66,7 +74,9 @@ export default function Home() {
                 changerTour(1);
             } else if (tour === 1) {
                 if (contexte.joueurBio.position.x === contexte.carte.residenceBio.x && contexte.joueurBio.position.y === contexte.carte.residenceBio.y && contexte.joueurBio.mascotte) {
-                    changerTour(3);
+                    changerTour(3); // Equipe Bio gagne 
+                    router.push("/temporaire?showVictoire=true");
+
                     return;
                 }
                 if (modeJeu === "bot" && tour === tourIA) {
@@ -232,6 +242,16 @@ export default function Home() {
                         </div>
                     </div>
                 </main>
+
+               {showVictoire && <VictoirePopUpModal 
+                    texte={"Victoire de l'équipe " + ((tour === 2) ? "Info" : (tour === 3 ? "Bio" : "No"))} 
+                    button={true}
+                    buttonLabel={"Revenir à la page d'accueil"}
+                    onClickButton={() => router.push("/temporaire")} // Mettre l'url de la page d'accueil 
+                    sndButton={true}
+                    sndButtonLabel={"Recommencer une partie"}
+                    onClickSndButton={() => router.push("/temporaire")} // Mettre l'url du paramétrage de la partie
+                />} 
             </>
         );
     }

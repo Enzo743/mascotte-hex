@@ -3,22 +3,26 @@
 import {useEffect, useState} from "react";
 import Grille from "./components/Grille";
 import {Jeu} from "./components/Jeu";
-import {useSearchParams} from "next/navigation";
-import {Graphe} from "./components/Graphe"
+import {useSearchParams, useRouter} from "next/navigation";
+import VictoirePopUpModal from "./components/VictoirePopUpModal";
+import {Graphe} from "./components/Graphe";
 import {getCarte} from "@/app/actions/getCarte";
 
 let jeton = 0; // mettre le joueur qui commence
 
 let partieFinie = false;
+let nomEquipeGagnante = "";
 
 let mascotteInfoVolle = false;
 let mascotteBioVolle = false;
 
 export default function Home() {
     const searchParams = useSearchParams();
+    const showVictoire = searchParams.get("showVictoire");
+    const router = useRouter();
     const carteId = searchParams.get("id");
 
-    const [partie, setPartie] = useState<any>(null);
+    const [partie, setPartie] = useState(null);
 
     const [posMascotteInfo, setPosMascotteInfo] = useState(null);
     const [posMascotteBio, setPosMascotteBio] = useState(null);
@@ -93,6 +97,8 @@ export default function Home() {
 
                                         if (position[0] == posResidenceInfo[0] && position[1] == posResidenceInfo[1]) {
                                             partieFinie = true;
+                                            nomEquipeGagnante = "Info";
+                                            router.push("/?id=Carte&showVictoire=true");
                                         }
                                     }
 
@@ -107,6 +113,8 @@ export default function Home() {
 
                                         if (position[0] == posResidenceBio[0] && position[1] == posResidenceBio[1]) {
                                             partieFinie = true;
+                                            nomEquipeGagnante = "Bio";
+                                            router.push("/?id=Carte&showVictoire=true");
                                         }
                                     }
 
@@ -116,6 +124,15 @@ export default function Home() {
                         }
                     }}
                 />
+                {showVictoire && <VictoirePopUpModal 
+                    texte={"Victoire de l'équipe " + nomEquipeGagnante}
+                    button={true}
+                    buttonLabel={"Revenir à la page d'accueil"}
+                    onClickButton={() => router.push("/?id=Carte")} // Mettre l'url de la page d'accueil 
+                    sndButton={true}
+                    sndButtonLabel={"Recommencer une partie"}
+                    onClickSndButton={() => router.push("/?id=Carte")} // Mettre l'url du paramétrage de la partie
+                />}
             </>
         );
     }

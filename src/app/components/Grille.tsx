@@ -1,5 +1,5 @@
 // Dépendances
-import { Arrow, Stage, Layer, Path, RegularPolygon, Group, Star, Circle} from "react-konva";
+import { Arrow, Stage, Layer, Path, RegularPolygon, Group, Star, Circle } from "react-konva";
 import { Case, Connexion } from "./Structure";
 import { Graphe } from "./Graphe";
 
@@ -199,6 +199,9 @@ export default function Grille(
                             }}
                         />
                     ))}
+                </Group>
+                <Group>
+                    
                 </Group>
             </Layer>
         </Stage>
