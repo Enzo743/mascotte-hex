@@ -6,9 +6,13 @@ import {GiBroccoli, GiCarabiner, GiPenguin, GiRiver} from "react-icons/gi";
 import {HiOutlineSave} from "react-icons/hi";
 import {TbZoom} from "react-icons/tb";
 import {BiRedo, BiUndo} from "react-icons/bi";
+import {Case} from "@/app/components/Structure";
 
 interface SidebarProps {
     carteId: string | null;
+    posInfo: Case | null;
+    posBio: Case | null;
+    estValide: boolean;
     rayon: number;
     setRayon: (rayon: number) => void;
     terrainSelectionne: string | null;
@@ -34,6 +38,9 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({
                                              carteId,
+                                             posInfo,
+                                             posBio,
+                                             estValide,
                                              rayon,
                                              setRayon,
                                              terrainSelectionne,
@@ -61,6 +68,19 @@ const Sidebar: React.FC<SidebarProps> = ({
             <h1>
                 Edition de la carte &#34;{carteId}&#34;
             </h1>
+
+            {posInfo && posBio && (
+                <div className={"valide"} style={{
+                    backgroundColor: estValide ? "#dcfce7" : "#fee2e2",
+                    color: estValide ? "#166534" : "#991b1b",
+                }}>
+                    {estValide ? (
+                        <><span>✓</span><span>Valide - Chemin trouvé</span></>
+                    ) : (
+                        <><span>✗</span><span>Invalide - Aucun chemin trouvé</span></>
+                    )}
+                </div>
+            )}
 
             {/* Onglet du terrain */}
             <Categorie

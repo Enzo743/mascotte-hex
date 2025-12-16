@@ -19,6 +19,20 @@
     display: flex;
     flex-direction: row;
     overflow: hidden;
+    border-radius: 8px;
+    transition: border-color 0.3s ease;
+}
+
+.valide {
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    border-radius: 4px;
+    font-weight: bold;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
 }
 
 .editeur .sidebar-left {
@@ -155,6 +169,22 @@
 .button-red-modal {
     background-color: #D93526;
     color: #fff;
+}
+
+/* Composant VictoirePopUpModal */
+
+.texte-victoire-modal {
+    text-align: center;
+    margin: 0;
+    margin-top: 0.5rem;
+}
+
+.buttons-victoire-modal {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 2rem;
+    margin-bottom: 0.5rem;
 }
 
 /* Composant LigneGestionnaire */

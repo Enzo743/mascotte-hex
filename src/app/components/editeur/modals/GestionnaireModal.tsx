@@ -6,9 +6,10 @@ import React, {useEffect, useState} from "react";
 interface GestionnaireModalHref {
     prefixe: string;
     onCloseHref: string;
+    restriction?: boolean;
 }
 
-const GestionnaireModal: React.FC<GestionnaireModalHref> = ({prefixe, onCloseHref}) => {
+const GestionnaireModal: React.FC<GestionnaireModalHref> = ({prefixe, onCloseHref, restriction}) => {
 
     const [cartes, setCartes] = useState<any[]>([]);
 
@@ -34,6 +35,9 @@ const GestionnaireModal: React.FC<GestionnaireModalHref> = ({prefixe, onCloseHre
         chargerDonnees();
     }, []);
 
+    // Permet de n'afficher que les cartes valides, et de les trier par nom
+    const cartesValides = cartes.filter(carte => !carte.nom.startsWith("invalide-"));
+
     return (
         <dialog open>
             <article>
@@ -41,7 +45,7 @@ const GestionnaireModal: React.FC<GestionnaireModalHref> = ({prefixe, onCloseHre
                     <Link href={onCloseHref} aria-label="Close" className="close link-message-modal"/>
                     <h3 style={{textAlign: 'center', margin: 0}}>Gestionnaire des cartes</h3>
                 </header>
-                <main>
+                <main className={"overflow-auto"}>
                     <div className="col-titres">
                         <span className="col-nom">Nom du fichier</span>
                         <span className="col-infos">
@@ -49,7 +53,17 @@ const GestionnaireModal: React.FC<GestionnaireModalHref> = ({prefixe, onCloseHre
                             <span className="col-colonnes">Colonnes</span>
                         </span>
                     </div>
-                    {cartes.map((carte) => (
+                    {restriction && cartesValides.map((carte) => (
+                        <LigneGestionnaire
+                            key={carte.nom}
+                            nomFichier={carte.nom}
+                            lignes={carte.lignes}
+                            colonnes={carte.colonnes}
+                            href={`${prefixe}?id=${carte.nom}`}
+                        />
+                    ))}
+
+                    {!restriction && cartes.map((carte) => (
                         <LigneGestionnaire
                             key={carte.nom}
                             nomFichier={carte.nom}
