@@ -15,9 +15,27 @@ export async function POST(req: Request) {
         const data = await fs.readFile(`./public/json/${nom}.json`, "utf8");
         const json = JSON.parse(data);
 
-        const presence = json.connexions.filter(c => c.type === "riviere").some(c => c.tuiles.some(t => estMemeTuile(t, tuile)));
+        let position = null;
 
-        return NextResponse.json({status: "success", presence: presence});
+        const connexion = json.connexions.find((c: any) =>
+            c.type === "riviere" && c.tuiles.some((t: any) => estMemeTuile(t, tuile))
+        );
+        const presence = !!connexion;
+
+        if (connexion) {
+            const index = connexion.tuiles.findIndex((t: any) => estMemeTuile(t, tuile));
+            const longueur = connexion.tuiles.length;
+
+            if (index === 0) {
+                position = "debut";
+            } else if (index === longueur - 1) {
+                position = "fin";
+            } else {
+                position = "milieu";
+            }
+        }
+
+        return NextResponse.json({status: "success", presence: presence, position: position});
     } catch (error) {
         console.log(error);
         return NextResponse.json({status: "error", error: error});
