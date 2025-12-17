@@ -30,7 +30,6 @@ export default function Home() {
     const showSelection = searchParams.get("showSelec");
     const showVictoire = searchParams.get("showVict");
     const show = searchParams.get("show");
-    const showVisualisation = searchParams.get("showVisu");
     const showModification = searchParams.get("showModif");
 
     const [contexte, definirContexte] = useState<Contexte | undefined>(undefined);
@@ -298,8 +297,12 @@ export default function Home() {
                                 <div style={{ flex: 1, backgroundColor: "#e5e7eb", border: "1px solid #ccc", margin: "1rem 0" }}>
                                 </div>
 
-                                <div style={{ display: "flex", justifyContent: "center", gap: "1rem" }}>
-                                    <button disabled>Choisir une carte</button>
+                                <div style={{display: "flex", justifyContent: "center", gap: "1rem"}}>
+                                    <Link id={"btnSelec"} href={"?showSelec=true"} role={"button"}>
+                                        Choisir une carte
+                                    </Link>
+                                    {modeJeu && premierTour && carteId &&
+                                        <button onClick={demarrerJeu}>▶️ Démarrer</button>}
                                 </div>
                             </article>
 
@@ -350,7 +353,7 @@ export default function Home() {
                                     <>
                                         <hr/>
                                         <h4>Choisir votre équipe</h4>
-                                        <div role="group">
+                                        <div role="group"  style={{flexWrap: "wrap"}}>
                                             {[
                                                 {key: "info", label: "🐧 Informaticiens", color: "#9486E1"},
                                                 {key: "bio", label: "🥦 Biologistes", color: "#F17961"}
@@ -405,28 +408,6 @@ export default function Home() {
                                 )}
                             </article>
 
-                            <article style={{
-                                flex: "1 1 auto",
-                                display: "flex",
-                                flexDirection: "column",
-                                justifyContent: "space-between"
-                            }}>
-                                <div style={{
-                                    flex: 1,
-                                    backgroundColor: "#e5e7eb",
-                                    border: "1px solid #ccc",
-                                    margin: "1rem 0"
-                                }}>
-                                </div>
-
-                                <div style={{display: "flex", justifyContent: "center", gap: "1rem"}}>
-                                    <Link id={"btnSelec"} href={"?showSelec=true"} role={"button"}>
-                                        Choisir une carte
-                                    </Link>
-                                    {modeJeu && premierTour && carteId &&
-                                        <button onClick={demarrerJeu}>▶️ Démarrer</button>}
-                                </div>
-                            </article>
                         </div>
                     </div>
 
