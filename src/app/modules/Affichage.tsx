@@ -175,7 +175,10 @@ export function Affichage({contexte, rayon, tour, deplacement}: AffichageParams)
                                 <Text
                                     x = {mascotteBio.positionCanvas.x}
                                     y = {mascotteBio.positionCanvas.y}
-                                    text = {"🥦"}
+                                    text = {contexte.carte.residenceBio.x === contexte.joueurBio.position.x && 
+                                            contexte.carte.residenceBio.y === contexte.joueurBio.position.y &&
+                                            !contexte.joueurInfo.mascotte
+                                            ? "" : "🥦"}
                                     fontSize = {rayon/2}
                                     offsetX = {rayon/3.5}
                                     offsetY = {rayon/3.5}
@@ -183,7 +186,10 @@ export function Affichage({contexte, rayon, tour, deplacement}: AffichageParams)
                                 <Text
                                     x = {mascotteInfo.positionCanvas.x}
                                     y = {mascotteInfo.positionCanvas.y}
-                                    text = {"🐧"}
+                                    text = {contexte.carte.residenceInfo.x === contexte.joueurInfo.position.x && 
+                                            contexte.carte.residenceInfo.y === contexte.joueurInfo.position.y &&
+                                            !contexte.joueurBio.mascotte
+                                            ? "" : "🐧"}
                                     fontSize = {rayon/2}
                                     offsetX = {rayon/3.5}
                                     offsetY = {rayon/3.5}
