@@ -470,3 +470,55 @@ textarea {
 .text-center {
     text-align: center;
 }
+
+/* Structure de la page principale */
+.main-game-layout {
+    height: calc(100vh - 4rem);
+}
+
+.grid-full-height {
+    height: 100%;
+}
+
+/* Section Éditeur (Affichage carte) */
+.article-preview-map {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.container-scroll-map {
+    max-width: 100%;
+    max-height: 100%;
+    overflow: auto;
+}
+
+/* Section Entrainement */
+.sidebar-training {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.article-training-controls {
+    flex: 0 0 auto;
+}
+
+.training-select-container {
+    max-width: 420px;
+    margin: 0 auto;
+}
+
+/* Groupes de boutons et Alignements */
+.btn-group-centered {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.actions-footer {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
