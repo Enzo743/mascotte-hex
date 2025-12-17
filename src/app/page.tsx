@@ -21,6 +21,9 @@ import Link from "next/link";
 import {getCarte} from "@/app/actions/getCarte";
 import NouveauPopUpModal from "@/app/components/editeur/modals/NouveauPopUpModal";
 import VictoirePopUpModal from "./components/VictoirePopUpModal";
+import GrilleEditeur from "@/app/components/editeur/GrilleEditeur";
+import {Case, Connexion} from "@/app/components/Structure";
+import {Terrain} from "@/app/components/Terrain";
 
 // Je commenterais le code demain si j'ai pas trop de bugs ou de problèmes à corriger
 // J'ai mis l'ancienne page dans page.old.tsx
@@ -32,12 +35,12 @@ export default function Home() {
     const showSelection = searchParams.get("showSelec");
     const showVictoire = searchParams.get("showVict");
     const show = searchParams.get("show");
-    const showVisualisation = searchParams.get("showVisu");
     const showModification = searchParams.get("showModif");
 
     const [contexte, definirContexte] = useState<Contexte | undefined>(undefined);
     const [tour, changerTour] = useState<number>(0);
     const [rayon, definirRayon] = useState<number>(60);
+    const [carteJSONvisu, definirCarteJSONvisu] = useState<CarteJSON | null>(null);
     const [carteJSON, definirCarteJSON] = useState<CarteJSON | null>(null);
 
     const [modeJeu, definirModeJeu] = useState<ModeJeu | undefined>("");
@@ -46,6 +49,11 @@ export default function Home() {
 
     const [jeuDemarre, definirJeuDemarre] = useState<boolean>(false);
     const [victoire, definirVictoire] = useState<"Info" | "Bio" | null>(null);
+
+    // Nécessaire pour la visualisation de la carte
+    const [hexagones, definirHexagones] = useState<Case[]>([]);
+    const [tyroliennes, definirTyroliennes] = useState<Connexion[]>([]);
+    const [rivieres, definirRivieres] = useState<Connexion[]>([]);
 
     useEffect(() => {
         if (contexte) {
@@ -63,6 +71,12 @@ export default function Home() {
         }
     }, [tour]);
 
+    // Charger la carte quand carteId change
+    useEffect(() => {
+        if (carteId) {
+            showCarteVisu();
+        }
+    }, [carteId, rayon]);
 
     // Affreux
     function deplacerIA() {
@@ -190,6 +204,22 @@ export default function Home() {
         }
     }
 
+    // Fonction qui se charge de charger la carte et de la visualiser
+    async function showCarteVisu() {
+        if (carteId) {
+            const carte = await getCarte(carteId);
+            definirCarteJSONvisu(carte);
+
+            const hex = Terrain(carte, rayon);
+            const tyrol = carte.connexions.filter(c => c.type === "tyrolienne");
+            const riv = carte.connexions.filter(c => c.type === "riviere");
+
+            definirHexagones(hex);
+            definirTyroliennes(tyrol);
+            definirRivieres(riv);
+        }
+    }
+
     async function demarrerJeu() {
         if (modeJeu && premierTour && carteId) {
             const carte = await getCarte(carteId);
@@ -274,15 +304,40 @@ export default function Home() {
                                 </div>
 
                                 {show && <NouveauPopUpModal/>}
-                                {showModification && <GestionnaireModal prefixe="./editeur/modifier" onCloseHref={"/"}/>}
+                                {showModification &&
+                                    <GestionnaireModal prefixe="./editeur/modifier" onCloseHref={"/"}/>}
                             </article>
 
-                            <article style={{ flex: "1 1 auto", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-                                <div style={{ flex: 1, backgroundColor: "#e5e7eb", border: "1px solid #ccc", margin: "1rem 0" }}>
+                            <article style={{
+                                flex: "1 1 auto",
+                                display: "flex",
+                                flexDirection: "column",
+                                justifyContent: "space-between"
+                            }}>
+                                <div style={{
+                                    maxWidth: "100%",
+                                    maxHeight: "100%",
+                                    overflow: "auto"
+                                }}>
+                                    {hexagones.length > 0 && <GrilleEditeur
+                                        rayon={rayon}
+                                        hexagones={hexagones}
+                                        mascotteInfo={null}
+                                        mascotteBio={null}
+                                        rivieres={rivieres}
+                                        tyroliennes={tyroliennes}
+                                        onClick={(hex) => {
+                                        }}
+                                    />}
+                                    <br/>
                                 </div>
 
-                                <div style={{ display: "flex", justifyContent: "center", gap: "1rem" }}>
-                                    <button disabled>Choisir une carte</button>
+                                <div style={{display: "flex", justifyContent: "center", gap: "1rem"}}>
+                                    <Link id={"btnSelec"} href={"?showSelec=true"} role={"button"}>
+                                        Choisir une carte
+                                    </Link>
+                                    {modeJeu && premierTour && carteId &&
+                                        <button onClick={demarrerJeu}>▶️ Démarrer</button>}
                                 </div>
                             </article>
 
@@ -333,7 +388,7 @@ export default function Home() {
                                     <>
                                         <hr/>
                                         <h4>Choisir votre équipe</h4>
-                                        <div role="group">
+                                        <div role="group" style={{flexWrap: "wrap"}}>
                                             {[
                                                 {key: "info", label: "🐧 Informaticiens", color: "#9486E1"},
                                                 {key: "bio", label: "🥦 Biologistes", color: "#F17961"}
@@ -388,32 +443,11 @@ export default function Home() {
                                 )}
                             </article>
 
-                            <article style={{
-                                flex: "1 1 auto",
-                                display: "flex",
-                                flexDirection: "column",
-                                justifyContent: "space-between"
-                            }}>
-                                <div style={{
-                                    flex: 1,
-                                    backgroundColor: "#e5e7eb",
-                                    border: "1px solid #ccc",
-                                    margin: "1rem 0"
-                                }}>
-                                </div>
-
-                                <div style={{display: "flex", justifyContent: "center", gap: "1rem"}}>
-                                    <Link id={"btnSelec"} href={"?showSelec=true"} role={"button"}>
-                                        Choisir une carte
-                                    </Link>
-                                    {modeJeu && premierTour && carteId &&
-                                        <button onClick={demarrerJeu}>▶️ Démarrer</button>}
-                                </div>
-                            </article>
                         </div>
                     </div>
 
-                    {showSelection && <GestionnaireModal prefixe={"/"} onCloseHref={"/"} restriction/>}
+                    {showSelection &&
+                        <GestionnaireModal prefixe={"/"} onCloseHref={"/"} restriction/>}
                 </main>
             </>
         );
