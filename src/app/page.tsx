@@ -356,8 +356,8 @@ export default function Home() {
                     <h1 className="text-center">🐧/🥦 MASCOTTE HEX</h1>
                 </header>
 
-                <main className="container-fluid" style={{height: "calc(100vh - 4rem)"}}>
-                    <div className="grid" style={{height: "100%"}}>
+                <main className="container-fluid main-game-layout">
+                    <div className="grid grid-full-height">
                         <div className="container">
                             {/* Partie de l'éditeur */}
                             <article>
@@ -374,18 +374,9 @@ export default function Home() {
                                     <GestionnaireModal prefixe="./editeur/modifier" onCloseHref={"/"}/>}
                             </article>
 
-                            <article style={{
-                                flex: "1 1 auto",
-                                display: "flex",
-                                flexDirection: "column",
-                                justifyContent: "space-between"
-                            }}>
+                            <article className="article-preview-map">
                                 <h3 className="text-center">👀🗺️ AFFICHAGE DE LA CARTE</h3>
-                                <div style={{
-                                    maxWidth: "100%",
-                                    maxHeight: "100%",
-                                    overflow: "auto"
-                                }}>
+                                <div className="container-scroll-map">
                                     {hexagones.length > 0 && <GrilleEditeur
                                         rayon={rayon}
                                         hexagones={hexagones}
@@ -401,11 +392,11 @@ export default function Home() {
                             </article>
 
                         </div>
-                        <div className="container" style={{display: "flex", flexDirection: "column", height: "100%"}}>
-                            <article style={{flex: "0 0 auto"}}>
+                        <div className="container sidebar-training">
+                            <article className="article-training-controls">
                                 {/* Selection du mode de jeu */}
                                 <h3 className="text-center">🎯⚔️ ENTRAINEMENT</h3>
-                                <div className="container" style={{maxWidth: "420px", margin: "0 auto"}}>
+                                <div className="container training-select-container">
                                     <select value={modeJeu}
                                             onChange={(mode) => definirModeJeu(mode.target.value as ModeJeu)}>
                                         <option value="" disabled>👉 CHOISIR MODE DE JEU</option>
@@ -419,7 +410,7 @@ export default function Home() {
                                         <hr/>
                                         {/* On choisit le premier joueur, info, bio ou choisis aléatoirement entre les deux */}
                                         <h4>Qui commence ?</h4>
-                                        <div role="group">
+                                        <div role="group" className="btn-group-centered">
                                             {[
                                                 {key: "info", label: "🐧 Informaticiens", color: "#9486E1"},
                                                 {key: "bio", label: "🥦 Biologistes", color: "#F17961"},
@@ -432,10 +423,14 @@ export default function Home() {
                                                         aria-pressed={selected}
                                                         onClick={() => definirPremierTour(v.key as PremierTour)}
                                                         style={{
+                                                            flex: "1 1 200px",
+                                                            maxWidth: "260px",
+                                                            boxSizing: "border-box",
                                                             fontWeight: selected ? "bold" : undefined,
                                                             textDecoration: selected ? "underline" : undefined,
                                                             backgroundColor: v.color,
-                                                            color: "#000"
+                                                            color: "#000",
+                                                            whiteSpace: "normal"
                                                         }}
                                                     >
                                                         {v.label}
@@ -450,7 +445,7 @@ export default function Home() {
                                     <>
                                         <hr/>
                                         <h4>Choisir votre équipe</h4>
-                                        <div role="group" style={{flexWrap: "wrap"}}>
+                                        <div role="group" className="btn-group-centered">
                                             {/* On choisit qui est le joueur (humain), il commencera en premier */}
                                             {[
                                                 {key: "info", label: "🐧 Informaticiens", color: "#9486E1"},
@@ -463,10 +458,14 @@ export default function Home() {
                                                         aria-pressed={selected}
                                                         onClick={() => definirPremierTour(v.key as "info" | "bio")}
                                                         style={{
+                                                            flex: "1 1 200px",
+                                                            maxWidth: "260px",
+                                                            boxSizing: "border-box",
                                                             fontWeight: selected ? "bold" : undefined,
                                                             textDecoration: selected ? "underline" : undefined,
                                                             backgroundColor: v.color,
-                                                            color: "#000"
+                                                            color: "#000",
+                                                            whiteSpace: "normal"
                                                         }}
                                                     >
                                                         {v.label}
@@ -479,11 +478,7 @@ export default function Home() {
                                         <h4>Difficulté de l’IA</h4>
                                         <div
                                             role="group"
-                                            style={{
-                                                display: "flex",
-                                                flexWrap: "wrap",
-                                                justifyContent: "center"
-                                            }}
+                                            className="btn-group-centered"
                                         >
                                             {[
                                                 {key: "stupide", emoji: "🤪", bgColor: "#4ade80"},
@@ -505,7 +500,7 @@ export default function Home() {
                                                             textDecoration: selected ? "underline" : undefined,
                                                             backgroundColor: v.bgColor,
                                                             color: "#000",
-                                                            whiteSpace: "normal",
+                                                            whiteSpace: "normal"
                                                         }}
                                                     >
                                                         {v.emoji} {v.key.toUpperCase()}
@@ -515,7 +510,7 @@ export default function Home() {
                                         </div>
                                     </>
                                 )}
-                            <div style={{display: "flex", justifyContent: "center", gap: "1rem"}}>
+                            <div className="actions-footer">
                                 <Link id={"btnSelec"} href={"?showSelec=true"} role={"button"}>
                                     Choisir une carte
                                 </Link>
