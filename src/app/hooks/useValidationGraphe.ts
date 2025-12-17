@@ -1,7 +1,7 @@
 import {useEffect, useState} from "react";
-import {Arc, Carte, CarteJSON} from "@/app/temporaire/Interfaces";
-import {TraitementCarte, TraitementGraphe} from "@/app/temporaire/Traitement";
-import {plusCourtChemin} from "@/app/temporaire/Bot";
+import {Arc, Carte, CarteJSON} from "@/app/modules/Interfaces";
+import {TraitementCarte, TraitementGraphe} from "@/app/modules/Traitement";
+import {plusCourtChemin} from "@/app/modules/Bot";
 
 interface ValidationResult {
     estValide: boolean;

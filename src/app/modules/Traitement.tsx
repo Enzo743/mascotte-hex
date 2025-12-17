@@ -1,3 +1,4 @@
+// Dépendances
 import {Arc, Carte, CarteJSON, Case, Connexion, Contexte, Joueur, Position, Riviere, Tyrolienne} from "./Interfaces";
 
 /*
@@ -68,7 +69,7 @@ export function TraitementCarte(carteJSON: CarteJSON, rayon: number): Carte {
             carte.cases.push({
                 id: `${j}-${i}`, // sachant j (les colonnes, la largeur) alias x et i (les lignes, la hauteur) alias y, l'identifiant est représenté sous la forme (x,y).
                 positionMatrice: {x: j, y: i},
-                positionCanvas: {x: x, y: y},
+                positionCanvas: {x: 10+x, y: 10+y},
                 residenceInfo: carteJSON.résidences.info[0] === j && carteJSON.résidences.info[0] === i ? true : false,
                 residenceBio: carteJSON.résidences.bio[0] === j && carteJSON.résidences.info[0] === i ? true : false,
                 riviere: false,

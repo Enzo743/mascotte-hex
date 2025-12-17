@@ -18,6 +18,9 @@ export interface Arc {
     noeud: Noeud;
     voisins: Noeud[]
 }
+
+/* === Interfaces pour la selection du mode de jeu ===
+*/
 export enum Difficulte {
     EXTREME,
     DIFFICILE,
@@ -26,14 +29,13 @@ export enum Difficulte {
     STUPIDE
 }
 
-/*
-*/
 export type ModeJeu = "" | "pvp" | "bot";
+
 export type PremierTour = "info" | "bio" | "random";
+
 export type DifficulteIA = "stupide" | "facile" | "moyen" | "difficile" | "extreme";
 /*
 === Interfaces de la structure des fichiers json ===
-
 CarteJSON est délicat, car le fichier JSON fourni peut être interprété de plusieurs manières.
 J'ai considéré que les coordonnées de la forme [x, y] sont des tuples de nombres et non pas une liste de nombres.
 Il faut donc convertir le JSON pour qu'il n'y ait pas d'erreurs à la compilation (exemple) :
@@ -64,6 +66,8 @@ export interface CarteJSON {
 
 /*
 === Interfaces pour le jeu ===
+Pour chaque joueur on a sa position, et si il a la mascotte ou non
+Cette implémentation permet de connaître la position de la mascotte ennemie sans avoir un objet mascotte distinct
 */
 export interface Joueur {
     position: Position;
@@ -72,6 +76,7 @@ export interface Joueur {
 
 /*
 === Interfaces pour l'affichage de la carte ===
+On convertit le fichier Json d'origine en plusieurs objets mieux organisés pour le traitement
 */
 export interface AffichageParams {
     contexte: Contexte;
@@ -98,7 +103,7 @@ export interface Tyrolienne {
 
 export interface Riviere {
     parcours: Position[];
-    embouchure: Position // Séparation de la dernière case de chaque rivière, utile pour son traitement.
+    embouchure: Position // Séparation de la dernière case de chaque rivière, utile pour son traitement
 }
 
 export interface Carte {
@@ -115,10 +120,30 @@ export interface Carte {
 
 /*
 === Interfaces pour le traitement ===
+Condense les informations utiles sur le jeu un un unique objet
 */
 export interface Contexte {
     carte: Carte;
     graphe: Arc[];
     joueurInfo: Joueur,
     joueurBio: Joueur
+}
+
+/*
+=== File ===
+Implémentation d'une classe représentant une file de positions.
+Nécessaire pour connaître le plus court chemin entre deux noeuds dans un graphe
+*/
+export class File {
+    private elements: Position[] = [];
+
+    enfiler(position: Position): void {
+        this.elements.push(position);
+    }
+    defiler(): Position | undefined {
+        return this.elements.shift();
+    }
+    estVide(): boolean {
+        return this.elements.length === 0;
+    }
 }

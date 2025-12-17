@@ -1,14 +1,14 @@
+// Dépendances
 "use client";
 import { Arrow, Circle, Group, Layer, Path, RegularPolygon, Star, Stage, Text } from "react-konva";
-import { AffichageParams, Carte, Case, Contexte, Noeud, Position, Riviere, Tyrolienne } from "./Interfaces";
+import { AffichageParams, Case, Position, Riviere, Tyrolienne } from "./Interfaces";
 import React from "react";
-
 
 /*
 === Affichage ===
-Fonction qui affiche l'intégralité des éléments disponibles de la carte.
-Affiche également les cases adjacentes du joueur à qui c'est le tour.
-Si l'on clique sur une case, la fonction déplacerJoueur est appelée (dans page.tsx).
+Fonction qui affiche l'intégralité des éléments disponibles de la carte
+Affiche également les cases adjacentes du joueur à qui c'est le tour
+Si l'on clique sur une case, la fonction déplacerJoueur est appelée (vers page.tsx)
 */
 export function Affichage({contexte, rayon, tour, deplacement}: AffichageParams) {
     // Largeur et hauteur du canvas en pixels.
@@ -22,10 +22,13 @@ export function Affichage({contexte, rayon, tour, deplacement}: AffichageParams)
     )?.voisins || [];
 
     return (
-        <Stage width={largeurCanvas} height={hauteurCanvas}>
+        // On rajoute 20 à la largeur et la hauteur du cadre du jeu pour que les stroke ne soient pas coupées (étant donné qu'elles ne sont pas comptées dans le calcul)
+        <Stage width={largeurCanvas + 20} height={hauteurCanvas + 20}>
             <Layer>
                 <Group>
-                    {/* === VISUEL DES CASES === */}
+                    {/* === VISUEL DES TERRAINS === 
+                    Chaque case (hexagone) est affichée en fonction de sa position sur le canvas
+                    */}
                     {contexte.carte.cases.map((c: Case) => (
                             <RegularPolygon
                                 key = {"v-" + c.id}
@@ -39,7 +42,10 @@ export function Affichage({contexte, rayon, tour, deplacement}: AffichageParams)
                         )
                     )}
 
-                    {/* === CASES ADJACENTES === */}
+                    {/* === CASES ADJACENTES === 
+                    Ici on superpose les cases adjacentes (la ou le joueur peut se déplacer)
+                    La couleur de la stroke est définie en fonction du joueur
+                    */}
                     {contexte.carte.cases.map((c: Case) => {
                         const [x, y] = c.id.split("-").map(Number);
                         const adjacent = voisins.some(
@@ -54,11 +60,14 @@ export function Affichage({contexte, rayon, tour, deplacement}: AffichageParams)
                             sides = {6}
                             radius = {rayon}
                             stroke = {tour === 0 ? "#9486E1" : tour === 1 ? "#F17961" : "transparent"}
+                            strokeWidth = {4}
                         />
                         )
                     })}     
 
-                    {/* === VISUEL DES RIVIERES === */}
+                    {/* === VISUEL DES RIVIERES === 
+                    Les rivières sont des chemins svg composés de tous les points de la rivière
+                    */}
                     {contexte.carte.rivieres.map((riviere: Riviere) => {
                         const chemin: string[] = [];
                         chemin.push("M ");
@@ -77,12 +86,14 @@ export function Affichage({contexte, rayon, tour, deplacement}: AffichageParams)
                                 key={`r-${riviere.parcours[0].x}-${riviere.parcours[0].y}-${riviere.embouchure.x}-${riviere.embouchure.y}`}
                                 data = {chemin.join(" ")}
                                 stroke = "#748BF8"
-                                strokeWidth = {4}
+                                strokeWidth = {6}
                             />
                         );
                     })}
 
-                    {/* --- RESIDENCES --- */}
+                    {/* === RESIDENCES ===
+                    Pas grand chose à expliquer ici
+                    */}
                     {(() => {
                         const residenceInfo: Case | undefined = contexte.carte.cases.find((c) => c.id === `${contexte.carte.residenceInfo.x}-${contexte.carte.residenceInfo.y}`);
                         const residenceBio: Case | undefined = contexte.carte.cases.find((c) => c.id === `${contexte.carte.residenceBio.x}-${contexte.carte.residenceBio.y}`);
@@ -111,7 +122,9 @@ export function Affichage({contexte, rayon, tour, deplacement}: AffichageParams)
                         );
                     })()}
 
-                    {/* === VISUEL DES TYROLIENNES === */}
+                    {/* === VISUEL DES TYROLIENNES === 
+                    Une tyrolienne est représentée par une flèche pointant du départ vers l'arrivée de la tyrolienne
+                    */}
                     {contexte.carte.tyroliennes.map((tyrolienne: Tyrolienne) => {
                         const entree: Case | undefined = contexte.carte.cases.find((c) => c.id === `${tyrolienne.entree.x}-${tyrolienne.entree.y}`);
                         const sortie: Case | undefined = contexte.carte.cases.find((c) => c.id === `${tyrolienne.sortie.x}-${tyrolienne.sortie.y}`);
@@ -129,12 +142,14 @@ export function Affichage({contexte, rayon, tour, deplacement}: AffichageParams)
                                 pointerWidth = {rayon/2.5}
                                 fill = "#FFA23A"
                                 stroke = "#FFA23A"
-                                strokeWidth = {4}
+                                strokeWidth = {6}
                             />
                         );
                     })}
 
-                    {/*=== JOUEURS ET MASCOTTES === */}
+                    {/*=== JOUEURS ET MASCOTTES ===
+                    Affiche les joueurs et les mascottes, en fonction de "mascotte" de Joueur
+                    */}
                     {(() => {
                         const mascotteInfo: Case | undefined = contexte.joueurBio.mascotte ? contexte.carte.cases.find((c) => c.id === `${contexte.joueurBio.position.x}-${contexte.joueurBio.position.y}`) : contexte.carte.cases.find((c) => c.id === `${contexte.carte.residenceInfo.x}-${contexte.carte.residenceInfo.y}`);
                         const mascotteBio: Case | undefined = contexte.joueurInfo.mascotte ? contexte.carte.cases.find((c) => c.id === `${contexte.joueurInfo.position.x}-${contexte.joueurInfo.position.y}`) : contexte.carte.cases.find((c) => c.id === `${contexte.carte.residenceBio.x}-${contexte.carte.residenceBio.y}`);
@@ -160,10 +175,7 @@ export function Affichage({contexte, rayon, tour, deplacement}: AffichageParams)
                                 <Text
                                     x = {mascotteBio.positionCanvas.x}
                                     y = {mascotteBio.positionCanvas.y}
-                                    text = {contexte.carte.residenceBio.x === contexte.joueurBio.position.x && 
-                                            contexte.carte.residenceBio.y === contexte.joueurBio.position.y &&
-                                            !contexte.joueurInfo.mascotte
-                                            ? "" : "🥦"}
+                                    text = {"🥦"}
                                     fontSize = {rayon/2}
                                     offsetX = {rayon/3.5}
                                     offsetY = {rayon/3.5}
@@ -171,10 +183,7 @@ export function Affichage({contexte, rayon, tour, deplacement}: AffichageParams)
                                 <Text
                                     x = {mascotteInfo.positionCanvas.x}
                                     y = {mascotteInfo.positionCanvas.y}
-                                    text = {contexte.carte.residenceInfo.x === contexte.joueurInfo.position.x && 
-                                            contexte.carte.residenceInfo.y === contexte.joueurInfo.position.y &&
-                                            !contexte.joueurBio.mascotte
-                                            ? "" : "🐧"}
+                                    text = {"🐧"}
                                     fontSize = {rayon/2}
                                     offsetX = {rayon/3.5}
                                     offsetY = {rayon/3.5}
@@ -183,7 +192,9 @@ export function Affichage({contexte, rayon, tour, deplacement}: AffichageParams)
                         );
                     })()}
 
-                    {/* === INTERACTION AVEC LES CASES === */}
+                    {/* === INTERACTION AVEC LES CASES ===
+                    Essentiel pour que les joueurs (humains) se déplacent
+                    */}
                     {contexte.carte.cases.map((c: Case) => (
                     <React.Fragment key={c.id}>
                         <Text // Texte indiquant les coordonées (x,y) de la case, utile pour le debug.
@@ -191,7 +202,7 @@ export function Affichage({contexte, rayon, tour, deplacement}: AffichageParams)
                             y = {c.positionCanvas.y}
                             text = {`${c.positionMatrice.x},${c.positionMatrice.y}`}
                             fontSize = {14}
-                            fill = "black"
+                            fill = "transparent" // J'ai mis en transparent pour désactiver le "mode debug". Mettre en "black" pour le ré-afficher
                             offsetX = {10}
                             offsetY = {7}
                         />
@@ -201,7 +212,7 @@ export function Affichage({contexte, rayon, tour, deplacement}: AffichageParams)
                             sides={6}
                             radius={rayon}
                             onClick={() => {
-                                if (deplacement) deplacement(c.positionMatrice);
+                                if (deplacement) deplacement(c.positionMatrice); // On appelle la fonction avec comme paramètre les coordonées de la case, pour (si authorisé) déplacer le joueur vers celle ci.
                             }}
                         />
                     </React.Fragment>

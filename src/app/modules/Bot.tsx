@@ -1,52 +1,34 @@
-import { Arc, DifficulteIA, Noeud, Position } from "./Interfaces";
-
-/*
-=== File ===
-Implémentation d'une classe représentant une file de positions.
-*/
-class File {
-    private elements: Position[] = [];
-
-    enfiler(position: Position): void {
-        this.elements.push(position);
-    }
-    defiler(): Position | undefined {
-        return this.elements.shift();
-    }
-    estVide(): boolean {
-        return this.elements.length === 0;
-    }
-}
+// Dépendances
+import { Arc, DifficulteIA, Noeud, File } from "./Interfaces";
 
 /*
 === plusCourtChemin ===
 Calcule le chemin le plus court dans un graphe orienté entre un nœud de départ et un nœud d'arrivée en utilisant la recherche en largeur (BFS). 
-Fonctionne dans l'état actuel, mais peut ne pas être le plus adapté pour un bot, l'objectif est de s'entraîner, pas de se faire massacrer par l'adversaire.
-
-Todo : Rendre le bot moins intelligent, avec plusieurs niveaux de difficulté ?
+L'algo a plusieurs niveaux de difficultés, chacun avec des variations, mis ) part le niveau "extreme" (en théorie parfait)
+Problème : les variations sont tellement mineures que la difficulté stupide est parfois plus intelligente que moi (je le prends mal)
+Il faudrait faire des traitements différents que BFS pour les niveaux stupide et facile
 */
 
 export function plusCourtChemin(graphe: Arc[], depart: Noeud, arrive: Noeud, difficulte: DifficulteIA): Noeud[] | null {
     const file = new File();
-    const visite = new Set<string>(); // Retient les nœuds déjà visités (avec un identifiant unique constitué de leurs coordonnées)
-    const precedent = new Map<string, Noeud>(); // Retient les nœuds précédents pour pouvoir reconstituer le chemin.
+    const visite = new Set<string>(); // Retient les noeuds déjà visités (avec un identifiant unique constitué de leurs coordonnées)
+    const precedent = new Map<string, Noeud>(); // Retient les noeuds précédents pour pouvoir reconstituer le chemin.
     
     file.enfiler(depart);
     visite.add(`${depart.x},${depart.y}`);
 
-    const obtenirVoisins = (arcCourant: Arc, difficulte: DifficulteIA) => {
-        switch (difficulte) {
-            case "extreme":
-                return arcCourant.voisins;
-            case "difficile":
-                return arcCourant.voisins;
-            case "moyen":
-                return arcCourant.voisins.sort(() => Math.random() - 0.5);
-            case "facile":
-                return arcCourant.voisins;
-            case "stupide":
-                return [arcCourant.voisins[Math.floor(Math.random() * arcCourant.voisins.length)]];
-        }
+    const obtenirVoisins = (arcCourant: Arc, difficulte: DifficulteIA): Noeud[] => { // Selectionne les voisins d'un noeud, plus ou moins bien en fonction de la difficulté
+        const voisins = [...arcCourant.voisins];
+
+        const chaos: Record<DifficulteIA, number> = { // Plus la difficulté est basse, plus l'aléatoire est haut
+            extreme: 0,
+            difficile: 0.1,
+            moyen: 0.3,
+            facile: 0.6,
+            stupide: 1,
+        };
+
+        return voisins.sort(() => (Math.random() - 0.5) * chaos[difficulte]);
     };
 
     while (!file.estVide()) {
