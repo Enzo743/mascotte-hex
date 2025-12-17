@@ -39,10 +39,11 @@ export default function NouveauPopUpModal() {
         formData.append("colonnes", valColonnes);
 
         const nom_ref_slug = slugify(valNom, {replacement: '_', remove: /[*+~.()'"!:@]/g});
-        formData.append("nom", nom_ref_slug);
+        const nom_ref_slug_invalide = "invalide-" + nom_ref_slug;
+        formData.append("nom", nom_ref_slug_invalide);
 
         if (force) {
-            await envoiDonnees(formData, nom_ref_slug);
+            await envoiDonnees(formData, nom_ref_slug_invalide);
             return;
         }
 
@@ -50,10 +51,10 @@ export default function NouveauPopUpModal() {
         const resultatNoms = await noms.json();
         console.log(resultatNoms);
 
-        if (resultatNoms.find((nom: { nom: string; }) => nom.nom === nom_ref_slug)) {
+        if (resultatNoms.find((nom: { nom: string; }) => nom.nom === nom_ref_slug_invalide)) {
             router.push("/editeur?show=true&showErreur=true");
         } else {
-            await envoiDonnees(formData, nom_ref_slug);
+            await envoiDonnees(formData, nom_ref_slug_invalide);
         }
     }
 
