@@ -5,17 +5,7 @@ import {plusCourtChemin} from "@/app/modules/Bot";
 import GestionnaireModal from "@/app/components/editeur/modals/GestionnaireModal";
 import {getCarte} from "@/app/actions/getCarte";
 import GrilleEditeur from "@/app/components/editeur/GrilleEditeur";
-import {
-    Arc,
-    CarteJSON,
-    Contexte,
-    DifficulteIA,
-    Joueur,
-    ModeJeu,
-    Noeud,
-    Position,
-    PremierTour
-} from "@/app/modules/Interfaces";
+import {Arc, CarteJSON, Contexte, DifficulteIA, Joueur, ModeJeu, Noeud, Position, PremierTour} from "@/app/modules/Interfaces";
 import Link from "next/link";
 import {useRouter, useSearchParams} from "next/navigation";
 import NouveauPopUpModal from "@/app/components/editeur/modals/NouveauPopUpModal";
@@ -412,6 +402,7 @@ export default function Home() {
                                 flexDirection: "column",
                                 justifyContent: "space-between"
                             }}>
+                                <h3 className="text-center">👀🗺️ AFFICHAGE DE LA CARTE</h3>
                                 <div style={{
                                     maxWidth: "100%",
                                     maxHeight: "100%",
@@ -546,8 +537,6 @@ export default function Home() {
                                         </div>
                                     </>
                                 )}
-                            </article>
-                            {/* Boutons qui permettent de choisir une carte et de lancer une partie */}
                             <div style={{display: "flex", justifyContent: "center", gap: "1rem"}}>
                                 <Link id={"btnSelec"} href={"?showSelec=true"} role={"button"}>
                                     Choisir une carte
@@ -557,6 +546,8 @@ export default function Home() {
                                     ▶️ Démarrer
                                 </button>
                             </div>
+                            </article>
+                            {/* Boutons qui permettent de choisir une carte et de lancer une partie */}
                         </div>
                     </div>
 
