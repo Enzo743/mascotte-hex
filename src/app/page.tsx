@@ -280,25 +280,6 @@ export default function Home() {
         }
     }
 
-    /* === boutonRedemarrer 
-    Quand la partie est terminée, ce bouton est affiché
-    Il permet de revenir à l'écran de sélection et de réinitialiser tous les etats, pour ne pas causer de soucis avec la partie suivante
-    */
-    function boutonRedemarrer() {
-        if (tour < 2) return;
-        return (
-            <button
-                onClick={() => {
-                    definirDifficulteIA("facile"); // On remet la difficulté par défaut
-                    definirModeJeu("");
-                    definirPremierTour(undefined);
-                    definirVictoire(null); // En bref toutes les variables on les réinitialise
-                    definirJeuDemarre(false); // Pour retourner sur l'écran de sélection comme neuf
-                }}
-            >🔄 Rejouer</button>
-        );
-    }
-
     if (jeuDemarre && contexte) {
         return (
             <>
@@ -312,7 +293,7 @@ export default function Home() {
                     texte={"Bravo"}
                     onClickFermeture={() => router.push(`/?id=${carteId}`)}
                     button={true}
-                    buttonLabel="🔄 Rejouer"
+                    buttonLabel="Revenir à l'accueil"
                     onClickButton={() => {
                         router.push("/");
                         definirDifficulteIA("facile");
@@ -375,9 +356,6 @@ export default function Home() {
                     </div>
 
                 </main>
-
-                {/* Affiche le bouton redémarrer seulement si la partie est finie */}
-                {boutonRedemarrer()}
             </>
         );
     } else {
