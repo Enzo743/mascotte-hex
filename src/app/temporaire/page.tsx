@@ -7,9 +7,12 @@ import {useEffect, useState} from "react";
 import {useSearchParams, useRouter} from "next/navigation";
 import {TraitementCarte, TraitementGraphe, TraitementTotal, TraitementJoueurInitial} from "./Traitement";
 import carteBrute from "./carte.json" assert {type: "json"};
+import VictoirePopUpModal from "../components/VictoirePopUpModal";
 const carteJSON: CarteJSON = carteBrute as CarteJSON;
 
 export default function Home() {
+    const router = useRouter();
+
     const [contexte, definirContexte] = useState<Contexte | undefined>(undefined);
     const [tour, changerTour] = useState<number>(0);
     const [rayon, definirRayon] = useState<number>(60);
@@ -19,7 +22,7 @@ export default function Home() {
     const [difficulteIA, definirDifficulteIA] = useState<DifficulteIA>("facile");
 
     const [jeuDemarre, definirJeuDemarre] = useState<boolean>(false);
-    const [victoire, definirVictoire] = useState<"info" | "bio" | null>(null);
+    const [victoire, definirVictoire] = useState<"Info" | "Bio" | null>(null);
 
     useEffect(() => {
         if (contexte) {
@@ -100,7 +103,7 @@ export default function Home() {
             joueurIAUpdate.position.y === resAdverse.y) { // Vérifier si l'IA à gagnée
             definirContexte(nouveauContexte);
             changerTour(iaInfo ? 2 : 3);
-            definirVictoire(iaInfo ? "info" : "bio");
+            definirVictoire(iaInfo ? "Info" : "Bio");
             return;
         }
 
@@ -140,7 +143,7 @@ export default function Home() {
                     contexte.joueurInfo.position.y === contexte.carte.residenceInfo.y && 
                     contexte.joueurInfo.mascotte) {
                     changerTour(2);
-                    definirVictoire("info");
+                    definirVictoire("Info");
                     return;
                 }
             } else if (tour === 1) {
@@ -148,7 +151,7 @@ export default function Home() {
                     contexte.joueurBio.position.y === contexte.carte.residenceBio.y && 
                     contexte.joueurBio.mascotte) {
                     changerTour(3);
-                    definirVictoire("bio");
+                    definirVictoire("Bio");
                     return;
                 }
             }
@@ -169,7 +172,7 @@ export default function Home() {
             definirJeuDemarre(true);   
         }
     }
-
+    /*
     function afficherVictoire() {
         if (!victoire) return null; // Pour l'afficher que quand c'est nécessaire
 
@@ -195,7 +198,7 @@ export default function Home() {
             </dialog>
         );
     }
-
+    */
     function boutonRedemarrer() {
         if (tour < 2) return;
 
@@ -215,7 +218,15 @@ export default function Home() {
     if (jeuDemarre && contexte) {
         return (
             <>
-                {afficherVictoire()}
+                {showVictoire && <VictoirePopUpModal
+                    texte={"Victoire de l'équipe " + victoire}
+                    button={true}
+                    buttonLabel="Revenir à l'accueil"
+                    onClickButton={router.push("/")} // url page d'accueil
+                    sndButton={true}
+                    sndButtonLabel="Rejouer"
+                    onClickSndButton={router.push("/")} // url pour rejouer sur la même carte 
+                />}
 
                 <div className="container-fluid">
                     <input 

@@ -160,7 +160,7 @@ export function Affichage({contexte, rayon, tour, deplacement}: AffichageParams)
                                 <Text
                                     x = {mascotteBio.positionCanvas.x}
                                     y = {mascotteBio.positionCanvas.y}
-                                    text = {contexte.joueurInfo.mascotte ? "🥦" : ""}
+                                    text = {"🥦"}
                                     fontSize = {rayon/2}
                                     offsetX = {rayon/3.5}
                                     offsetY = {rayon/3.5}
@@ -168,7 +168,7 @@ export function Affichage({contexte, rayon, tour, deplacement}: AffichageParams)
                                 <Text
                                     x = {mascotteInfo.positionCanvas.x}
                                     y = {mascotteInfo.positionCanvas.y}
-                                    text = {contexte.joueurBio.mascotte ? "🐧" : ""}
+                                    text = {"🐧"}
                                     fontSize = {rayon/2}
                                     offsetX = {rayon/3.5}
                                     offsetY = {rayon/3.5}
