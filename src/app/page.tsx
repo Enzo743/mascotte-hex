@@ -23,6 +23,7 @@ import NouveauPopUpModal from "@/app/components/editeur/modals/NouveauPopUpModal
 import GrilleEditeur from "@/app/components/editeur/GrilleEditeur";
 import {Case, Connexion} from "@/app/components/Structure";
 import {Terrain} from "@/app/components/Terrain";
+import { TbZoom } from "react-icons/tb";
 
 // Je commenterais le code demain si j'ai pas trop de bugs ou de problèmes à corriger
 // J'ai mis l'ancienne page dans page.old.tsx
@@ -281,25 +282,58 @@ export default function Home() {
             <>
                 {afficherVictoire()}
 
-                <div className="container-fluid">
-                    <input
-                        type="range"
-                        min={5}
-                        max={200}
-                        value={rayon}
-                        onChange={(event) => {
-                            definirRayon(Number(event.target.value));
-                        }}
-                    />
-                    <Affichage
-                        contexte={contexte}
-                        rayon={rayon}
-                        tour={tour}
-                        deplacement={deplacerJoueur}
-                    />
-                </div>
+                <header className={"head-compact"}>
+                    <h1 className={"titre-head"}>{`Jeu en cours sur la carte "${carteId}"`}</h1>
+                </header>
+                <main>
+                    <div className={"container-fluid visualiser"}>
+                        <div className={"sidebar-right"}>
+                            <div className={"grille2"}>
+                                <div className={"contenu-visu"}>
+                                    <Affichage
+                                        contexte={contexte}
+                                        rayon={rayon}
+                                        tour={tour}
+                                        deplacement={deplacerJoueur}
+                                    />
+                                    <br/>
+                                    <button
+                                        onClick={() => {
+                                            router.push("/");
+                                            definirDifficulteIA("facile");
+                                            definirModeJeu("");
+                                            definirPremierTour(undefined);
+                                            definirVictoire(null);
+                                            definirJeuDemarre(false);
+                                        }}
+                                    >Revenir à l'accueil</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="zoom-vertical">
+                        <div className="zoom-vertical-icon">
+                            <TbZoom size={24} />
+                        </div>
+
+                        <input
+                            className="zoom-vertical-range"
+                            type={"range"}
+                            min={20}
+                            max={65}
+                            onChange={(e) => definirRayon(Number(e.currentTarget.value))}
+                        />
+
+                        <div className="zoom-vertical-value">
+                            {rayon}
+                        </div>
+                    </div>
+
+                </main>
 
                 {boutonRedemarrer()}
+                
             </>
         );
     } else {

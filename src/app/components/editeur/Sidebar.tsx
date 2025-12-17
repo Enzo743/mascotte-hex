@@ -3,7 +3,7 @@ import {IoIosArrowForward} from "react-icons/io";
 import {LuFlower, LuMountain, LuWaves} from "react-icons/lu";
 import {MdOutlineForest} from "react-icons/md";
 import {GiBroccoli, GiCarabiner, GiPenguin, GiRiver} from "react-icons/gi";
-import {HiOutlineSave} from "react-icons/hi";
+import {HiOutlineSave, HiOutlineHome} from "react-icons/hi";
 import {TbZoom} from "react-icons/tb";
 import {BiRedo, BiUndo} from "react-icons/bi";
 import {Case} from "@/app/components/Structure";
@@ -30,6 +30,7 @@ interface SidebarProps {
     modeRiviere: boolean;
     setModeRiviere: (modeRiviere: boolean) => void;
     onChangerCarte: () => void;
+    onChangerPage: () => void;
     onUndo?: () => void;
     onRedo?: () => void;
     peutUndo?: boolean;
@@ -58,6 +59,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                              modeRiviere,
                                              setModeRiviere,
                                              onChangerCarte,
+                                             onChangerPage,
                                              onUndo,
                                              onRedo,
                                              peutUndo = false,
@@ -69,18 +71,16 @@ const Sidebar: React.FC<SidebarProps> = ({
                 Edition de la carte &#34;{carteId}&#34;
             </h1>
 
-            {posInfo && posBio && (
-                <div className={"valide"} style={{
-                    backgroundColor: estValide ? "#dcfce7" : "#fee2e2",
-                    color: estValide ? "#166534" : "#991b1b",
-                }}>
-                    {estValide ? (
-                        <><span>✓</span><span>Valide - Chemin trouvé</span></>
-                    ) : (
-                        <><span>✗</span><span>Invalide - Aucun chemin trouvé</span></>
-                    )}
-                </div>
-            )}
+            <div className={"valide"} style={{
+                backgroundColor: estValide ? "#dcfce7" : "#fee2e2",
+                color: estValide ? "#166534" : "#991b1b",
+            }}>
+                {estValide ? (
+                    <><span>✓</span><span>Valide - Chemin trouvé</span></>
+                ) : (
+                    <><span>✗</span><span>Invalide - Aucun chemin trouvé</span></>
+                )}
+            </div>
 
             {/* Onglet du terrain */}
             <Categorie
@@ -150,6 +150,11 @@ const Sidebar: React.FC<SidebarProps> = ({
             <Categorie icon={HiOutlineSave} label={"Changer de carte"}
                        className={"menu-item"}
                        onClick={onChangerCarte}/>
+            
+            {/* Onglet pour retourner à la page d'accueil */}
+            <Categorie icon={HiOutlineHome} label={"Retourner à l'accueil"}
+                       className={"menu-item"}
+                       onClick={onChangerPage}/>
 
             {/* Boutons Undo et Redo */}
             <div className="undo-redo-container">

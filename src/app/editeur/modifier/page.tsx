@@ -91,7 +91,7 @@ export default function Page() {
 
         const nomActuel = carteId;
         const aLePrefixe = nomActuel.startsWith("invalide-");
-        const devraitAvoirLePrefixe = posInfo && posBio && !estValide;
+        const devraitAvoirLePrefixe = !estValide;
 
         // Si l'état du préfixe doit changer
         if (devraitAvoirLePrefixe && !aLePrefixe) {
@@ -242,7 +242,7 @@ export default function Page() {
     }
 
     // Détermine la couleur du cadre
-    const couleurCadre = posInfo && posBio ? (estValide ? "#22c55e" : "#ef4444") : "#6b7280";
+    const couleurCadre = estValide ? "#22c55e" : "#ef4444";
 
     return (
         <div className={"container-fluid editeur"} style={{
@@ -260,6 +260,7 @@ export default function Page() {
                      modeTyrolienne={modeTyrolienne} setModeTyrolienne={setModeTyrolienne}
                      modeRiviere={modeRiviere} setModeRiviere={setModeRiviere}
                      onChangerCarte={() => router.push(`/editeur/modifier?id=${carteId}&show=true`)}
+                     onChangerPage={() => router.push(`/`)}
                      onUndo={handleUndo} onRedo={handleRedo} peutUndo={peutUndo} peutRedo={peutRedo}/>
 
             {/* Modal qui s'ouvre quand on clique sur l'onglet pour changer de carte */}
