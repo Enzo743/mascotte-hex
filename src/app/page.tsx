@@ -5,23 +5,33 @@ import {plusCourtChemin} from "@/app/modules/Bot";
 import GestionnaireModal from "@/app/components/editeur/modals/GestionnaireModal";
 import {getCarte} from "@/app/actions/getCarte";
 import GrilleEditeur from "@/app/components/editeur/GrilleEditeur";
-import {Arc, CarteJSON, Contexte, DifficulteIA, Joueur, ModeJeu, Noeud, Position, PremierTour} from "@/app/modules/Interfaces";
+import {
+    Arc,
+    CarteJSON,
+    Contexte,
+    DifficulteIA,
+    Joueur,
+    ModeJeu,
+    Noeud,
+    Position,
+    PremierTour
+} from "@/app/modules/Interfaces";
 import Link from "next/link";
-import {useSearchParams, useRouter} from "next/navigation";
+import {useRouter, useSearchParams} from "next/navigation";
 import NouveauPopUpModal from "@/app/components/editeur/modals/NouveauPopUpModal";
 import {useEffect, useState} from "react";
 import {Case, Connexion} from "@/app/components/Structure";
 import {Terrain} from "@/app/components/Terrain";
 import {TraitementCarte, TraitementGraphe, TraitementTotal} from "@/app/modules/Traitement";
 import VictoirePopUpModal from "@/app/components/VictoirePopUpModal";
-import { TbZoom } from "react-icons/tb";
+import {TbZoom} from "react-icons/tb";
 
 /* === Home ===
 Page principale du projet, c'est elle qui gère le fonctionnement du jeu, et la selection des différents modes
 Elle relie tout
 */
 export default function Home() {
-    // Ca c'est à Enzo de commenter je crois
+    // Permet de récupérer les différents paramètres qui sont dans l'URL à différents moments
     const router = useRouter();
     const searchParams = useSearchParams();
     const carteId = searchParams.get("id");
@@ -29,8 +39,12 @@ export default function Home() {
     const showVictoire = searchParams.get("showVict");
     const show = searchParams.get("show");
     const showModification = searchParams.get("showModif");
+
+    // États pour stocker les différents objets à la visualisation de la carte
     const [carteJSONvisu, definirCarteJSONvisu] = useState<CarteJSON | null>(null);
     const [hexagones, definirHexagones] = useState<Case[]>([]);
+    const [residenceInfo, definirResidenceInfo] = useState(null);
+    const [residenceBio, definirResidenceBio] = useState(null);
     const [tyroliennes, definirTyroliennes] = useState<Connexion[]>([]);
     const [rivieres, definirRivieres] = useState<Connexion[]>([]);
 
@@ -48,8 +62,8 @@ export default function Home() {
     const [jeuDemarre, definirJeuDemarre] = useState<boolean>(false);
     const [tour, changerTour] = useState<number>(0);
     const [victoire, definirVictoire] = useState<"Info" | "Bio" | null>(null);
-    
-    // Recalcule les positions des hexagones, leurs taille, si la taille de la carte est ajustée
+
+    // Recalcule les positions des hexagones, leurs tailles, si la taille de la carte est ajustée
     // Et affiche donc la nouvelle carte en résultant
     useEffect(() => {
         if (!carteJSON) return;
@@ -69,24 +83,39 @@ export default function Home() {
         }
     }, [tour]);
 
-    // Ca c'est à Enzo de commenter je crois
+    // Permet de changer la partie de visualisation de carte
     useEffect(() => {
         if (carteId) {
             showCarteVisu();
         }
     }, [carteId, rayon]);
 
-    // Ca c'est à Enzo de commenter je crois
+    // Fonction qui permet de charger la carte sélectionnée afin de la visualiser
     async function showCarteVisu() {
         if (carteId) {
-            const carte = await getCarte(carteId);
+            const carte: CarteJSON = await getCarte(carteId);
+
+            console.log(carte);
+
+            if (!carte || !carte.résidences) return;
+
             definirCarteJSONvisu(carte);
 
+            const coordResidenceInfo = carte.résidences.info;
+            const coordResidenceBio = carte.résidences.bio;
+
+            const idResidenceInfo = `${coordResidenceInfo[0]}-${coordResidenceInfo[1]}`;
+            const idResidenceBio = `${coordResidenceBio[0]}-${coordResidenceBio[1]}`;
+
             const hex = Terrain(carte, rayon);
+            const residenceInfo = hex.find(h => h.id === idResidenceInfo);
+            const residenceBio = hex.find(h => h.id === idResidenceBio);
             const tyrol = carte.connexions.filter(c => c.type === "tyrolienne");
             const riv = carte.connexions.filter(c => c.type === "riviere");
 
             definirHexagones(hex);
+            definirResidenceBio(residenceBio);
+            definirResidenceInfo(residenceInfo);
             definirTyroliennes(tyrol);
             definirRivieres(riv);
         }
@@ -250,7 +279,7 @@ export default function Home() {
             definirJeuDemarre(true);
         }
     }
-    
+
     /* === boutonRedemarrer 
     Quand la partie est terminée, ce bouton est affiché
     Il permet de revenir à l'écran de sélection et de réinitialiser tous les etats, pour ne pas causer de soucis avec la partie suivante
@@ -289,60 +318,61 @@ export default function Home() {
                         definirDifficulteIA("facile");
                         definirModeJeu("");
                         definirPremierTour(undefined);
-                        definirVictoire(null); 
+                        definirVictoire(null);
                         definirJeuDemarre(false);
                     }}
                 />}
 
-                    <header className={"head-compact"}>
-                        <h1 className={"titre-head"}>{`Jeu en cours sur la carte "${carteId}"`}</h1>
-                    </header>
-                    <main>
-                        <div className={"container-fluid visualiser"}>
-                            <div className={"sidebar-right"}>
-                                <div className={"grille2"}>
-                                    <div className={"contenu-visu"}>
-                                        {/* Appel à la fonction affichage pour afficher la carte */}
-                                        <Affichage
-                                            contexte={contexte}
-                                            rayon={rayon}
-                                            tour={tour}
-                                            deplacement={deplacerJoueur}
-                                        />
-                                        <br/>
-                                        <button
-                                            onClick={() => {
-                                                router.push("/");
-                                                definirDifficulteIA("facile");
-                                                definirModeJeu("");
-                                                definirPremierTour(undefined);
-                                                definirVictoire(null);
-                                                definirJeuDemarre(false);
-                                            }}
-                                        >Revenir à l'accueil</button>
-                                    </div>
+                <header className={"head-compact"}>
+                    <h1 className={"titre-head"}>{`Jeu en cours sur la carte "${carteId}"`}</h1>
+                </header>
+                <main>
+                    <div className={"container-fluid visualiser"}>
+                        <div className={"sidebar-right"}>
+                            <div className={"grille2"}>
+                                <div className={"contenu-visu"}>
+                                    {/* Appel à la fonction affichage pour afficher la carte */}
+                                    <Affichage
+                                        contexte={contexte}
+                                        rayon={rayon}
+                                        tour={tour}
+                                        deplacement={deplacerJoueur}
+                                    />
+                                    <br/>
+                                    <button
+                                        onClick={() => {
+                                            router.push("/");
+                                            definirDifficulteIA("facile");
+                                            definirModeJeu("");
+                                            definirPremierTour(undefined);
+                                            definirVictoire(null);
+                                            definirJeuDemarre(false);
+                                        }}
+                                    >Revenir à l'accueil
+                                    </button>
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        <div className="zoom-vertical">
-                            <div className="zoom-vertical-icon">
-                                {/* Curseur pour changer la taille de la carte */}
-                                <TbZoom size={24} />
-                            </div>
-
-                            <input
-                                className="zoom-vertical-range"
-                                type={"range"}
-                                min={20}
-                                max={65}
-                                onChange={(e) => definirRayon(Number(e.currentTarget.value))}
-                            />
-
-                            <div className="zoom-vertical-value">
-                                {rayon}
-                            </div>
+                    <div className="zoom-vertical">
+                        <div className="zoom-vertical-icon">
+                            {/* Curseur pour changer la taille de la carte */}
+                            <TbZoom size={24}/>
                         </div>
+
+                        <input
+                            className="zoom-vertical-range"
+                            type={"range"}
+                            min={20}
+                            max={65}
+                            onChange={(e) => definirRayon(Number(e.currentTarget.value))}
+                        />
+
+                        <div className="zoom-vertical-value">
+                            {rayon}
+                        </div>
+                    </div>
 
                 </main>
 
@@ -361,8 +391,8 @@ export default function Home() {
                 <main className="container-fluid" style={{height: "calc(100vh - 4rem)"}}>
                     <div className="grid" style={{height: "100%"}}>
                         <div className="container">
+                            {/* Partie de l'éditeur */}
                             <article>
-                                {/* Ca c'est à Enzo de commenter je crois */}
                                 <h3 className="text-center">🔧🗺️ EDITEUR DE CARTE</h3>
                                 <br/>
                                 <div className={"grid"}>
@@ -370,6 +400,7 @@ export default function Home() {
                                     <Link id="btnModifier" href="/?showModif=true" role="button">Modifier</Link>
                                 </div>
 
+                                {/* Permet l'affichage des popups de création et de modification de cartes */}
                                 {show && <NouveauPopUpModal/>}
                                 {showModification &&
                                     <GestionnaireModal prefixe="./editeur/modifier" onCloseHref={"/"}/>}
@@ -389,24 +420,14 @@ export default function Home() {
                                     {hexagones.length > 0 && <GrilleEditeur
                                         rayon={rayon}
                                         hexagones={hexagones}
-                                        mascotteInfo={null}
-                                        mascotteBio={null}
+                                        mascotteInfo={residenceInfo}
+                                        mascotteBio={residenceBio}
                                         rivieres={rivieres}
                                         tyroliennes={tyroliennes}
                                         onClick={(hex) => {
                                         }}
                                     />}
                                     <br/>
-                                </div>
-                                
-                                {/* Faut bouger ca autre part */}
-                                <div style={{display: "flex", justifyContent: "center", gap: "1rem"}}>
-                                    <Link id={"btnSelec"} href={"?showSelec=true"} role={"button"}>
-                                        Choisir une carte
-                                    </Link>
-                                    {/* Lance le jeu si les conditions nécessaires sont réunies */}
-                                    {modeJeu && premierTour && carteId &&
-                                        <button onClick={demarrerJeu}>▶️ Démarrer</button>}
                                 </div>
                             </article>
 
@@ -423,11 +444,11 @@ export default function Home() {
                                         <option value="bot">🤖 CONTRE L'IA</option>
                                     </select>
                                 </div>
-                                {/* Si le mode de jeu joueur contre joueur à été selectionné */}
+                                {/* Si le mode de jeu joueur contre joueur a été selectionné */}
                                 {modeJeu === "pvp" && (
                                     <>
                                         <hr/>
-                                        {/* On choisis le premier joueur, info, bio ou choisis aléatoirement entre les deux */}
+                                        {/* On choisit le premier joueur, info, bio ou choisis aléatoirement entre les deux */}
                                         <h4>Qui commence ?</h4>
                                         <div role="group">
                                             {[
@@ -455,13 +476,13 @@ export default function Home() {
                                         </div>
                                     </>
                                 )}
-                                {/* Si le mode de jeu joueur contre robot à été selectionné */}
+                                {/* Si le mode de jeu joueur contre robot a été selectionné */}
                                 {modeJeu === "bot" && (
                                     <>
                                         <hr/>
                                         <h4>Choisir votre équipe</h4>
                                         <div role="group" style={{flexWrap: "wrap"}}>
-                                            {/* On choisis qui est le joueur (humain), il commencera en premier */}
+                                            {/* On choisit qui est le joueur (humain), il commencera en premier */}
                                             {[
                                                 {key: "info", label: "🐧 Informaticiens", color: "#9486E1"},
                                                 {key: "bio", label: "🥦 Biologistes", color: "#F17961"}
@@ -485,7 +506,7 @@ export default function Home() {
                                             })}
                                         </div>
                                         <hr/>
-                                        {/* On choisis la difficulté de l'IA, facile par défaut */}
+                                        {/* On choisit la difficulté de l'IA, facile par défaut */}
                                         <h4>Difficulté de l’IA</h4>
                                         <div
                                             role="group"
@@ -494,7 +515,7 @@ export default function Home() {
                                                 flexWrap: "wrap",
                                                 justifyContent: "center"
                                             }}
-                                            >
+                                        >
                                             {[
                                                 {key: "stupide", emoji: "🤪", bgColor: "#4ade80"},
                                                 {key: "facile", emoji: "🙂", bgColor: "#a3e635"},
@@ -504,33 +525,42 @@ export default function Home() {
                                             ].map((v) => {
                                                 const selected = difficulteIA === v.key;
                                                 return (
-                                                <button
-                                                    key={v.key}
-                                                    onClick={() => definirDifficulteIA(v.key as DifficulteIA)}
-                                                    style={{
-                                                        flex: "1 1 200px",
-                                                        maxWidth: "260px",
-                                                        boxSizing: "border-box",
-                                                        fontWeight: selected ? "bold" : undefined,
-                                                        textDecoration: selected ? "underline" : undefined,
-                                                        backgroundColor: v.bgColor,
-                                                        color: "#000",
-                                                        whiteSpace: "normal",
-                                                    }}
-                                                >
-                                                    {v.emoji} {v.key.toUpperCase()}
-                                                </button>
+                                                    <button
+                                                        key={v.key}
+                                                        onClick={() => definirDifficulteIA(v.key as DifficulteIA)}
+                                                        style={{
+                                                            flex: "1 1 200px",
+                                                            maxWidth: "260px",
+                                                            boxSizing: "border-box",
+                                                            fontWeight: selected ? "bold" : undefined,
+                                                            textDecoration: selected ? "underline" : undefined,
+                                                            backgroundColor: v.bgColor,
+                                                            color: "#000",
+                                                            whiteSpace: "normal",
+                                                        }}
+                                                    >
+                                                        {v.emoji} {v.key.toUpperCase()}
+                                                    </button>
                                                 );
                                             })}
                                         </div>
                                     </>
                                 )}
                             </article>
-
+                            {/* Boutons qui permettent de choisir une carte et de lancer une partie */}
+                            <div style={{display: "flex", justifyContent: "center", gap: "1rem"}}>
+                                <Link id={"btnSelec"} href={"?showSelec=true"} role={"button"}>
+                                    Choisir une carte
+                                </Link>
+                                {/* Lance le jeu si les conditions nécessaires sont réunies */}
+                                <button onClick={demarrerJeu} disabled={!(modeJeu && premierTour && carteId)}>
+                                    ▶️ Démarrer
+                                </button>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Ca c'est à Enzo de commenter je crois */}
+                    {/* Permet l'affichage de la sélection des cartes */}
                     {showSelection &&
                         <GestionnaireModal prefixe={"/"} onCloseHref={"/"} restriction/>}
                 </main>
