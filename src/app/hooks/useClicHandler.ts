@@ -285,16 +285,17 @@ export function useClicHandler(props: useClicHandlerProps) {
                 return;
             }
 
+            const connexions = props.jsonData?.connexions || [];
+            const rivieresExistantes = connexions.filter((c: any) => c.type === "riviere");
+
+            const estSurUneAutreRiviere = rivieresExistantes.some((riv: any) =>
+                riv.tuiles.some((t: any) => t[0] === x && t[1] === y)
+            );
+
             const nouvellesCases = [...props.casesRiviere, [x, y]];
             props.setCasesRiviere(nouvellesCases);
 
-            const response = await fetch(`/api/cartes/riviere`, {
-                method: "POST",
-                body: JSON.stringify({"nom": props.carteId, "tuile": {x, y}})
-            });
-            const {status, presence} = await response.json();
-
-            const estTerminee = (hex.type === "ocean") || (status === "success" && presence === true);
+            const estTerminee = (hex.type === "ocean") || estSurUneAutreRiviere;
 
             if (estTerminee) {
                 const reponse: any = await setTuiles(JSON.stringify({
