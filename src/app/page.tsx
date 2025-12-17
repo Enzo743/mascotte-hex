@@ -456,7 +456,14 @@ export default function Home() {
                                         <hr/>
 
                                         <h4>Difficulté de l’IA</h4>
-                                        <div role="group">
+                                        <div
+                                            role="group"
+                                            style={{
+                                                display: "flex",
+                                                flexWrap: "wrap",
+                                                justifyContent: "center"
+                                            }}
+                                            >
                                             {[
                                                 {key: "stupide", emoji: "🤪", bgColor: "#4ade80"},
                                                 {key: "facile", emoji: "🙂", bgColor: "#a3e635"},
@@ -466,18 +473,22 @@ export default function Home() {
                                             ].map((v) => {
                                                 const selected = difficulteIA === v.key;
                                                 return (
-                                                    <button
-                                                        key={v.key}
-                                                        onClick={() => definirDifficulteIA(v.key as DifficulteIA)}
-                                                        style={{
-                                                            fontWeight: selected ? "bold" : undefined,
-                                                            textDecoration: selected ? "underline" : undefined,
-                                                            backgroundColor: v.bgColor,
-                                                            color: "#000"
-                                                        }}
-                                                    >
-                                                        {v.emoji} {v.key.toUpperCase()}
-                                                    </button>
+                                                <button
+                                                    key={v.key}
+                                                    onClick={() => definirDifficulteIA(v.key as DifficulteIA)}
+                                                    style={{
+                                                        flex: "1 1 200px",
+                                                        maxWidth: "260px",
+                                                        boxSizing: "border-box",
+                                                        fontWeight: selected ? "bold" : undefined,
+                                                        textDecoration: selected ? "underline" : undefined,
+                                                        backgroundColor: v.bgColor,
+                                                        color: "#000",
+                                                        whiteSpace: "normal",
+                                                    }}
+                                                >
+                                                    {v.emoji} {v.key.toUpperCase()}
+                                                </button>
                                                 );
                                             })}
                                         </div>
