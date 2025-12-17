@@ -335,8 +335,8 @@ export default function Home() {
                         <input
                             className="zoom-vertical-range"
                             type={"range"}
-                            min={20}
-                            max={65}
+                            min={10}
+                            max={100}
                             onChange={(e) => definirRayon(Number(e.currentTarget.value))}
                         />
 
@@ -510,6 +510,8 @@ export default function Home() {
                                         </div>
                                     </>
                                 )}
+                            {/* Boutons qui permettent de choisir une carte et de lancer une partie */}
+                            <hr/>
                             <div className="actions-footer">
                                 <Link id={"btnSelec"} href={"?showSelec=true"} role={"button"}>
                                     Choisir une carte
@@ -520,7 +522,6 @@ export default function Home() {
                                 </button>
                             </div>
                             </article>
-                            {/* Boutons qui permettent de choisir une carte et de lancer une partie */}
                         </div>
                     </div>
 
