@@ -252,9 +252,11 @@ export default function Home() {
         return (
             <>
                 {showVictoire && <VictoirePopUpModal
-                    texte={"Victoire de l'équipe " + victoire}
+                    titre={"Victoire de l'équipe " + victoire}
+                    texte={"Bravo !"}
+                    onClickFermeture={() => router.push(`/?id=${carteId}`)}
                     button={true}
-                    buttonLabel="Rejouer"
+                    buttonLabel="🔄 Rejouer"
                     onClickButton={() => {
                         router.push("/");
                         definirDifficulteIA("facile");
