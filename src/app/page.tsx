@@ -265,7 +265,7 @@ export default function Home() {
                     definirVictoire(null); // En bref toutes les variables on les réinitialise
                     definirJeuDemarre(false); // Pour retourner sur l'écran de sélection comme neuf
                 }}
-            >🔁 Rejouer</button>
+            >🔄 Rejouer</button>
         );
     }
 
@@ -278,9 +278,11 @@ export default function Home() {
                 quand quelqu'un gagne, showVictoire est mis à true, quand on clique sur le bouton Close, showVictoire est mis à false
                 */}
                 {showVictoire && <VictoirePopUpModal
-                    texte={"Victoire de l'équipe " + victoire}
+                    titre={"Victoire de l'équipe " + victoire}
+                    texte={"Bravo"}
+                    onClickFermeture={() => router.push(`/?id=${carteId}`)}
                     button={true}
-                    buttonLabel="Rejouer"
+                    buttonLabel="🔄 Rejouer"
                     onClickButton={() => {
                         router.push("/");
                         definirDifficulteIA("facile");
