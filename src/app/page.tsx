@@ -141,6 +141,7 @@ export default function Home() {
             definirContexte(nouveauContexte);
             changerTour(iaInfo ? 2 : 3);
             definirVictoire(iaInfo ? "Info" : "Bio");
+            router.push(`/?id=${carteId}&showVict=true`);
             return;
         }
 
