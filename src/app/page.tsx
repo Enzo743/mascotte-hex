@@ -5,6 +5,8 @@ import {plusCourtChemin} from "./modules/Bot";
 import {
     Arc,
     CarteJSON,
+    Case,
+    Connexion,
     Contexte,
     DifficulteIA,
     Joueur,
@@ -22,7 +24,6 @@ import {getCarte} from "@/app/actions/getCarte";
 import NouveauPopUpModal from "@/app/components/editeur/modals/NouveauPopUpModal";
 import VictoirePopUpModal from "./components/VictoirePopUpModal";
 import GrilleEditeur from "@/app/components/editeur/GrilleEditeur";
-import {Case, Connexion} from "@/app/components/Structure";
 import {Terrain} from "@/app/components/Terrain";
 
 // Je commenterais le code demain si j'ai pas trop de bugs ou de problèmes à corriger
@@ -52,6 +53,8 @@ export default function Home() {
 
     // Nécessaire pour la visualisation de la carte
     const [hexagones, definirHexagones] = useState<Case[]>([]);
+    const [residenceInfo, definirResidenceInfo] = useState(null);
+    const [residenceBio, definirResidenceBio] = useState(null);
     const [tyroliennes, definirTyroliennes] = useState<Connexion[]>([]);
     const [rivieres, definirRivieres] = useState<Connexion[]>([]);
 
@@ -208,13 +211,23 @@ export default function Home() {
     // Fonction qui se charge de charger la carte et de la visualiser
     async function showCarteVisu() {
         if (carteId) {
-            const carte = await getCarte(carteId);
+            const carte: CarteJSON = await getCarte(carteId);
             definirCarteJSONvisu(carte);
 
+            const coordResidenceInfo = carte.résidences.info;
+            const coordResidenceBio = carte.résidences.bio;
+
+            const idResidenceInfo = `${coordResidenceInfo[0]}-${coordResidenceInfo[1]}`;
+            const idResidenceBio = `${coordResidenceBio[0]}-${coordResidenceBio[1]}`;
+
             const hex = Terrain(carte, rayon);
+            const residenceInfo = hex.find(h => h.id === idResidenceInfo);
+            const residenceBio = hex.find(h => h.id === idResidenceBio);
             const tyrol = carte.connexions.filter(c => c.type === "tyrolienne");
             const riv = carte.connexions.filter(c => c.type === "riviere");
 
+            definirResidenceBio(residenceBio);
+            definirResidenceInfo(residenceInfo);
             definirHexagones(hex);
             definirTyroliennes(tyrol);
             definirRivieres(riv);
@@ -231,7 +244,7 @@ export default function Home() {
             definirJeuDemarre(true);
         }
     }
-    
+
     function boutonRedemarrer() {
         if (tour < 2) return;
 
@@ -260,7 +273,7 @@ export default function Home() {
                         definirDifficulteIA("facile");
                         definirModeJeu("");
                         definirPremierTour(undefined);
-                        definirVictoire(null); 
+                        definirVictoire(null);
                         definirJeuDemarre(false);
                     }}
                 />}
@@ -298,7 +311,6 @@ export default function Home() {
                         <div className="container">
                             <article>
                                 <h3 className="text-center">🔧🗺️ EDITEUR DE CARTE</h3>
-                                <br/>
                                 <div className={"grid"}>
                                     <Link id="btnNouveau" href="/?show=true" role="button">Nouveau</Link>
                                     <Link id="btnModifier" href="/?showModif=true" role="button">Modifier</Link>
@@ -315,6 +327,7 @@ export default function Home() {
                                 flexDirection: "column",
                                 justifyContent: "space-between"
                             }}>
+                                <h3 className={"text-center"}>🗺 VISUALISATION DE LA CARTE</h3>
                                 <div style={{
                                     maxWidth: "100%",
                                     maxHeight: "100%",
@@ -323,22 +336,14 @@ export default function Home() {
                                     {hexagones.length > 0 && <GrilleEditeur
                                         rayon={rayon}
                                         hexagones={hexagones}
-                                        mascotteInfo={null}
-                                        mascotteBio={null}
+                                        mascotteInfo={residenceInfo}
+                                        mascotteBio={residenceBio}
                                         rivieres={rivieres}
                                         tyroliennes={tyroliennes}
                                         onClick={(hex) => {
                                         }}
                                     />}
                                     <br/>
-                                </div>
-
-                                <div style={{display: "flex", justifyContent: "center", gap: "1rem"}}>
-                                    <Link id={"btnSelec"} href={"?showSelec=true"} role={"button"}>
-                                        Choisir une carte
-                                    </Link>
-                                    {modeJeu && premierTour && carteId &&
-                                        <button onClick={demarrerJeu}>▶️ Démarrer</button>}
                                 </div>
                             </article>
 
@@ -442,8 +447,16 @@ export default function Home() {
                                         </div>
                                     </>
                                 )}
+                                <div style={{display: "flex", justifyContent: "center", gap: "1rem"}}>
+                                    <Link id={"btnSelec"} href={"?showSelec=true"} role={"button"}>
+                                        Choisir une carte
+                                    </Link>
+                                    <button
+                                        onClick={demarrerJeu} disabled={!(modeJeu && premierTour && carteId)}>▶️
+                                        Démarrer
+                                    </button>
+                                </div>
                             </article>
-
                         </div>
                     </div>
 
