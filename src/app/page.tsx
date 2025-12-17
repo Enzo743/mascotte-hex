@@ -279,8 +279,8 @@ export default function Home() {
                 quand quelqu'un gagne, showVictoire est mis à true, quand on clique sur le bouton Close, showVictoire est mis à false
                 */}
                 {showVictoire && <VictoirePopUpModal
-                    titre={"Victoire de l'équipe " + victoire}
-                    texte={"Bravo"}
+                    titre={victoire === "Info" ? "🐧 Victoire de l'équipe Info" : "🥦 Victoire de l'équipe Bio"}
+                    texte={"Bravo 👏"}
                     onClickFermeture={() => router.push(`/?id=${carteId}`)}
                     button={true}
                     buttonLabel="🔄 Rejouer"
