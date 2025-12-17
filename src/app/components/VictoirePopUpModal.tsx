@@ -6,9 +6,6 @@ interface VictoirePopUpModalProps {
     button: boolean;
     buttonLabel: string;
     onClickButton: () => void;
-    sndButton: boolean;
-    sndButtonLabel: string;
-    onClickSndButton: () => void;
 }
 
 const VictoirePopUpModal: React.FC<VictoirePopUpModalProps> = ({
@@ -16,9 +13,6 @@ const VictoirePopUpModal: React.FC<VictoirePopUpModalProps> = ({
                                                                button,
                                                                buttonLabel,
                                                                onClickButton,
-                                                               sndButton,
-                                                               sndButtonLabel,
-                                                               onClickSndButton,
                                                            }) => {
 
     // Modal qui permet d'afficher un message de victoire avec des éléments paramétrables
@@ -26,11 +20,10 @@ const VictoirePopUpModal: React.FC<VictoirePopUpModalProps> = ({
         <dialog open>
             <article>
                 <h1 className={"texte-victoire-modal"}>{texte}</h1>
-                {button && sndButton &&
+                {button && 
                     <div className={"buttons-victoire-modal"}>
                         <button type="button"
                                 onClick={onClickButton}>{buttonLabel}</button>
-                        <button type="button" onClick={onClickSndButton}>{sndButtonLabel}</button>
                     </div>}
             </article>
         </dialog>

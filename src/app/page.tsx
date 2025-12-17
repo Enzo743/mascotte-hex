@@ -15,16 +15,18 @@ import {
 } from "./modules/Interfaces";
 import {useEffect, useState} from "react";
 import {TraitementCarte, TraitementGraphe, TraitementTotal} from "./modules/Traitement";
-import {useSearchParams} from "next/navigation";
+import {useSearchParams, useRouter} from "next/navigation";
 import GestionnaireModal from "@/app/components/editeur/modals/GestionnaireModal";
 import Link from "next/link";
 import {getCarte} from "@/app/actions/getCarte";
 import NouveauPopUpModal from "@/app/components/editeur/modals/NouveauPopUpModal";
+import VictoirePopUpModal from "./components/VictoirePopUpModal";
 
 // Je commenterais le code demain si j'ai pas trop de bugs ou de problèmes à corriger
 // J'ai mis l'ancienne page dans page.old.tsx
 // Une fois la version finale réalisée faudra penser à nettoyer un peu les fichiers inutiles, pour l'instant dans le doutes on garde
 export default function Home() {
+    const router = useRouter();
     const searchParams = useSearchParams();
     const carteId = searchParams.get("id");
     const showSelection = searchParams.get("showSelec");
@@ -43,7 +45,7 @@ export default function Home() {
     const [difficulteIA, definirDifficulteIA] = useState<DifficulteIA>("facile");
 
     const [jeuDemarre, definirJeuDemarre] = useState<boolean>(false);
-    const [victoire, definirVictoire] = useState<"info" | "bio" | null>(null);
+    const [victoire, definirVictoire] = useState<"Info" | "Bio" | null>(null);
 
     useEffect(() => {
         if (contexte) {
@@ -124,7 +126,7 @@ export default function Home() {
             joueurIAUpdate.position.y === resAdverse.y) { // Vérifier si l'IA à gagnée
             definirContexte(nouveauContexte);
             changerTour(iaInfo ? 2 : 3);
-            definirVictoire(iaInfo ? "info" : "bio");
+            definirVictoire(iaInfo ? "Info" : "Bio");
             return;
         }
 
@@ -164,7 +166,8 @@ export default function Home() {
                     contexte.joueurInfo.position.y === contexte.carte.residenceInfo.y &&
                     contexte.joueurInfo.mascotte) {
                     changerTour(2);
-                    definirVictoire("info");
+                    definirVictoire("Info");
+                    router.push(`/?id=${carteId}&showVict=true`);
                     return;
                 }
             } else if (tour === 1) {
@@ -172,7 +175,8 @@ export default function Home() {
                     contexte.joueurBio.position.y === contexte.carte.residenceBio.y &&
                     contexte.joueurBio.mascotte) {
                     changerTour(3);
-                    definirVictoire("bio");
+                    definirVictoire("Bio");
+                    router.push(`/?id=${carteId}&showVict=true`);
                     return;
                 }
             }
@@ -196,40 +200,7 @@ export default function Home() {
             definirJeuDemarre(true);
         }
     }
-
-    // J'ai pas compris comment avait été implémenté le modal et pourquoi il avait besoin d'autant de composants externes
-    // De plus, il ne marchait pas à la victoire, il fallait réactualiser la carte pour le voir
-    // Voici donc une version "simple" avec peu de variables pour stocker l'état du modal
-    function afficherVictoire() {
-        if (!victoire) return null; // Pour l'afficher que quand c'est nécessaire
-
-        return (
-            <dialog open>
-                <article>
-                    <header style={{position: "relative"}}>
-                        <p><strong>
-                            {victoire === "info" ? "🥇🐧 Les informaticiens ont gagnés" : "🥇🥦 Les biologistes ont gagnés"}
-                        </strong></p>
-                        <button
-                            aria-label="Close"
-                            rel="prev"
-                            onClick={() => definirVictoire(null)}
-                            style={{
-                                position: "absolute",
-                                top: "1rem",
-                                right: "0.5rem"
-                            }} // Pour mettre la croix à droite et au milieu (plus joli)
-                        />
-                    </header>
-
-                    <p>Bravo franchement j'applaudit 👏👏</p>
-
-                    {boutonRedemarrer()}
-                </article>
-            </dialog>
-        );
-    }
-
+    
     function boutonRedemarrer() {
         if (tour < 2) return;
 
@@ -249,7 +220,19 @@ export default function Home() {
     if (jeuDemarre && contexte) {
         return (
             <>
-                {afficherVictoire()}
+                {showVictoire && <VictoirePopUpModal
+                    texte={"Victoire de l'équipe " + victoire}
+                    button={true}
+                    buttonLabel="Rejouer"
+                    onClickButton={() => {
+                        router.push("/");
+                        definirDifficulteIA("facile");
+                        definirModeJeu("");
+                        definirPremierTour(undefined);
+                        definirVictoire(null); 
+                        definirJeuDemarre(false);
+                    }}
+                />}
 
                 <div className="container-fluid">
                     <input
