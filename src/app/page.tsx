@@ -2,26 +2,41 @@
 "use client";
 import {Affichage} from "./modules/Affichage";
 import {plusCourtChemin} from "./modules/Bot";
-import {Arc, CarteJSON, Contexte, DifficulteIA, Joueur, ModeJeu, Noeud, Position, PremierTour} from "./modules/Interfaces";
+import {
+    Arc,
+    CarteJSON,
+    Contexte,
+    DifficulteIA,
+    Joueur,
+    ModeJeu,
+    Noeud,
+    Position,
+    PremierTour
+} from "./modules/Interfaces";
 import {useEffect, useState} from "react";
+import {TraitementCarte, TraitementGraphe, TraitementTotal} from "./modules/Traitement";
+import {useSearchParams} from "next/navigation";
+import GestionnaireModal from "@/app/components/editeur/modals/GestionnaireModal";
 import Link from "next/link";
-import {useSearchParams} from 'next/navigation';
-import NouveauPopUpModal from "./components/editeur/modals/NouveauPopUpModal";
-import "./globals.css";
-import GestionnaireModal from "./components/editeur/modals/GestionnaireModal";
-import {TraitementCarte, TraitementGraphe, TraitementTotal, TraitementJoueurInitial} from "./modules/Traitement";
-// Implémentation temporaire de la carte, il faudra bien sur demain enfin aujourd'hui plus tard,
-// la charger via l'API
-import carteBrute from "./modules/temp.json" assert {type: "json"};
-const carteJSON: CarteJSON = carteBrute as CarteJSON;
+import {getCarte} from "@/app/actions/getCarte";
+import NouveauPopUpModal from "@/app/components/editeur/modals/NouveauPopUpModal";
 
 // Je commenterais le code demain si j'ai pas trop de bugs ou de problèmes à corriger
 // J'ai mis l'ancienne page dans page.old.tsx
 // Une fois la version finale réalisée faudra penser à nettoyer un peu les fichiers inutiles, pour l'instant dans le doutes on garde
 export default function Home() {
+    const searchParams = useSearchParams();
+    const carteId = searchParams.get("id");
+    const showSelection = searchParams.get("showSelec");
+    const showVictoire = searchParams.get("showVict");
+    const show = searchParams.get("show");
+    const showVisualisation = searchParams.get("showVisu");
+    const showModification = searchParams.get("showModif");
+
     const [contexte, definirContexte] = useState<Contexte | undefined>(undefined);
     const [tour, changerTour] = useState<number>(0);
     const [rayon, definirRayon] = useState<number>(60);
+    const [carteJSON, definirCarteJSON] = useState<CarteJSON | null>(null);
 
     const [modeJeu, definirModeJeu] = useState<ModeJeu | undefined>("");
     const [premierTour, definirPremierTour] = useState<PremierTour | undefined>(undefined);
@@ -30,14 +45,9 @@ export default function Home() {
     const [jeuDemarre, definirJeuDemarre] = useState<boolean>(false);
     const [victoire, definirVictoire] = useState<"info" | "bio" | null>(null);
 
-    const searchParams = useSearchParams();
-    const show = searchParams.get("show");
-    const showVisualisation = searchParams.get("showVisu");
-    const showModification = searchParams.get("showModif");
-
     useEffect(() => {
         if (contexte) {
-            contexte.carte = TraitementCarte(carteJSON, rayon);    
+            contexte.carte = TraitementCarte(carteJSON, rayon);
         }
     }, [rayon]);
 
@@ -97,8 +107,8 @@ export default function Home() {
         const joueurIAUpdate: Joueur = {
             ...joueurIA,
             position: prochainePosition,
-            mascotte: joueurIA.mascotte || 
-                    (prochainePosition.x === (iaInfo ? contexte.carte.residenceBio.x : contexte.carte.residenceInfo.x) &&
+            mascotte: joueurIA.mascotte ||
+                (prochainePosition.x === (iaInfo ? contexte.carte.residenceBio.x : contexte.carte.residenceInfo.x) &&
                     prochainePosition.y === (iaInfo ? contexte.carte.residenceBio.y : contexte.carte.residenceInfo.y))
         };
 
@@ -129,9 +139,9 @@ export default function Home() {
 
         if (contexte) {
             const joueurActuel: Joueur = tour === 0 ? contexte.joueurInfo : contexte.joueurBio;
-            const arc: Arc | undefined = contexte.graphe.find(g => 
-                    g.noeud.x === joueurActuel.position.x &&
-                    g.noeud.y === joueurActuel.position.y
+            const arc: Arc | undefined = contexte.graphe.find(g =>
+                g.noeud.x === joueurActuel.position.x &&
+                g.noeud.y === joueurActuel.position.y
             );
             if (arc && arc.voisins.some(v => v.x === position.x && v.y === position.y)) { // Si la position est bien dans les voisins du joueur
                 if (tour === 0) {
@@ -150,16 +160,16 @@ export default function Home() {
         if (contexte) {
             // On vérifie si la partie se termine (victoire d'un des joueurs)
             if (tour === 0) {
-                if (contexte.joueurInfo.position.x === contexte.carte.residenceInfo.x && 
-                    contexte.joueurInfo.position.y === contexte.carte.residenceInfo.y && 
+                if (contexte.joueurInfo.position.x === contexte.carte.residenceInfo.x &&
+                    contexte.joueurInfo.position.y === contexte.carte.residenceInfo.y &&
                     contexte.joueurInfo.mascotte) {
                     changerTour(2);
                     definirVictoire("info");
                     return;
                 }
             } else if (tour === 1) {
-                if (contexte.joueurBio.position.x === contexte.carte.residenceBio.x && 
-                    contexte.joueurBio.position.y === contexte.carte.residenceBio.y && 
+                if (contexte.joueurBio.position.x === contexte.carte.residenceBio.x &&
+                    contexte.joueurBio.position.y === contexte.carte.residenceBio.y &&
                     contexte.joueurBio.mascotte) {
                     changerTour(3);
                     definirVictoire("bio");
@@ -176,11 +186,14 @@ export default function Home() {
         }
     }
 
-    function demarrerJeu() {
-        if (modeJeu && premierTour) {
-            definirContexte(TraitementTotal(carteJSON, rayon));
+    async function demarrerJeu() {
+        if (modeJeu && premierTour && carteId) {
+            const carte = await getCarte(carteId);
+            definirCarteJSON(carte);
+
+            definirContexte(TraitementTotal(carte, rayon));
             changerTour((premierTour === "random") ? (Math.floor(Math.random() * 2)) : (premierTour === "info" ? 0 : 1));
-            definirJeuDemarre(true);   
+            definirJeuDemarre(true);
         }
     }
 
@@ -198,10 +211,14 @@ export default function Home() {
                             {victoire === "info" ? "🥇🐧 Les informaticiens ont gagnés" : "🥇🥦 Les biologistes ont gagnés"}
                         </strong></p>
                         <button
-                            aria-label = "Close"
-                            rel = "prev"
+                            aria-label="Close"
+                            rel="prev"
                             onClick={() => definirVictoire(null)}
-                            style={{position: "absolute", top: "1rem", right: "0.5rem"}} // Pour mettre la croix à droite et au milieu (plus joli)
+                            style={{
+                                position: "absolute",
+                                top: "1rem",
+                                right: "0.5rem"
+                            }} // Pour mettre la croix à droite et au milieu (plus joli)
                         />
                     </header>
 
@@ -219,11 +236,11 @@ export default function Home() {
         return (
             <button
                 onClick={() => {
-                definirDifficulteIA("facile"); // On remet la difficulté par défaut
-                definirModeJeu("");
-                definirPremierTour(undefined);
-                definirVictoire(null); // En bref toutes les variables on les réinitialise
-                definirJeuDemarre(false); // Pour retourner sur l'écran de sélection comme neuf
+                    definirDifficulteIA("facile"); // On remet la difficulté par défaut
+                    definirModeJeu("");
+                    definirPremierTour(undefined);
+                    definirVictoire(null); // En bref toutes les variables on les réinitialise
+                    definirJeuDemarre(false); // Pour retourner sur l'écran de sélection comme neuf
                 }}
             >🔁 Rejouer</button>
         );
@@ -235,18 +252,20 @@ export default function Home() {
                 {afficherVictoire()}
 
                 <div className="container-fluid">
-                    <input 
+                    <input
                         type="range"
                         min={5}
                         max={200}
                         value={rayon}
-                        onChange={(event) => {definirRayon(Number(event.target.value));}}
+                        onChange={(event) => {
+                            definirRayon(Number(event.target.value));
+                        }}
                     />
                     <Affichage
-                        contexte = {contexte}
-                        rayon = {rayon}
-                        tour = {tour}
-                        deplacement = {deplacerJoueur}
+                        contexte={contexte}
+                        rayon={rayon}
+                        tour={tour}
+                        deplacement={deplacerJoueur}
                     />
                 </div>
 
@@ -286,10 +305,11 @@ export default function Home() {
 
                         </div>
                         <div className="container" style={{display: "flex", flexDirection: "column", height: "100%"}}>
-                            <article style={{flex: "0 0 auto" }}>
+                            <article style={{flex: "0 0 auto"}}>
                                 <h3 className="text-center">🎯⚔️ ENTRAINEMENT</h3>
                                 <div className="container" style={{maxWidth: "420px", margin: "0 auto"}}>
-                                    <select value={modeJeu} onChange={(mode) => definirModeJeu(mode.target.value as ModeJeu)}>
+                                    <select value={modeJeu}
+                                            onChange={(mode) => definirModeJeu(mode.target.value as ModeJeu)}>
                                         <option value="" disabled>👉 CHOISIR MODE DE JEU</option>
                                         <option value="pvp">🆚 1 CONTRE 1</option>
                                         <option value="bot">🤖 CONTRE L'IA</option>
@@ -298,13 +318,13 @@ export default function Home() {
 
                                 {modeJeu === "pvp" && (
                                     <>
-                                        <hr />
+                                        <hr/>
                                         <h4>Qui commence ?</h4>
                                         <div role="group">
                                             {[
-                                                { key: "info", label: "🐧 Informaticiens", color: "#9486E1" },
-                                                { key: "bio", label: "🥦 Biologistes", color: "#F17961" },
-                                                { key: "random", label: "🎲 Aléatoire", color: "#6FC1F7" }
+                                                {key: "info", label: "🐧 Informaticiens", color: "#9486E1"},
+                                                {key: "bio", label: "🥦 Biologistes", color: "#F17961"},
+                                                {key: "random", label: "🎲 Aléatoire", color: "#6FC1F7"}
                                             ].map((v) => {
                                                 const selected = premierTour === v.key;
                                                 return (
@@ -328,12 +348,12 @@ export default function Home() {
                                 )}
                                 {modeJeu === "bot" && (
                                     <>
-                                        <hr />
+                                        <hr/>
                                         <h4>Choisir votre équipe</h4>
                                         <div role="group">
                                             {[
-                                                { key: "info", label: "🐧 Informaticiens", color: "#9486E1" },
-                                                { key: "bio", label: "🥦 Biologistes", color: "#F17961" }
+                                                {key: "info", label: "🐧 Informaticiens", color: "#9486E1"},
+                                                {key: "bio", label: "🥦 Biologistes", color: "#F17961"}
                                             ].map((v) => {
                                                 const selected = premierTour === v.key;
                                                 return (
@@ -353,16 +373,16 @@ export default function Home() {
                                                 );
                                             })}
                                         </div>
-                                        <hr />
+                                        <hr/>
 
                                         <h4>Difficulté de l’IA</h4>
                                         <div role="group">
                                             {[
-                                                { key: "stupide", emoji: "🤪", bgColor: "#4ade80" },
-                                                { key: "facile", emoji: "🙂", bgColor: "#a3e635" },
-                                                { key: "moyen", emoji: "😐", bgColor: "#facc15" },
-                                                { key: "difficile", emoji: "😈", bgColor: "#f97316" },
-                                                { key: "extreme", emoji: "🔥", bgColor: "#ef4444" }
+                                                {key: "stupide", emoji: "🤪", bgColor: "#4ade80"},
+                                                {key: "facile", emoji: "🙂", bgColor: "#a3e635"},
+                                                {key: "moyen", emoji: "😐", bgColor: "#facc15"},
+                                                {key: "difficile", emoji: "😈", bgColor: "#f97316"},
+                                                {key: "extreme", emoji: "🔥", bgColor: "#ef4444"}
                                             ].map((v) => {
                                                 const selected = difficulteIA === v.key;
                                                 return (
@@ -385,13 +405,32 @@ export default function Home() {
                                 )}
                             </article>
 
-                            <article style={{ flex: "1 1 auto", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-                                <div style={{ display: "flex", justifyContent: "center", gap: "1rem" }}>
-                                    <button onClick={demarrerJeu}>▶️ Démarrer</button>
+                            <article style={{
+                                flex: "1 1 auto",
+                                display: "flex",
+                                flexDirection: "column",
+                                justifyContent: "space-between"
+                            }}>
+                                <div style={{
+                                    flex: 1,
+                                    backgroundColor: "#e5e7eb",
+                                    border: "1px solid #ccc",
+                                    margin: "1rem 0"
+                                }}>
+                                </div>
+
+                                <div style={{display: "flex", justifyContent: "center", gap: "1rem"}}>
+                                    <Link id={"btnSelec"} href={"?showSelec=true"} role={"button"}>
+                                        Choisir une carte
+                                    </Link>
+                                    {modeJeu && premierTour && carteId &&
+                                        <button onClick={demarrerJeu}>▶️ Démarrer</button>}
                                 </div>
                             </article>
                         </div>
                     </div>
+
+                    {showSelection && <GestionnaireModal prefixe={"/"} onCloseHref={"/"} restriction/>}
                 </main>
             </>
         );
