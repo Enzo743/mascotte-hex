@@ -69,7 +69,7 @@ export default function NouveauPopUpModal() {
             <dialog open>
                 <article>
                     <header>
-                        <Link href="/editeur" aria-label="Close" className="close link-message-modal"/>
+                        <Link href="/" aria-label="Close" className="close link-message-modal"/>
                         <h3 className={"titre-message-modal"}>Nouvelle carte</h3>
                     </header>
                     <form onSubmit={onFormSubmit}>

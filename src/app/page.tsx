@@ -4,6 +4,11 @@ import {Affichage} from "./modules/Affichage";
 import {plusCourtChemin} from "./modules/Bot";
 import {Arc, CarteJSON, Contexte, DifficulteIA, Joueur, ModeJeu, Noeud, Position, PremierTour} from "./modules/Interfaces";
 import {useEffect, useState} from "react";
+import Link from "next/link";
+import {useSearchParams} from 'next/navigation';
+import NouveauPopUpModal from "./components/editeur/modals/NouveauPopUpModal";
+import "./globals.css";
+import GestionnaireModal from "./components/editeur/modals/GestionnaireModal";
 import {TraitementCarte, TraitementGraphe, TraitementTotal, TraitementJoueurInitial} from "./modules/Traitement";
 // Implémentation temporaire de la carte, il faudra bien sur demain enfin aujourd'hui plus tard,
 // la charger via l'API
@@ -24,6 +29,11 @@ export default function Home() {
 
     const [jeuDemarre, definirJeuDemarre] = useState<boolean>(false);
     const [victoire, definirVictoire] = useState<"info" | "bio" | null>(null);
+
+    const searchParams = useSearchParams();
+    const show = searchParams.get("show");
+    const showVisualisation = searchParams.get("showVisu");
+    const showModification = searchParams.get("showModif");
 
     useEffect(() => {
         if (contexte) {
@@ -255,7 +265,25 @@ export default function Home() {
                         <div className="container">
                             <article>
                                 <h3 className="text-center">🔧🗺️ EDITEUR DE CARTE</h3>
+                                <br/>
+                                <div className={"grid"}>
+                                    <Link id="btnNouveau" href="/?show=true" role="button">Nouveau</Link>
+                                    <Link id="btnModifier" href="/?showModif=true" role="button">Modifier</Link>
+                                </div>
+
+                                {show && <NouveauPopUpModal/>}
+                                {showModification && <GestionnaireModal prefixe="./editeur/modifier" onCloseHref={"/"}/>}
                             </article>
+
+                            <article style={{ flex: "1 1 auto", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                                <div style={{ flex: 1, backgroundColor: "#e5e7eb", border: "1px solid #ccc", margin: "1rem 0" }}>
+                                </div>
+
+                                <div style={{ display: "flex", justifyContent: "center", gap: "1rem" }}>
+                                    <button disabled>Choisir une carte</button>
+                                </div>
+                            </article>
+
                         </div>
                         <div className="container" style={{display: "flex", flexDirection: "column", height: "100%"}}>
                             <article style={{flex: "0 0 auto" }}>
@@ -358,11 +386,7 @@ export default function Home() {
                             </article>
 
                             <article style={{ flex: "1 1 auto", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-                                <div style={{ flex: 1, backgroundColor: "#e5e7eb", border: "1px solid #ccc", margin: "1rem 0" }}>
-                                </div>
-
                                 <div style={{ display: "flex", justifyContent: "center", gap: "1rem" }}>
-                                    <button disabled>Choisir une carte</button>
                                     <button onClick={demarrerJeu}>▶️ Démarrer</button>
                                 </div>
                             </article>
