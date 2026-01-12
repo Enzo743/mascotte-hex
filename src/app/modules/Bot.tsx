@@ -62,3 +62,11 @@ export function plusCourtChemin(graphe: Arc[], depart: Noeud, arrive: Noeud, dif
     // Si aucun chemin n'est trouvé, la fonction renvoie null.
     return null;
 }
+
+export function cheminRandom(graphe: Arc[], depart: Noeud): Noeud | null {
+    const arcCourant = graphe.find(a => a.noeud.x === depart.x && a.noeud.y === depart.y);
+    if (!arcCourant || arcCourant.voisins.length == 0) {
+        return null;
+    }
+    return arcCourant.voisins[Math.floor(Math.random() * arcCourant.voisins.length)];
+}
