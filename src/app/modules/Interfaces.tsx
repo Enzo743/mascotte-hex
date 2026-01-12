@@ -107,6 +107,10 @@ export interface Riviere {
     embouchure: Position // Séparation de la dernière case de chaque rivière, utile pour son traitement
 }
 
+export interface Barrage {
+    position: Position;
+}
+
 export interface Carte {
     taille: {
         lignes: number;
@@ -147,4 +151,9 @@ export class File {
     estVide(): boolean {
         return this.elements.length === 0;
     }
+}
+
+/* Intérfaces des  cartes à jouer */
+export interface CarteAJouer {
+    type: string;
 }
