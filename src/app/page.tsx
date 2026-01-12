@@ -247,7 +247,11 @@ export default function Home() {
             if (tour === 0) {
                 if (contexte.joueurInfo.position.x === contexte.carte.residenceInfo.x &&
                     contexte.joueurInfo.position.y === contexte.carte.residenceInfo.y &&
-                    contexte.joueurInfo.mascotte) {
+                    contexte.joueurInfo.mascotte
+                    || 
+                    contexte.joueurInfo2.position.x === contexte.carte.residenceInfo.x &&
+                    contexte.joueurInfo2.position.y === contexte.carte.residenceInfo.y &&
+                    contexte.joueurInfo2.mascotte) {
                     changerTour(2);
                     definirVictoire("Info");
                     router.push(`/?id=${carteId}&showVict=true`);
@@ -256,7 +260,11 @@ export default function Home() {
             } else if (tour === 1) {
                 if (contexte.joueurBio.position.x === contexte.carte.residenceBio.x &&
                     contexte.joueurBio.position.y === contexte.carte.residenceBio.y &&
-                    contexte.joueurBio.mascotte) {
+                    contexte.joueurBio.mascotte
+                    ||
+                    contexte.joueurBio2.position.x === contexte.carte.residenceBio.x &&
+                    contexte.joueurBio2.position.y === contexte.carte.residenceBio.y &&
+                    contexte.joueurBio2.mascotte) {
                     changerTour(3);
                     definirVictoire("Bio");
                     router.push(`/?id=${carteId}&showVict=true`);
