@@ -1,7 +1,7 @@
 // Dépendances
 "use client";
 import {Affichage} from "@/app/modules/Affichage";
-import {plusCourtChemin} from "@/app/modules/Bot";
+import {cheminRandom, plusCourtChemin} from "@/app/modules/Bot";
 import GestionnaireModal from "@/app/components/editeur/modals/GestionnaireModal";
 import {getCarte} from "@/app/actions/getCarte";
 import GrilleEditeur from "@/app/components/editeur/GrilleEditeur";
@@ -63,7 +63,7 @@ export default function Home() {
         }
     }, [rayon]);
 
-    // Si le joueur joue contre l'IA (bon mode de jeu) et que c'est au tour du not, le bot se déplace
+    // Si le joueur joue contre l'IA (bon mode de jeu) et que c'est au tour du bot, le bot se déplace
     useEffect(() => {
         if (!contexte || modeJeu !== "bot") return;
 
@@ -128,39 +128,46 @@ export default function Home() {
         const joueurIA = iaInfo ? contexte.joueurInfo : contexte.joueurBio;
         const joueurHumain = iaInfo ? contexte.joueurBio : contexte.joueurInfo;
 
-        // Noeud d'arrivée
-        let arrivee: Arc | undefined;
-        if (joueurIA.mascotte) {
-            const res = iaInfo ? contexte.carte.residenceInfo : contexte.carte.residenceBio;
-            arrivee = contexte.graphe.find(g => g.noeud.x === res.x && g.noeud.y === res.y);
+        let prochainePosition;
+        if (difficulteIA == "stupide") {
+            prochainePosition = cheminRandom(contexte.graphe, joueurIA.position);
         } else {
-            const res = iaInfo ? contexte.carte.residenceBio : contexte.carte.residenceInfo;
-            arrivee = contexte.graphe.find(g => g.noeud.x === res.x && g.noeud.y === res.y);
+            // Noeud d'arrivée
+            let arrivee: Arc | undefined;
+            if (joueurIA.mascotte) {
+                const res = iaInfo ? contexte.carte.residenceInfo : contexte.carte.residenceBio;
+                arrivee = contexte.graphe.find(g => g.noeud.x === res.x && g.noeud.y === res.y);
+            } else {
+                const res = iaInfo ? contexte.carte.residenceBio : contexte.carte.residenceInfo;
+                arrivee = contexte.graphe.find(g => g.noeud.x === res.x && g.noeud.y === res.y);
+            }
+
+            if (!arrivee) return;
+
+            let chemin: Noeud[] | null = null;
+
+            const arriveeBloquee =
+                joueurHumain.position.x === arrivee.noeud.x &&
+                joueurHumain.position.y === arrivee.noeud.y;
+
+            if (arriveeBloquee) {
+                const chemins: Noeud[][] = [];
+                arrivee.voisins.forEach(voisin => { // Si l'arrivée est bloquée, trouver le plus court chemin parmis ses voisins
+                    const c = plusCourtChemin(contexte.graphe, joueurIA.position, voisin, difficulteIA);
+                    if (c) chemins.push(c);
+                });
+                if (chemins.length === 0) return;
+                chemin = chemins.reduce((a, b) => (a.length < b.length ? a : b));
+            } else {
+                chemin = plusCourtChemin(contexte.graphe, joueurIA.position, arrivee.noeud, difficulteIA);
+            }
+
+            if (!chemin || chemin.length < 2) return;
+
+            prochainePosition = chemin[1];
         }
 
-        if (!arrivee) return;
-
-        let chemin: Noeud[] | null = null;
-
-        const arriveeBloquee =
-            joueurHumain.position.x === arrivee.noeud.x &&
-            joueurHumain.position.y === arrivee.noeud.y;
-
-        if (arriveeBloquee) {
-            const chemins: Noeud[][] = [];
-            arrivee.voisins.forEach(voisin => { // Si l'arrivée est bloquée, trouver le plus court chemin parmis ses voisins
-                const c = plusCourtChemin(contexte.graphe, joueurIA.position, voisin, difficulteIA);
-                if (c) chemins.push(c);
-            });
-            if (chemins.length === 0) return;
-            chemin = chemins.reduce((a, b) => (a.length < b.length ? a : b));
-        } else {
-            chemin = plusCourtChemin(contexte.graphe, joueurIA.position, arrivee.noeud, difficulteIA);
-        }
-
-        if (!chemin || chemin.length < 2) return;
-
-        const prochainePosition = chemin[1];
+        if (!prochainePosition) return null;
 
         const joueurIAUpdate: Joueur = {
             ...joueurIA,
@@ -273,6 +280,7 @@ export default function Home() {
     */
     async function demarrerJeu() {
         if (modeJeu && premierTour && carteId) {
+            if (brouillard) definirDifficulteIA("stupide")
             const carte = await getCarte(carteId);
             definirCarteJSON(carte);
             definirContexte(TraitementTotal(carte, rayon));
@@ -322,6 +330,26 @@ export default function Home() {
                                         brouillard={brouillard}
                                     />
                                     <br/>
+                                    <div className={"parent0"}>
+                                        <div className={"parent1 div0-1"}>
+                                            <h4 className="text-center">Cartes du joueur info</h4>
+                                        </div>
+                                        <div className={"parent1 div0-2"}>
+                                            <h4 className="text-center">Cartes du joueur bio</h4>
+                                        </div>
+                                    </div>
+                                    <div className={"parent0"}>
+                                        <div className={"parent1 div0-1"}>
+                                            <article className={"div1-1"}><header>Carte x</header></article>
+                                            <article className={"div1-2"}><header>Carte x</header></article>
+                                            <article className={"div1-3"}><header>Carte x</header></article>
+                                        </div>
+                                        <div className={"parent1 div0-2"}>
+                                            <article className={"div1-1"}><header>Carte x</header></article>
+                                            <article className={"div1-2"}><header>Carte x</header></article>
+                                            <article className={"div1-3"}><header>Carte x</header></article>
+                                        </div>
+                                    </div>
                                     <button
                                         onClick={() => {
                                             router.push("/");
@@ -410,7 +438,10 @@ export default function Home() {
                                 <h3 className="text-center">🎯⚔️ ENTRAINEMENT</h3>
                                 <div className="container training-select-container">
                                     <select value={modeJeu}
-                                            onChange={(mode) => definirModeJeu(mode.target.value as ModeJeu)}>
+                                            onChange={(mode) => {
+                                                definirModeJeu(mode.target.value as ModeJeu);
+                                                definirBrouillard(false);
+                                            }}>
                                         <option value="" disabled>👉 CHOISIR MODE DE JEU</option>
                                         <option value="pvp">🆚 1 CONTRE 1</option>
                                         <option value="bot">🤖 CONTRE L'IA</option>
@@ -493,39 +524,48 @@ export default function Home() {
                                         </div>
                                         <hr/>
                                         {/* On choisit la difficulté de l'IA, facile par défaut */}
-                                        <h4>Difficulté de l’IA</h4>
-                                        <div
-                                            role="group"
-                                            className="btn-group-centered"
-                                        >
-                                            {[
-                                                {key: "stupide", emoji: "🤪", bgColor: "#4ade80"},
-                                                {key: "facile", emoji: "🙂", bgColor: "#a3e635"},
-                                                {key: "moyen", emoji: "😐", bgColor: "#facc15"},
-                                                {key: "difficile", emoji: "😈", bgColor: "#f97316"},
-                                                {key: "extreme", emoji: "🔥", bgColor: "#ef4444"}
-                                            ].map((v) => {
-                                                const selected = difficulteIA === v.key;
-                                                return (
-                                                    <button
-                                                        key={v.key}
-                                                        onClick={() => definirDifficulteIA(v.key as DifficulteIA)}
-                                                        style={{
-                                                            flex: "1 1 200px",
-                                                            maxWidth: "260px",
-                                                            boxSizing: "border-box",
-                                                            fontWeight: selected ? "bold" : undefined,
-                                                            textDecoration: selected ? "underline" : undefined,
-                                                            backgroundColor: v.bgColor,
-                                                            color: "#000",
-                                                            whiteSpace: "normal"
-                                                        }}
-                                                    >
-                                                        {v.emoji} {v.key.toUpperCase()}
-                                                    </button>
-                                                );
-                                            })}
-                                        </div>
+                                        {!brouillard && (
+                                            <>
+                                                <h4>Difficulté de l’IA</h4>
+                                                <div role="group" className="btn-group-centered">
+                                                    {[
+                                                        { key: "stupide", emoji: "🤪", bgColor: "#4ade80" },
+                                                        { key: "facile", emoji: "🙂", bgColor: "#a3e635" },
+                                                        { key: "moyen", emoji: "😐", bgColor: "#facc15" },
+                                                        { key: "difficile", emoji: "😈", bgColor: "#f97316" },
+                                                        { key: "extreme", emoji: "🔥", bgColor: "#ef4444" }
+                                                    ].map((v) => {
+                                                        const selected = difficulteIA === v.key;
+                                                        return (
+                                                            <button
+                                                                key={v.key}
+                                                                onClick={() => definirDifficulteIA(v.key)}
+                                                                style={{
+                                                                    flex: "1 1 200px",
+                                                                    maxWidth: "260px",
+                                                                    boxSizing: "border-box",
+                                                                    fontWeight: selected ? "bold" : undefined,
+                                                                    textDecoration: selected ? "underline" : undefined,
+                                                                    backgroundColor: v.bgColor,
+                                                                    color: "#000",
+                                                                    whiteSpace: "normal"
+                                                                }}
+                                                            >{v.emoji} {v.key.toUpperCase()}</button>
+                                                        );
+                                                    })}
+                                                
+                                                </div>
+                                                <hr />
+                                            </>
+                                        )}
+                                        <input type="checkbox" role="switch" id="brouillard" onClick={
+                                            () => {
+                                                if (!brouillard) {
+                                                    definirDifficulteIA("facile");
+                                                }
+                                                definirBrouillard(!brouillard);
+                                            }
+                                        }/><label htmlFor="brouillard">Brouillard</label>
                                     </>
                                 )}
                             {/* Boutons qui permettent de choisir une carte et de lancer une partie */}

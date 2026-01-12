@@ -93,6 +93,7 @@ export interface Case {
     residenceInfo: boolean;
     residenceBio: boolean;
     riviere: boolean;
+    tyrolienne: {nombre: number; sorties: Position[]}; 
     type: string;
     couleur: string
 }
