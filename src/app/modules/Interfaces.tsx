@@ -83,6 +83,7 @@ export interface AffichageParams {
     rayon: number;
     tour: number;
     deplacement?: (position: Position) => void;
+    brouillard: boolean;
 }
 
 export interface Case {
