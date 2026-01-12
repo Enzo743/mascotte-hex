@@ -93,6 +93,7 @@ export interface Case {
     residenceInfo: boolean;
     residenceBio: boolean;
     riviere: boolean;
+    tyrolienne: {nombre: number; sorties: Position[]}; 
     type: string;
     couleur: string
 }
@@ -105,6 +106,10 @@ export interface Tyrolienne {
 export interface Riviere {
     parcours: Position[];
     embouchure: Position // Séparation de la dernière case de chaque rivière, utile pour son traitement
+}
+
+export interface Barrage {
+    position: Position;
 }
 
 export interface Carte {
@@ -147,4 +152,9 @@ export class File {
     estVide(): boolean {
         return this.elements.length === 0;
     }
+}
+
+/* Intérfaces des  cartes à jouer */
+export interface CarteAJouer {
+    type: string;
 }
