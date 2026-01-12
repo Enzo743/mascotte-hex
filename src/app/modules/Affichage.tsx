@@ -1,7 +1,7 @@
 // Dépendances
 "use client";
 import { Arrow, Circle, Group, Layer, Path, RegularPolygon, Star, Stage, Text } from "react-konva";
-import { AffichageParams, Case, Position, Riviere, Tyrolienne } from "./Interfaces";
+import { AffichageParams, Case, Noeud, Position, Riviere, Tyrolienne } from "./Interfaces";
 import React from "react";
 
 /*
@@ -10,7 +10,7 @@ Fonction qui affiche l'intégralité des éléments disponibles de la carte
 Affiche également les cases adjacentes du joueur à qui c'est le tour
 Si l'on clique sur une case, la fonction déplacerJoueur est appelée (vers page.tsx)
 */
-export function Affichage({contexte, rayon, tour, deplacement}: AffichageParams) {
+export function Affichage({contexte, rayon, tour, deplacement, brouillard}: AffichageParams) {
     // Largeur et hauteur du canvas en pixels.
     const largeurCanvas: number = Math.max.apply(0, contexte.carte.cases.map((c) => c.positionCanvas.x)) + rayon;
     const hauteurCanvas: number = Math.max.apply(0, contexte.carte.cases.map((c) => c.positionCanvas.y)) + rayon;
@@ -20,6 +20,17 @@ export function Affichage({contexte, rayon, tour, deplacement}: AffichageParams)
         g.noeud.x === (tour === 0 ? contexte.joueurInfo.position.x : contexte.joueurBio.position.x) &&
         g.noeud.y === (tour === 0 ? contexte.joueurInfo.position.y : contexte.joueurBio.position.y)
     )?.voisins || [];
+
+    const visuel = contexte.graphe.find(g =>
+        g.noeud.x === (tour === 0 ? contexte.joueurInfo.position.x : contexte.joueurBio.position.x) &&
+        g.noeud.y === (tour === 0 ? contexte.joueurInfo.position.y : contexte.joueurBio.position.y)
+    )?.voisins || [];
+    contexte.graphe.find(g =>
+        g.noeud.x === (tour === 0 ? contexte.joueurInfo.position.x : contexte.joueurBio.position.x) &&
+        g.noeud.y === (tour === 0 ? contexte.joueurInfo.position.y : contexte.joueurBio.position.y)
+    )?.voisins.map((n: Noeud) => {visuel.push(n)});
+    visuel.push({x: contexte.joueurInfo.position.x, y: contexte.joueurInfo.position.y});
+    visuel.push({x: contexte.joueurBio.position.x, y: contexte.joueurBio.position.y});
 
     return (
         // On rajoute 20 à la largeur et la hauteur du cadre du jeu pour que les stroke ne soient pas coupées (étant donné qu'elles ne sont pas comptées dans le calcul)
@@ -40,30 +51,7 @@ export function Affichage({contexte, rayon, tour, deplacement}: AffichageParams)
                                 stroke = {"black"}
                             />
                         )
-                    )}
-
-                    {/* === CASES ADJACENTES === 
-                    Ici on superpose les cases adjacentes (la ou le joueur peut se déplacer)
-                    La couleur de la stroke est définie en fonction du joueur
-                    */}
-                    {contexte.carte.cases.map((c: Case) => {
-                        const [x, y] = c.id.split("-").map(Number);
-                        const adjacent = voisins.some(
-                            (voisin) => voisin.x === x && voisin.y === y
-                        );
-                        if (!adjacent) {return null;}
-                        return (
-                        <RegularPolygon
-                            key = {"a-" + c.id}
-                            x = {c.positionCanvas.x}
-                            y = {c.positionCanvas.y}
-                            sides = {6}
-                            radius = {rayon}
-                            stroke = {tour === 0 ? "#9486E1" : tour === 1 ? "#F17961" : "transparent"}
-                            strokeWidth = {4}
-                        />
-                        )
-                    })}     
+                    )}  
 
                     {/* === VISUEL DES RIVIERES === 
                     Les rivières sont des chemins svg composés de tous les points de la rivière
@@ -197,6 +185,52 @@ export function Affichage({contexte, rayon, tour, deplacement}: AffichageParams)
                             </>
                         );
                     })()}
+
+                    {/* === BROUILLARD === 
+                    Affiche le brouillard, pour l'instant les joueurs ne peuvent que voir les cases où ils peuvent se déplacer
+                    */}
+                    {brouillard && contexte.carte.cases.map((c: Case) => {
+                            const visible = visuel.some(v =>
+                                v.x === c.positionMatrice.x &&
+                                v.y === c.positionMatrice.y
+                            );
+                            if (visible) return null;
+                            return (
+                                <RegularPolygon
+                                    key = {"b-" + c.id}
+                                    x = {c.positionCanvas.x}
+                                    y = {c.positionCanvas.y}
+                                    sides = {6}
+                                    radius = {rayon}
+                                    fill = "grey"
+                                    stroke = {"black"}
+                                />
+                            );
+                        })
+                    }
+
+                    {/* === CASES ADJACENTES === 
+                    Ici on superpose les cases adjacentes (la ou le joueur peut se déplacer)
+                    La couleur de la stroke est définie en fonction du joueur
+                    */}
+                    {contexte.carte.cases.map((c: Case) => {
+                        const [x, y] = c.id.split("-").map(Number);
+                        const adjacent = voisins.some(
+                            (voisin) => voisin.x === x && voisin.y === y
+                        );
+                        if (!adjacent) {return null;}
+                        return (
+                        <RegularPolygon
+                            key = {"a-" + c.id}
+                            x = {c.positionCanvas.x}
+                            y = {c.positionCanvas.y}
+                            sides = {6}
+                            radius = {rayon}
+                            stroke = {tour === 0 ? "#9486E1" : tour === 1 ? "#F17961" : "transparent"}
+                            strokeWidth = {4}
+                        />
+                        )
+                    })} 
 
                     {/* === INTERACTION AVEC LES CASES ===
                     Essentiel pour que les joueurs (humains) se déplacent
