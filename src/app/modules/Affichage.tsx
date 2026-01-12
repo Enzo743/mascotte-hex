@@ -15,22 +15,26 @@ export function Affichage({contexte, rayon, tour, deplacement, brouillard}: Affi
     const largeurCanvas: number = Math.max.apply(0, contexte.carte.cases.map((c) => c.positionCanvas.x)) + rayon;
     const hauteurCanvas: number = Math.max.apply(0, contexte.carte.cases.map((c) => c.positionCanvas.y)) + rayon;
 
-    // "voisins" contient toutes les cartes adjacentes au joueur à qui c'est le tour.
+    // "voisins" contient toutes les cases adjacentes au joueur à qui c'est le tour.
     const voisins = contexte.graphe.find(g => 
         g.noeud.x === (tour === 0 ? contexte.joueurInfo.position.x : contexte.joueurBio.position.x) &&
         g.noeud.y === (tour === 0 ? contexte.joueurInfo.position.y : contexte.joueurBio.position.y)
     )?.voisins || [];
+    console.log(voisins);
 
-    const visuel = contexte.graphe.find(g =>
-        g.noeud.x === (tour === 0 ? contexte.joueurInfo.position.x : contexte.joueurBio.position.x) &&
-        g.noeud.y === (tour === 0 ? contexte.joueurInfo.position.y : contexte.joueurBio.position.y)
-    )?.voisins || [];
-    contexte.graphe.find(g =>
-        g.noeud.x === (tour === 0 ? contexte.joueurInfo.position.x : contexte.joueurBio.position.x) &&
-        g.noeud.y === (tour === 0 ? contexte.joueurInfo.position.y : contexte.joueurBio.position.y)
-    )?.voisins.map((n: Noeud) => {visuel.push(n)});
-    visuel.push({x: contexte.joueurInfo.position.x, y: contexte.joueurInfo.position.y});
-    visuel.push({x: contexte.joueurBio.position.x, y: contexte.joueurBio.position.y});
+    const casesVisibles: Position[] = [];
+    let i = contexte.joueurInfo.position.x; let j = contexte.joueurInfo.position.y;
+    casesVisibles.push({x : i, y : j});
+    const adjacentsInfo: number[][] = (j%2 == 1) ? [[i,j-1],[i+1,j-1],[i-1,j],[i+1,j],[i,j+1],[i+1,j+1]] : [[i-1,j-1],[i,j-1],[i-1,j],[i+1,j],[i-1,j+1],[i,j+1]];
+    adjacentsInfo.forEach((adjacent: number[]) => {
+        casesVisibles.push({x : adjacent[0], y : adjacent[1]});
+    });
+    i = contexte.joueurBio.position.x; j = contexte.joueurBio.position.y;
+    casesVisibles.push({x : i, y : j});
+    const adjacentsBio: number[][] = (j%2 == 1) ? [[i,j-1],[i+1,j-1],[i-1,j],[i+1,j],[i,j+1],[i+1,j+1]] : [[i-1,j-1],[i,j-1],[i-1,j],[i+1,j],[i-1,j+1],[i,j+1]];
+    adjacentsBio.forEach((adjacent: number[]) => {
+        casesVisibles.push({x : adjacent[0], y : adjacent[1]});
+    });
 
     return (
         // On rajoute 20 à la largeur et la hauteur du cadre du jeu pour que les stroke ne soient pas coupées (étant donné qu'elles ne sont pas comptées dans le calcul)
@@ -190,7 +194,7 @@ export function Affichage({contexte, rayon, tour, deplacement, brouillard}: Affi
                     Affiche le brouillard, pour l'instant les joueurs ne peuvent que voir les cases où ils peuvent se déplacer
                     */}
                     {brouillard && contexte.carte.cases.map((c: Case) => {
-                            const visible = visuel.some(v =>
+                            const visible = casesVisibles.some(v =>
                                 v.x === c.positionMatrice.x &&
                                 v.y === c.positionMatrice.y
                             );
@@ -213,7 +217,7 @@ export function Affichage({contexte, rayon, tour, deplacement, brouillard}: Affi
                     Ici on superpose les cases adjacentes (la ou le joueur peut se déplacer)
                     La couleur de la stroke est définie en fonction du joueur
                     */}
-                    {contexte.carte.cases.map((c: Case) => {
+                    {/*contexte.carte.cases.map((c: Case) => {
                         const [x, y] = c.id.split("-").map(Number);
                         const adjacent = voisins.some(
                             (voisin) => voisin.x === x && voisin.y === y
@@ -230,7 +234,7 @@ export function Affichage({contexte, rayon, tour, deplacement, brouillard}: Affi
                             strokeWidth = {4}
                         />
                         )
-                    })} 
+                    })*/} 
 
                     {/* === INTERACTION AVEC LES CASES ===
                     Essentiel pour que les joueurs (humains) se déplacent
