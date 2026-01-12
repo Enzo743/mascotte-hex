@@ -202,7 +202,17 @@ export default function Home() {
         if (tour > 1) return; // La partie est terminée, quelqu'un à gagné
 
         if (contexte) {
-            const joueurActuel: Joueur = tour === 0 ? contexte.joueurInfo : contexte.joueurBio;
+            let joueurActuel: Joueur;
+            if (false) { // Le mode de jeu est 2 vs 2 
+                joueurActuel = tour === 0 ? /* (joueurSelect == contexe.joueurInfo ? contexe.joueurInfo : contexe.joueurInfo2) : (joueurSelect == contexe.joueurBio ? contexe.joueurBio : contexe.joueurBio2) */;
+                /* joueurSelect n'est pas implémanté 
+                Possibilité : 
+                    • cliqué sur le pion qu'on veut déplacer puis cliqué sur la case
+                    • sélectionner le joueur qu'on veut déplacer depuis un bouton à côté de la carte
+                */
+            }else { // Le mode de jeu est 1 vs 1
+               joueurActuel = tour === 0 ? contexte.joueurInfo : contexte.joueurBio;
+            }
             const arc: Arc | undefined = contexte.graphe.find(g =>
                 g.noeud.x === joueurActuel.position.x &&
                 g.noeud.y === joueurActuel.position.y

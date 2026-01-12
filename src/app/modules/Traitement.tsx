@@ -15,7 +15,21 @@ export function TraitementTotal(carteJSON: CarteJSON, rayon: number): Contexte {
             },
             mascotte: false
     }
+    const joueurInfo2: Joueur = {
+            position: {
+                x: carteJSON.résidences.info[0],
+                y: carteJSON.résidences.info[1]
+            },
+            mascotte: false
+    }
     const joueurBio: Joueur = {
+            position: {
+                x: carteJSON.résidences.bio[0],
+                y: carteJSON.résidences.bio[1]
+            },
+            mascotte: false
+    }
+    const joueurBio2: Joueur = {
             position: {
                 x: carteJSON.résidences.bio[0],
                 y: carteJSON.résidences.bio[1]
@@ -28,7 +42,9 @@ export function TraitementTotal(carteJSON: CarteJSON, rayon: number): Contexte {
         carte: carte,
         graphe: graphe,
         joueurInfo,
-        joueurBio
+        joueurInfo2,
+        joueurBio,
+        joueurBio2
     };
 }
 

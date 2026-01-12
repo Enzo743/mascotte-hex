@@ -130,8 +130,10 @@ Condense les informations utiles sur le jeu un un unique objet
 export interface Contexte {
     carte: Carte;
     graphe: Arc[];
-    joueurInfo: Joueur,
-    joueurBio: Joueur
+    joueurInfo: Joueur;
+    joueurInfo2: Joueur;
+    joueurBio: Joueur;
+    joueurBio2: Joueur
 }
 
 /*

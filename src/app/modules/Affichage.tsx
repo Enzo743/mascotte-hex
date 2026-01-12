@@ -10,7 +10,7 @@ Fonction qui affiche l'intégralité des éléments disponibles de la carte
 Affiche également les cases adjacentes du joueur à qui c'est le tour
 Si l'on clique sur une case, la fonction déplacerJoueur est appelée (vers page.tsx)
 */
-export function Affichage({contexte, rayon, tour, deplacement, brouillard}: AffichageParams) {
+export function Affichage({contexte, rayon, tour, deplacement, brouillard, modeJeu}: AffichageParams) {
     // Largeur et hauteur du canvas en pixels.
     const largeurCanvas: number = Math.max.apply(0, contexte.carte.cases.map((c) => c.positionCanvas.x)) + rayon;
     const hauteurCanvas: number = Math.max.apply(0, contexte.carte.cases.map((c) => c.positionCanvas.y)) + rayon;
@@ -142,49 +142,252 @@ export function Affichage({contexte, rayon, tour, deplacement, brouillard}: Affi
                         const mascotteInfo: Case | undefined = contexte.joueurBio.mascotte ? contexte.carte.cases.find((c) => c.id === `${contexte.joueurBio.position.x}-${contexte.joueurBio.position.y}`) : contexte.carte.cases.find((c) => c.id === `${contexte.carte.residenceInfo.x}-${contexte.carte.residenceInfo.y}`);
                         const mascotteBio: Case | undefined = contexte.joueurInfo.mascotte ? contexte.carte.cases.find((c) => c.id === `${contexte.joueurInfo.position.x}-${contexte.joueurInfo.position.y}`) : contexte.carte.cases.find((c) => c.id === `${contexte.carte.residenceBio.x}-${contexte.carte.residenceBio.y}`);
                         const posInfo: Case | undefined = contexte.carte.cases.find((c) => c.id === `${contexte.joueurInfo.position.x}-${contexte.joueurInfo.position.y}`);
+                        const posInfo2: Case | undefined = contexte.carte.cases.find((c) => c.id === `${contexte.joueurInfo.position.x}-${contexte.joueurInfo.position.y}`);
                         const posBio: Case | undefined = contexte.carte.cases.find((c) => c.id === `${contexte.joueurBio.position.x}-${contexte.joueurBio.position.y}`);
-                        if (!posInfo || !posBio || !mascotteInfo || !mascotteBio) return;
-                        return (
-                            <>
-                                <Circle
-                                    x = {posInfo.positionCanvas.x}
-                                    y = {posInfo.positionCanvas.y}
-                                    radius = {rayon / 2}
-                                    fill = "#9486E1"
-                                    stroke = "black"
-                                />
-                                <Circle
-                                    x = {posBio.positionCanvas.x}
-                                    y = {posBio.positionCanvas.y}
-                                    radius = {rayon / 2}
-                                    fill = "#F17961"
-                                    stroke = "black"
-                                />
-                                <Text
-                                    x = {mascotteBio.positionCanvas.x}
-                                    y = {mascotteBio.positionCanvas.y}
-                                    text = {contexte.carte.residenceBio.x === contexte.joueurBio.position.x && 
-                                            contexte.carte.residenceBio.y === contexte.joueurBio.position.y &&
-                                            !contexte.joueurInfo.mascotte
-                                            ? "" : "🥦"}
-                                    fontSize = {rayon/2}
-                                    offsetX = {rayon/3.5}
-                                    offsetY = {rayon/3.5}
-                                />
-                                <Text
-                                    x = {mascotteInfo.positionCanvas.x}
-                                    y = {mascotteInfo.positionCanvas.y}
-                                    text = {contexte.carte.residenceInfo.x === contexte.joueurInfo.position.x && 
-                                            contexte.carte.residenceInfo.y === contexte.joueurInfo.position.y &&
-                                            !contexte.joueurBio.mascotte
-                                            ? "" : "🐧"}
-                                    fontSize = {rayon/2}
-                                    offsetX = {rayon/3.5}
-                                    offsetY = {rayon/3.5}
-                                />
-                            </>
-                        );
-                    })()}
+                        const posBio2: Case | undefined = contexte.carte.cases.find((c) => c.id === `${contexte.joueurBio2.position.x}-${contexte.joueurBio.position.y}`);
+                        if (modeJeu == "equipe") { // provisoire 
+                            if (!posInfo || !posInfo2 || !posBio || !posBio2 || !mascotteInfo || !mascotteBio) return;
+                            if (posInfo.positionMatrice.x === posInfo2.positionMatrice.x && posInfo.positionMatrice.y === posInfo2.positionMatrice.y 
+                                && contexte.carte.residenceInfo.x !== posInfo.positionMatrice.x && contexte.carte.residenceInfo.y !== posInfo.positionMatrice.y) {
+                                const decalage = contexte.joueurInfo.mascotte ? 5 : (contexte.joueurInfo2.mascotte ? -5 : 0);
+                                return (
+                                    <>
+                                        <Circle
+                                            x = {posInfo.positionCanvas.x + 5} // La valeur 5 est provisoire pour les tests
+                                            y = {posInfo.positionCanvas.y}
+                                            radius = {rayon / 3} // La valeur 3 est provisoire pour les tests
+                                            fill = "#9486E1"
+                                            stroke = "black"
+                                        />
+                                        <Circle
+                                            x = {posInfo2.positionCanvas.x - 5} // La valeur 5 est provisoire pour les tests
+                                            y = {posInfo2.positionCanvas.y}
+                                            radius = {rayon / 3} // La valeur 3 est provisoire pour les tests
+                                            fill = "#9486E1"
+                                            stroke = "white"
+                                        />
+
+                                        <Circle
+                                            x = {posBio.positionCanvas.x}
+                                            y = {posBio.positionCanvas.y}
+                                            radius = {rayon / 2}
+                                            fill = "#F17961"
+                                            stroke = "black"
+                                        />
+                                        <Circle
+                                            x = {posBio2.positionCanvas.x}
+                                            y = {posBio2.positionCanvas.y}
+                                            radius = {rayon / 2}
+                                            fill = "#F17961"
+                                            stroke = "white"
+                                        />
+                                        <Text
+                                            x = {mascotteBio.positionCanvas.x + decalage}
+                                            y = {mascotteBio.positionCanvas.y}
+                                            text = {contexte.carte.residenceBio.x === contexte.joueurBio.position.x && 
+                                                    contexte.carte.residenceBio.y === contexte.joueurBio.position.y &&
+                                                    !contexte.joueurInfo.mascotte
+                                                    &&
+                                                    contexte.carte.residenceBio.x === contexte.joueurBio2.position.x && 
+                                                    contexte.carte.residenceBio.y === contexte.joueurBio2.position.y &&
+                                                    !contexte.joueurInfo2.mascotte
+                                                    ? "" : "🥦"}
+                                            fontSize = {decalage != 0 ? rayon/3 : rayon/2} // La valeur 3 est provisoire pour les tests
+                                            offsetX = {rayon/3.5}
+                                            offsetY = {rayon/3.5}
+                                        />
+                                        <Text
+                                            x = {mascotteInfo.positionCanvas.x}
+                                            y = {mascotteInfo.positionCanvas.y}
+                                            text = {contexte.carte.residenceInfo.x === contexte.joueurInfo.position.x && 
+                                                    contexte.carte.residenceInfo.y === contexte.joueurInfo.position.y &&
+                                                    !contexte.joueurBio.mascotte
+                                                    &&
+                                                    contexte.carte.residenceInfo.x === contexte.joueurInfo2.position.x && 
+                                                    contexte.carte.residenceInfo.y === contexte.joueurInfo2.position.y &&
+                                                    !contexte.joueurBio2.mascotte
+                                                    ? "" : "🐧"}
+                                            fontSize = {rayon/2}
+                                            offsetX = {rayon/3.5}
+                                            offsetY = {rayon/3.5}
+                                        />
+                                    </>
+                                );
+                            }
+                            if (posBio.positionMatrice.x === posBio2.positionMatrice.x && posBio.positionMatrice.y === posBio2.positionMatrice.y
+                                && contexte.carte.residenceBio.x !== posBio.positionMatrice.x && contexte.carte.residenceBio.y !== posBio.positionMatrice.y) {
+                                const decalage = contexte.joueurBio.mascotte ? 5 : (contexte.joueurBio2.mascotte ? -5 : 0);
+                                return (
+                                    <>
+                                        <Circle
+                                            x = {posInfo.positionCanvas.x}
+                                            y = {posInfo.positionCanvas.y}
+                                            radius = {rayon / 2}
+                                            fill = "#9486E1"
+                                            stroke = "black"
+                                        />
+                                        <Circle
+                                            x = {posInfo2.positionCanvas.x}
+                                            y = {posInfo2.positionCanvas.y}
+                                            radius = {rayon / 2}
+                                            fill = "#9486E1"
+                                            stroke = "white"
+                                        />
+
+                                        <Circle
+                                            x = {posBio.positionCanvas.x + 5} // La valeur 5 est provisoire pour les tests
+                                            y = {posBio.positionCanvas.y}
+                                            radius = {rayon / 3} // La valeur 3 est provisoire pour les tests
+                                            fill = "#F17961"
+                                            stroke = "black"
+                                        />
+                                        <Circle
+                                            x = {posBio2.positionCanvas.x - 5}
+                                            y = {posBio2.positionCanvas.y}
+                                            radius = {rayon / 3}
+                                            fill = "#F17961"
+                                            stroke = "white"
+                                        />
+                                        <Text
+                                            x = {mascotteBio.positionCanvas.x}
+                                            y = {mascotteBio.positionCanvas.y}
+                                            text = {contexte.carte.residenceBio.x === contexte.joueurBio.position.x && 
+                                                    contexte.carte.residenceBio.y === contexte.joueurBio.position.y &&
+                                                    !contexte.joueurInfo.mascotte
+                                                    && 
+                                                    contexte.carte.residenceBio.x === contexte.joueurBio2.position.x && 
+                                                    contexte.carte.residenceBio.y === contexte.joueurBio2.position.y &&
+                                                    !contexte.joueurInfo2.mascotte
+                                                    ? "" : "🥦"}
+                                            fontSize = {decalage != 0 ? rayon/3 : rayon/2} // La valeur 3 est provisoire pour les tests
+                                            offsetX = {rayon/3.5}
+                                            offsetY = {rayon/3.5}
+                                        />
+                                        <Text
+                                            x = {mascotteInfo.positionCanvas.x + decalage}
+                                            y = {mascotteInfo.positionCanvas.y}
+                                            text = {contexte.carte.residenceInfo.x === contexte.joueurInfo.position.x && 
+                                                    contexte.carte.residenceInfo.y === contexte.joueurInfo.position.y &&
+                                                    !contexte.joueurBio.mascotte
+                                                    && 
+                                                    contexte.carte.residenceInfo.x === contexte.joueurInfo2.position.x && 
+                                                    contexte.carte.residenceInfo.y === contexte.joueurInfo2.position.y &&
+                                                    !contexte.joueurBio2.mascotte
+                                                    ? "" : "🐧"}
+                                            fontSize = {decalage != 0 ? rayon/3 : rayon/2} // La valeur 3 est provisoire pour les tests
+                                            offsetX = {rayon/3.5}
+                                            offsetY = {rayon/3.5}
+                                        />
+                                    </>
+                                );
+                            }
+                            return (
+                                <>
+                                    <Circle
+                                        x = {posInfo.positionCanvas.x}
+                                        y = {posInfo.positionCanvas.y}
+                                        radius = {rayon / 2}
+                                        fill = "#9486E1"
+                                        stroke = "black"
+                                    />
+                                    <Circle
+                                        x = {posInfo2.positionCanvas.x}
+                                        y = {posInfo2.positionCanvas.y}
+                                        radius = {rayon / 2}
+                                        fill = "#9486E1"
+                                        stroke = "white"
+                                    />
+
+                                    <Circle
+                                        x = {posBio.positionCanvas.x}
+                                        y = {posBio.positionCanvas.y}
+                                        radius = {rayon / 2}
+                                        fill = "#F17961"
+                                        stroke = "black"
+                                    />
+                                    <Circle
+                                        x = {posBio2.positionCanvas.x}
+                                        y = {posBio2.positionCanvas.y}
+                                        radius = {rayon / 2}
+                                        fill = "#F17961"
+                                        stroke = "white"
+                                    />
+                                    <Text
+                                        x = {mascotteBio.positionCanvas.x}
+                                        y = {mascotteBio.positionCanvas.y}
+                                        text = {contexte.carte.residenceBio.x === contexte.joueurBio.position.x && 
+                                                contexte.carte.residenceBio.y === contexte.joueurBio.position.y &&
+                                                !contexte.joueurInfo.mascotte
+                                                && 
+                                                contexte.carte.residenceBio.x === contexte.joueurBio2.position.x && 
+                                                contexte.carte.residenceBio.y === contexte.joueurBio2.position.y &&
+                                                !contexte.joueurInfo2.mascotte
+                                                ? "" : "🥦"}
+                                        fontSize = {rayon/2}
+                                        offsetX = {rayon/3.5}
+                                        offsetY = {rayon/3.5}
+                                    />
+                                    <Text
+                                        x = {mascotteInfo.positionCanvas.x}
+                                        y = {mascotteInfo.positionCanvas.y}
+                                        text = {contexte.carte.residenceInfo.x === contexte.joueurInfo.position.x && 
+                                                contexte.carte.residenceInfo.y === contexte.joueurInfo.position.y &&
+                                                !contexte.joueurBio.mascotte
+                                                && 
+                                                contexte.carte.residenceInfo.x === contexte.joueurInfo2.position.x && 
+                                                contexte.carte.residenceInfo.y === contexte.joueurInfo2.position.y &&
+                                                !contexte.joueurBio2.mascotte
+                                                ? "" : "🐧"}
+                                        fontSize = {rayon/2}
+                                        offsetX = {rayon/3.5}
+                                        offsetY = {rayon/3.5}
+                                    />
+                                </>
+                            );
+                        }else {
+                            if (!posInfo || !posBio || !mascotteInfo || !mascotteBio) return;
+                            return (
+                                <>
+                                    <Circle
+                                        x = {posInfo.positionCanvas.x}
+                                        y = {posInfo.positionCanvas.y}
+                                        radius = {rayon / 2}
+                                        fill = "#9486E1"
+                                        stroke = "black"
+                                    />
+                                    <Circle
+                                        x = {posBio.positionCanvas.x}
+                                        y = {posBio.positionCanvas.y}
+                                        radius = {rayon / 2}
+                                        fill = "#F17961"
+                                        stroke = "black"
+                                    />
+                                    <Text
+                                        x = {mascotteBio.positionCanvas.x}
+                                        y = {mascotteBio.positionCanvas.y}
+                                        text = {contexte.carte.residenceBio.x === contexte.joueurBio.position.x && 
+                                                contexte.carte.residenceBio.y === contexte.joueurBio.position.y &&
+                                                !contexte.joueurInfo.mascotte
+                                                ? "" : "🥦"}
+                                        fontSize = {rayon/2}
+                                        offsetX = {rayon/3.5}
+                                        offsetY = {rayon/3.5}
+                                    />
+                                    <Text
+                                        x = {mascotteInfo.positionCanvas.x}
+                                        y = {mascotteInfo.positionCanvas.y}
+                                        text = {contexte.carte.residenceInfo.x === contexte.joueurInfo.position.x && 
+                                                contexte.carte.residenceInfo.y === contexte.joueurInfo.position.y &&
+                                                !contexte.joueurBio.mascotte
+                                                ? "" : "🐧"}
+                                        fontSize = {rayon/2}
+                                        offsetX = {rayon/3.5}
+                                        offsetY = {rayon/3.5}
+                                    />
+                                </>
+                            );
+                        }
+                    })}
 
                     {/* === BROUILLARD === 
                     Affiche le brouillard, pour l'instant les joueurs ne peuvent que voir les cases où ils peuvent se déplacer
