@@ -2,6 +2,23 @@ import {Command} from 'commander';
 
 const program = new Command();
 
+enum TerrainType {
+    OCEAN,
+    PLAINE,
+    FORET,
+    MONTAGNE
+}
+
+interface Cellule {
+    x: number;
+    y: number;
+    type: TerrainType;
+    islandId?: number;
+    massifId?: number;
+    hasRiver: boolean;
+    tyrolienne: Cellule[]
+}
+
 // Permet de créer l'aide en ligne de commande et de relier les options à une valeur
 program
     .option('-l, --lignes <LIGNES>', 'Nombre de lignes', '12')
