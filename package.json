@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@picocss/pico": "^2.1.1",
+    "commander": "^14.0.2",
     "next": "16.0.10",
     "react": "19.2.3",
     "react-dom": "19.2.3",
