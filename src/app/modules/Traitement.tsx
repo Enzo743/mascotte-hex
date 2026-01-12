@@ -15,7 +15,21 @@ export function TraitementTotal(carteJSON: CarteJSON, rayon: number): Contexte {
             },
             mascotte: false
     }
+    const joueurInfo2: Joueur = {
+            position: {
+                x: carteJSON.résidences.info[0],
+                y: carteJSON.résidences.info[1]
+            },
+            mascotte: false
+    }
     const joueurBio: Joueur = {
+            position: {
+                x: carteJSON.résidences.bio[0],
+                y: carteJSON.résidences.bio[1]
+            },
+            mascotte: false
+    }
+    const joueurBio2: Joueur = {
             position: {
                 x: carteJSON.résidences.bio[0],
                 y: carteJSON.résidences.bio[1]
@@ -28,7 +42,9 @@ export function TraitementTotal(carteJSON: CarteJSON, rayon: number): Contexte {
         carte: carte,
         graphe: graphe,
         joueurInfo,
-        joueurBio
+        joueurInfo2,
+        joueurBio,
+        joueurBio2
     };
 }
 
@@ -73,6 +89,7 @@ export function TraitementCarte(carteJSON: CarteJSON, rayon: number): Carte {
                 residenceInfo: carteJSON.résidences.info[0] === j && carteJSON.résidences.info[0] === i ? true : false,
                 residenceBio: carteJSON.résidences.bio[0] === j && carteJSON.résidences.info[0] === i ? true : false,
                 riviere: false,
+                tyrolienne: {nombre: 0, sorties: []},
                 type: "ocean", // Todo : utiliser plutôt une énumération ?
                 couleur: "#748BF8" // Todo : plutôt implémenter les couleurs dans la partie visuelle.
             });
@@ -92,6 +109,11 @@ export function TraitementCarte(carteJSON: CarteJSON, rayon: number): Carte {
 
     // Affectation des connexions de type tyrolienne.
     carteJSON.connexions.filter(c => c.type === "tyrolienne").forEach((connexion: Connexion) => {
+        const affectation: Case | undefined = carte.cases.find(c => c.id === `${connexion.tuiles[0][0]}-${connexion.tuiles[0][1]}`);
+        if (affectation) {
+            affectation.tyrolienne.nombre++;
+            affectation.tyrolienne.sorties.push({x: connexion.tuiles[1][0], y: connexion.tuiles[1][1]});
+        }
         carte.tyroliennes.push({
             entree: {
                 x: connexion.tuiles[0][0],
@@ -174,8 +196,6 @@ export function TraitementGraphe(carte: Carte, joueurInfo: Joueur, joueurBio: Jo
             });
         }
     });
-
-
 
     // Ajout des arêtes liées aux rivières.
     // Alors, ça marche, mais c'est affreusement optimisé.

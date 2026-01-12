@@ -93,6 +93,7 @@ export interface Case {
     residenceInfo: boolean;
     residenceBio: boolean;
     riviere: boolean;
+    tyrolienne: {nombre: number; sorties: Position[]}; 
     type: string;
     couleur: string
 }
@@ -130,8 +131,10 @@ Condense les informations utiles sur le jeu un un unique objet
 export interface Contexte {
     carte: Carte;
     graphe: Arc[];
-    joueurInfo: Joueur,
-    joueurBio: Joueur
+    joueurInfo: Joueur;
+    joueurInfo2: Joueur;
+    joueurBio: Joueur;
+    joueurBio2: Joueur
 }
 
 /*
