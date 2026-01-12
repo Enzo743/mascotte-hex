@@ -47,6 +47,7 @@ export default function Home() {
     const [modeJeu, definirModeJeu] = useState<ModeJeu | undefined>("");
     const [premierTour, definirPremierTour] = useState<PremierTour | undefined>(undefined);
     const [difficulteIA, definirDifficulteIA] = useState<DifficulteIA>("facile");
+    const [brouillard, definirBrouillard] = useState<boolean>(false);
 
     // Etats de l'avancement du jeu, on sait ici si le jeu a démarré, finit, et quel est le joueur (ou bot) qui doit jouer
     const [jeuDemarre, definirJeuDemarre] = useState<boolean>(false);
@@ -308,6 +309,7 @@ export default function Home() {
                                         rayon={rayon}
                                         tour={tour}
                                         deplacement={deplacerJoueur}
+                                        brouillard={brouillard}
                                     />
                                     <br/>
                                     <button
@@ -438,6 +440,12 @@ export default function Home() {
                                                 );
                                             })}
                                         </div>
+                                        <hr />
+                                        <input type="checkbox" role="switch" id="brouillard" onClick={
+                                            () => {
+                                                definirBrouillard(!brouillard);
+                                            }
+                                        }/><label htmlFor="brouillard">Brouillard</label>
                                     </>
                                 )}
                                 {/* Si le mode de jeu joueur contre robot a été selectionné */}
