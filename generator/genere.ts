@@ -19,6 +19,131 @@ interface Cellule {
     tyrolienne?: Cellule[]
 }
 
+function generationIle(options, grille: Cellule[][], tailleIle: number, nbMassifsForet: number, nbTuilesForet: number, nbMassifsMontagne: number, nbTuilesMontagne: number): void {
+    const numIdIle: number = Math.floor(Math.random() * 100);
+    let iAleatoire: number = Math.floor(Math.random() * options.lignes);
+    let jAleatoire: number = Math.floor(Math.random() * options.colonnes);
+    const pointDepart: Cellule = grille[iAleatoire][jAleatoire]; // Point de départ de l'ile
+    let nbrHexagones: number = 0;
+    const file: Cellule[] = [];
+
+    // Création de l'île
+    do {
+        file.push(pointDepart);
+
+        // Faire un while (tant que le nombre d'hexagones de l'île est inférieur à la taille maximale de l'île)
+        while (nbrHexagones < tailleIle) {
+            // Récupération des voisins de la case à enlever dans la file
+            const caseActuelle: Cellule[] = file.splice(0, 1);
+            const voisins = getVoisins(grille, caseActuelle[0]);
+
+            // Choix de 2 hexagones parmi la liste des voisins
+            let j = 0;
+            do {
+                const voisinAleatoire: number = Math.floor(Math.random() * voisins.length);
+
+                // On vérifie que ce soit des cases de type "Océan"
+                if (voisins[voisinAleatoire].type === Terrains.Ocean) {
+                    const voisinsDuVoisin: Cellule[] = getVoisins(grille, voisins[voisinAleatoire]);
+
+                    for (const voisinDuVoisin of voisinsDuVoisin) {
+                        /* Vérifier que les voisins du voisin ne font pas partie d'une autre île
+                        (pour ne pas avoir 2 îles collées) */
+                        if (voisinDuVoisin.idIle === undefined || voisinDuVoisin.idIle === numIdIle) {
+                            // Ajout de la case dans l'île
+                            caseActuelle[0].idIle = numIdIle;
+                            caseActuelle[0].type = Terrains.Plaine;
+
+                            // Augmenter le nombre d'hexagones de l'île
+                            nbrHexagones++;
+
+                            // Ajout dans la file du voisin
+                            file.push(voisins[voisinAleatoire]);
+                            j++;
+                        }
+                    }
+                }
+            }
+            while (j !== 2);
+        }
+    }
+    while (pointDepart.idIle === undefined);
+
+    do {
+        iAleatoire = Math.floor(Math.random() * options.lignes);
+        jAleatoire = Math.floor(Math.random() * options.colonnes);
+    }
+    while (grille[iAleatoire][jAleatoire].idIle !== numIdIle)
+
+    if (nbMassifsForet / nbTuilesForet % 2 === 0) {
+        for (let i = 0; i < nbMassifsForet; i++) {
+            floodFillHexagonale(grille, pointDepart, Terrains.Foret, nbTuilesForet / nbMassifsForet);
+        }
+    } else {
+        const tabTuilesForet = [];
+
+        for (let i = 0; i < nbMassifsForet; i++) {
+            tabTuilesForet.push(nbTuilesForet / nbMassifsForet);
+        }
+
+        tabTuilesForet[0] += nbTuilesForet - ((nbTuilesForet / nbMassifsForet) * nbMassifsForet);
+
+        for (const tuilesForet of tabTuilesForet) {
+            floodFillHexagonale(grille, pointDepart, Terrains.Foret, tuilesForet);
+        }
+    }
+
+    do {
+        iAleatoire = Math.floor(Math.random() * options.lignes);
+        jAleatoire = Math.floor(Math.random() * options.colonnes);
+    }
+    while (grille[iAleatoire][jAleatoire].idIle !== numIdIle && grille[iAleatoire][jAleatoire].type !== Terrains.Foret)
+
+    if (nbMassifsMontagne / nbTuilesMontagne % 2 === 0) {
+        for (let i = 0; i < nbMassifsMontagne; i++) {
+            floodFillHexagonale(grille, pointDepart, Terrains.Montagne, nbTuilesMontagne / nbMassifsMontagne);
+        }
+    } else {
+        const tabTuilesMontagne = [];
+
+        for (let i = 0; i < nbMassifsMontagne; i++) {
+            tabTuilesMontagne.push(nbTuilesMontagne / nbMassifsMontagne);
+        }
+
+        tabTuilesMontagne[0] += nbTuilesForet - ((nbTuilesForet / nbMassifsForet) * nbMassifsForet);
+
+        for (const tuilesMontagne of tabTuilesMontagne) {
+            floodFillHexagonale(grille, pointDepart, Terrains.Foret, tuilesMontagne);
+        }
+    }
+}
+
+function getVoisins(grille: Cellule[][], caseActuelle: Cellule): Cellule[] {
+    const voisins: Cellule[] = [];
+    const directions: number[][] = [
+        [1, 0],   // Droite
+        [0, -1],  // Haut-droite
+        [-1, -1],  // Haut-gauche
+        [-1, 0],  // Gauche
+        [-1, 1],  // Bas-gauche
+        [0, 1]    // Bas-droite
+    ];
+
+    for (const [dx, dy] of directions) {
+        const x: number = caseActuelle.x + dx;
+        const y: number = caseActuelle.y + dy;
+
+        if (x >= 0 && x < grille.length && y >= 0 && y < grille[0].length) {
+            const voisin: Cellule = grille[x][y];
+            if (voisin) {
+                voisins.push(voisin);
+            }
+        }
+    }
+
+    return voisins;
+}
+
 function floodFillHexagonale(grille: Cellule[][], caseDepart: Cellule, type: TerrainType, tailleMax: number): void {
     const file: Cellule[] = [caseDepart];
     let taille: number = 0;
