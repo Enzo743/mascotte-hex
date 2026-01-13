@@ -20,23 +20,38 @@ export function Affichage({contexte, rayon, tour, pion, deplacement, brouillard,
         g.noeud.x === (tour === 0 ? (pion === 0 ? contexte.joueurInfo.position.x : contexte.joueurInfo2.position.x) : (pion === 0 ? contexte.joueurBio.position.x : contexte.joueurBio2.position.x)) &&
         g.noeud.y === (tour === 0 ? (pion === 0 ? contexte.joueurInfo.position.y : contexte.joueurInfo2.position.y) : (pion === 0 ? contexte.joueurBio.position.y : contexte.joueurBio2.position.y))
     )?.voisins || [];
-    console.log(voisins);
 
     const casesVisibles: Position[] = [];
-    let i = pion === 0 ? contexte.joueurInfo.position.x : contexte.joueurInfo2.position.x; 
-    let j = pion === 0 ? contexte.joueurInfo.position.y : contexte.joueurInfo2.position.y;
+    let i = contexte.joueurInfo.position.x; 
+    let j = contexte.joueurInfo.position.y;
     casesVisibles.push({x : i, y : j});
     const adjacentsInfo: number[][] = (j%2 == 1) ? [[i,j-1],[i+1,j-1],[i-1,j],[i+1,j],[i,j+1],[i+1,j+1]] : [[i-1,j-1],[i,j-1],[i-1,j],[i+1,j],[i-1,j+1],[i,j+1]];
     adjacentsInfo.forEach((adjacent: number[]) => {
         casesVisibles.push({x : adjacent[0], y : adjacent[1]});
     });
-    i = pion === 0 ? contexte.joueurBio.position.x : contexte.joueurBio2.position.x;
-    j = pion === 0 ? contexte.joueurBio.position.y : contexte.joueurBio2.position.y;
+    i = contexte.joueurBio.position.x;
+    j = contexte.joueurBio.position.y;
     casesVisibles.push({x : i, y : j});
     const adjacentsBio: number[][] = (j%2 == 1) ? [[i,j-1],[i+1,j-1],[i-1,j],[i+1,j],[i,j+1],[i+1,j+1]] : [[i-1,j-1],[i,j-1],[i-1,j],[i+1,j],[i-1,j+1],[i,j+1]];
     adjacentsBio.forEach((adjacent: number[]) => {
         casesVisibles.push({x : adjacent[0], y : adjacent[1]});
     });
+    if (equipe) {
+        i = contexte.joueurInfo2.position.x;
+        j = contexte.joueurInfo2.position.y;
+        casesVisibles.push({x : i, y : j});
+        const adjacentsInfo2: number[][] = (j%2 == 1) ? [[i,j-1],[i+1,j-1],[i-1,j],[i+1,j],[i,j+1],[i+1,j+1]] : [[i-1,j-1],[i,j-1],[i-1,j],[i+1,j],[i-1,j+1],[i,j+1]];
+        adjacentsInfo2.forEach((adjacent: number[]) => {
+            casesVisibles.push({x : adjacent[0], y : adjacent[1]});
+        });
+        i = contexte.joueurBio2.position.x;
+        j = contexte.joueurBio2.position.y;
+        casesVisibles.push({x : i, y : j});
+        const adjacentsBio2: number[][] = (j%2 == 1) ? [[i,j-1],[i+1,j-1],[i-1,j],[i+1,j],[i,j+1],[i+1,j+1]] : [[i-1,j-1],[i,j-1],[i-1,j],[i+1,j],[i-1,j+1],[i,j+1]];
+        adjacentsBio2.forEach((adjacent: number[]) => {
+            casesVisibles.push({x : adjacent[0], y : adjacent[1]});
+        });
+    }
 
     return (
         // On rajoute 20 à la largeur et la hauteur du cadre du jeu pour que les stroke ne soient pas coupées (étant donné qu'elles ne sont pas comptées dans le calcul)
@@ -174,23 +189,18 @@ export function Affichage({contexte, rayon, tour, pion, deplacement, brouillard,
                         let decalageMascotteBio = 0;
                         if (equipe) {
                             if (!posInfo || !posInfo2 || !posBio || !posBio2 || !mascotteInfo || !mascotteBio) return;
-                            console.log("posBio.positionCanvas.x : ", posBio.positionCanvas.x, "\nposBio2.positionCanvas.x : ", posBio2.positionCanvas.x);
-                            console.log("posBio.positionCanvas.y : ", posBio.positionCanvas.y, "\nposBio2.positionCanvas.y : ", posBio2.positionCanvas.y);
                             /* Ça fonctionne sur certaines cases et pas sur d'autres, y a une certaine symétrie je crois 
                             Mais en gros des fois on rentre pas dans le if alors qu'on devrait et du coup les pions se superposent */
                             if (posInfo.positionMatrice.x == posInfo2.positionMatrice.x && posInfo.positionMatrice.y == posInfo2.positionMatrice.y 
                                 && contexte.carte.residenceInfo.x != posInfo.positionMatrice.x && contexte.carte.residenceInfo.y != posInfo.positionMatrice.y) {
-                                console.log("Info même case");
                                 decalageInfo = tailleDecalage;
                                 decalageMascotteBio = contexte.joueurInfo.mascotte ? tailleDecalage : (contexte.joueurInfo2.mascotte ? -tailleDecalage : 0);
                             }
                             if (posBio.positionCanvas.x == posBio2.positionCanvas.x && posBio.positionCanvas.y == posBio2.positionCanvas.y
                                 && contexte.carte.residenceBio.x != posBio.positionMatrice.x && contexte.carte.residenceBio.y != posBio.positionMatrice.y) {
-                                console.log("Bio même case");
                                 decalageBio = tailleDecalage;
                                 decalageMascotteInfo = contexte.joueurBio.mascotte ? tailleDecalage : (contexte.joueurBio2.mascotte ? -tailleDecalage : 0);
                             }
-                            console.log("case diff");
                             return (
                                 <>
                                     <Circle
@@ -364,8 +374,12 @@ export function Affichage({contexte, rayon, tour, pion, deplacement, brouillard,
                             y={c.positionCanvas.y}
                             sides={6}
                             radius={rayon}
-                            onClick={() => {
-                                if (deplacement) deplacement(c.positionMatrice); // On appelle la fonction avec comme paramètre les coordonées de la case, pour (si autorisé) déplacer le joueur vers celle ci.
+                            onClick={(event) => {
+                                if (event.evt.button === 0) { // Clic gauche
+                                    if (deplacement) {
+                                        deplacement(c.positionMatrice); // On appelle la fonction avec comme paramètre les coordonées de la case, pour (si autorisé) déplacer le joueur vers celle ci.
+                                    }
+                                }
                             }}
                         />
                     </React.Fragment>
