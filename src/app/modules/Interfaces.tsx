@@ -82,6 +82,7 @@ export interface AffichageParams {
     contexte: Contexte;
     rayon: number;
     tour: number;
+    pion: number;
     deplacement?: (position: Position) => void;
     brouillard: boolean;
 }

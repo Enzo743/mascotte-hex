@@ -10,26 +10,28 @@ Fonction qui affiche l'intégralité des éléments disponibles de la carte
 Affiche également les cases adjacentes du joueur à qui c'est le tour
 Si l'on clique sur une case, la fonction déplacerJoueur est appelée (vers page.tsx)
 */
-export function Affichage({contexte, rayon, tour, deplacement, brouillard, modeJeu}: AffichageParams) {
+export function Affichage({contexte, rayon, tour, pion, deplacement, brouillard}: AffichageParams) {
     // Largeur et hauteur du canvas en pixels.
     const largeurCanvas: number = Math.max.apply(0, contexte.carte.cases.map((c) => c.positionCanvas.x)) + rayon;
     const hauteurCanvas: number = Math.max.apply(0, contexte.carte.cases.map((c) => c.positionCanvas.y)) + rayon;
 
     // "voisins" contient toutes les cases adjacentes au joueur à qui c'est le tour.
     const voisins = contexte.graphe.find(g => 
-        g.noeud.x === (tour === 0 ? contexte.joueurInfo.position.x : contexte.joueurBio.position.x) &&
-        g.noeud.y === (tour === 0 ? contexte.joueurInfo.position.y : contexte.joueurBio.position.y)
+        g.noeud.x === (tour === 0 ? (pion === 0 ? contexte.joueurInfo.position.x : contexte.joueurInfo2.position.x) : (pion === 0 ? contexte.joueurBio.position.x : contexte.joueurBio2.position.x)) &&
+        g.noeud.y === (tour === 0 ? (pion === 0 ? contexte.joueurInfo.position.y : contexte.joueurInfo2.position.y) : (pion === 0 ? contexte.joueurBio.position.y : contexte.joueurBio2.position.y))
     )?.voisins || [];
     console.log(voisins);
 
     const casesVisibles: Position[] = [];
-    let i = contexte.joueurInfo.position.x; let j = contexte.joueurInfo.position.y;
+    let i = pion === 0 ? contexte.joueurInfo.position.x : contexte.joueurInfo2.position.x; 
+    let j = pion === 0 ? contexte.joueurInfo.position.y : contexte.joueurInfo2.position.y;
     casesVisibles.push({x : i, y : j});
     const adjacentsInfo: number[][] = (j%2 == 1) ? [[i,j-1],[i+1,j-1],[i-1,j],[i+1,j],[i,j+1],[i+1,j+1]] : [[i-1,j-1],[i,j-1],[i-1,j],[i+1,j],[i-1,j+1],[i,j+1]];
     adjacentsInfo.forEach((adjacent: number[]) => {
         casesVisibles.push({x : adjacent[0], y : adjacent[1]});
     });
-    i = contexte.joueurBio.position.x; j = contexte.joueurBio.position.y;
+    i = pion === 0 ? contexte.joueurBio.position.x : contexte.joueurBio2.position.x;
+    j = pion === 0 ? contexte.joueurBio.position.y : contexte.joueurBio2.position.y;
     casesVisibles.push({x : i, y : j});
     const adjacentsBio: number[][] = (j%2 == 1) ? [[i,j-1],[i+1,j-1],[i-1,j],[i+1,j],[i,j+1],[i+1,j+1]] : [[i-1,j-1],[i,j-1],[i-1,j],[i+1,j],[i-1,j+1],[i,j+1]];
     adjacentsBio.forEach((adjacent: number[]) => {
@@ -146,13 +148,14 @@ export function Affichage({contexte, rayon, tour, deplacement, brouillard, modeJ
                         const mascotteInfo: Case | undefined = contexte.joueurBio.mascotte ? contexte.carte.cases.find((c) => c.id === `${contexte.joueurBio.position.x}-${contexte.joueurBio.position.y}`) : contexte.carte.cases.find((c) => c.id === `${contexte.carte.residenceInfo.x}-${contexte.carte.residenceInfo.y}`);
                         const mascotteBio: Case | undefined = contexte.joueurInfo.mascotte ? contexte.carte.cases.find((c) => c.id === `${contexte.joueurInfo.position.x}-${contexte.joueurInfo.position.y}`) : contexte.carte.cases.find((c) => c.id === `${contexte.carte.residenceBio.x}-${contexte.carte.residenceBio.y}`);
                         const posInfo: Case | undefined = contexte.carte.cases.find((c) => c.id === `${contexte.joueurInfo.position.x}-${contexte.joueurInfo.position.y}`);
-                        const posInfo2: Case | undefined = contexte.carte.cases.find((c) => c.id === `${contexte.joueurInfo.position.x}-${contexte.joueurInfo.position.y}`);
+                        const posInfo2: Case | undefined = contexte.carte.cases.find((c) => c.id === `${contexte.joueurInfo2.position.x}-${contexte.joueurInfo2.position.y}`);
                         const posBio: Case | undefined = contexte.carte.cases.find((c) => c.id === `${contexte.joueurBio.position.x}-${contexte.joueurBio.position.y}`);
-                        const posBio2: Case | undefined = contexte.carte.cases.find((c) => c.id === `${contexte.joueurBio2.position.x}-${contexte.joueurBio.position.y}`);
-                        if (modeJeu == "equipe") { // provisoire 
+                        const posBio2: Case | undefined = contexte.carte.cases.find((c) => c.id === `${contexte.joueurBio2.position.x}-${contexte.joueurBio2.position.y}`);
+                        if (true) { // modeJeu == "equipe"
                             if (!posInfo || !posInfo2 || !posBio || !posBio2 || !mascotteInfo || !mascotteBio) return;
                             if (posInfo.positionMatrice.x === posInfo2.positionMatrice.x && posInfo.positionMatrice.y === posInfo2.positionMatrice.y 
                                 && contexte.carte.residenceInfo.x !== posInfo.positionMatrice.x && contexte.carte.residenceInfo.y !== posInfo.positionMatrice.y) {
+                                console.log("Info même case hors résidence");
                                 const decalage = contexte.joueurInfo.mascotte ? 5 : (contexte.joueurInfo2.mascotte ? -5 : 0);
                                 return (
                                     <>
@@ -170,7 +173,6 @@ export function Affichage({contexte, rayon, tour, deplacement, brouillard, modeJ
                                             fill = "#9486E1"
                                             stroke = "white"
                                         />
-
                                         <Circle
                                             x = {posBio.positionCanvas.x}
                                             y = {posBio.positionCanvas.y}
@@ -220,6 +222,7 @@ export function Affichage({contexte, rayon, tour, deplacement, brouillard, modeJ
                             }
                             if (posBio.positionMatrice.x === posBio2.positionMatrice.x && posBio.positionMatrice.y === posBio2.positionMatrice.y
                                 && contexte.carte.residenceBio.x !== posBio.positionMatrice.x && contexte.carte.residenceBio.y !== posBio.positionMatrice.y) {
+                                console.log("Bio même case hors résidence");
                                 const decalage = contexte.joueurBio.mascotte ? 5 : (contexte.joueurBio2.mascotte ? -5 : 0);
                                 return (
                                     <>
@@ -237,7 +240,6 @@ export function Affichage({contexte, rayon, tour, deplacement, brouillard, modeJ
                                             fill = "#9486E1"
                                             stroke = "white"
                                         />
-
                                         <Circle
                                             x = {posBio.positionCanvas.x + 5} // La valeur 5 est provisoire pour les tests
                                             y = {posBio.positionCanvas.y}
@@ -285,6 +287,7 @@ export function Affichage({contexte, rayon, tour, deplacement, brouillard, modeJ
                                     </>
                                 );
                             }
+                            console.log("case diff");
                             return (
                                 <>
                                     <Circle
@@ -301,7 +304,6 @@ export function Affichage({contexte, rayon, tour, deplacement, brouillard, modeJ
                                         fill = "#9486E1"
                                         stroke = "white"
                                     />
-
                                     <Circle
                                         x = {posBio.positionCanvas.x}
                                         y = {posBio.positionCanvas.y}
@@ -348,7 +350,8 @@ export function Affichage({contexte, rayon, tour, deplacement, brouillard, modeJ
                                     />
                                 </>
                             );
-                        }else {
+                        }
+                        /*else {
                             if (!posInfo || !posBio || !mascotteInfo || !mascotteBio) return;
                             return (
                                 <>
@@ -390,8 +393,8 @@ export function Affichage({contexte, rayon, tour, deplacement, brouillard, modeJ
                                     />
                                 </>
                             );
-                        }
-                    })}
+                        }*/
+                    })()}
 
                     {/* === BROUILLARD === 
                     Affiche le brouillard, pour l'instant les joueurs ne peuvent que voir les cases où ils peuvent se déplacer
@@ -420,7 +423,7 @@ export function Affichage({contexte, rayon, tour, deplacement, brouillard, modeJ
                     Ici on superpose les cases adjacentes (la ou le joueur peut se déplacer)
                     La couleur de la stroke est définie en fonction du joueur
                     */}
-                    {/*contexte.carte.cases.map((c: Case) => {
+                    {contexte.carte.cases.map((c: Case) => {
                         const [x, y] = c.id.split("-").map(Number);
                         const adjacent = voisins.some(
                             (voisin) => voisin.x === x && voisin.y === y
@@ -437,7 +440,7 @@ export function Affichage({contexte, rayon, tour, deplacement, brouillard, modeJ
                             strokeWidth = {4}
                         />
                         )
-                    })*/} 
+                    })} 
 
                     {/* === INTERACTION AVEC LES CASES ===
                     Essentiel pour que les joueurs (humains) se déplacent
@@ -459,7 +462,7 @@ export function Affichage({contexte, rayon, tour, deplacement, brouillard, modeJ
                             sides={6}
                             radius={rayon}
                             onClick={() => {
-                                if (deplacement) deplacement(c.positionMatrice); // On appelle la fonction avec comme paramètre les coordonées de la case, pour (si authorisé) déplacer le joueur vers celle ci.
+                                if (deplacement) deplacement(c.positionMatrice); // On appelle la fonction avec comme paramètre les coordonées de la case, pour (si autorisé) déplacer le joueur vers celle ci.
                             }}
                         />
                     </React.Fragment>
