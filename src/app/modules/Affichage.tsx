@@ -177,7 +177,7 @@ export function Affichage({contexte, rayon, tour, pion, deplacement, brouillard,
                             console.log("posBio.positionCanvas.x : ", posBio.positionCanvas.x, "\nposBio2.positionCanvas.x : ", posBio2.positionCanvas.x);
                             console.log("posBio.positionCanvas.y : ", posBio.positionCanvas.y, "\nposBio2.positionCanvas.y : ", posBio2.positionCanvas.y);
                             /* Ça fonctionne sur certaines cases et pas sur d'autres, y a une certaine symétrie je crois 
-                            Mais en gros des fois on rentre pas dans le if alors qu'on devrait */
+                            Mais en gros des fois on rentre pas dans le if alors qu'on devrait et du coup les pions se superposent */
                             if (posInfo.positionMatrice.x == posInfo2.positionMatrice.x && posInfo.positionMatrice.y == posInfo2.positionMatrice.y 
                                 && contexte.carte.residenceInfo.x != posInfo.positionMatrice.x && contexte.carte.residenceInfo.y != posInfo.positionMatrice.y) {
                                 console.log("Info même case");
