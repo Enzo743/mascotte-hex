@@ -58,6 +58,28 @@ export default function Home() {
     const [tour, changerTour] = useState<number>(0);
     const [victoire, definirVictoire] = useState<"Info" | "Bio" | null>(null);
 
+    useEffect(() => {
+        const empecherMenu = (event: MouseEvent) => {
+            event.preventDefault(); // N'affiche pas le "menu clic droit"
+        };
+
+        const clic = (event: MouseEvent) => {
+            if (jeuDemarre && equipe && event.button === 2) { // Si on est en 2v2, que c'est un clic droit
+                definirPion((precedent) => {
+                    const nouveau = precedent === 0 ? 1 : 0; // On switch le pion
+                    return nouveau;
+                });
+            }
+        };
+
+        document.addEventListener("contextmenu", empecherMenu);
+        document.addEventListener("mousedown", clic);
+        return () => {
+            document.removeEventListener("contextmenu", empecherMenu);
+            document.removeEventListener("mousedown", clic);
+        };
+    }, [jeuDemarre, equipe]);
+
     // Recalcule les positions des hexagones, leurs tailles, si la taille de la carte est ajustée
     // Et affiche donc la nouvelle carte en résultant
     useEffect(() => {
@@ -87,10 +109,8 @@ export default function Home() {
 
     // Fonction qui permet de charger la carte sélectionnée afin de la visualiser
     async function showCarteVisu() {
-        if (carteId) {
+        if (carteId && residenceBio !== null && residenceInfo !== null) {
             const carte: CarteJSON = await getCarte(carteId);
-
-            console.log(carte);
 
             if (!carte || !carte.résidences) return;
 
@@ -109,8 +129,8 @@ export default function Home() {
             const riv = carte.connexions.filter(c => c.type === "riviere");
 
             definirHexagones(hex);
-            definirResidenceBio(residenceBio);
-            definirResidenceInfo(residenceInfo);
+            definirResidenceBio(residenceBio); // Faudrait que celui qui a fait ca règle ce problème de type
+            definirResidenceInfo(residenceInfo); // celui la aussi fin c'est le meme
             definirTyroliennes(tyrol);
             definirRivieres(riv);
         }
@@ -300,11 +320,15 @@ export default function Home() {
     */
     async function demarrerJeu() {
         if (modeJeu && premierTour && carteId) {
-            if (brouillard) definirDifficulteIA("stupide")
+            const estEquipe = modeJeu === "tvt";
+            if (brouillard) definirDifficulteIA("stupide");
+            definirEquipe(estEquipe);
             const carte = await getCarte(carteId);
             definirCarteJSON(carte);
-            definirContexte(TraitementTotal(carte, rayon, tour, equipe));
-            changerTour((premierTour === "random") ? (Math.floor(Math.random() * 2)) : (premierTour === "info" ? 0 : 1));
+            const nouveauContexte = TraitementTotal(carte, rayon, tour, estEquipe);
+            definirContexte(nouveauContexte);
+            const tourDepart = (premierTour === "random") ? Math.floor(Math.random() * 2) : (premierTour === "info" ? 0 : 1);
+            changerTour(tourDepart);
             definirJeuDemarre(true);
         }
     }
@@ -351,12 +375,6 @@ export default function Home() {
                                         brouillard={brouillard}
                                         equipe={equipe}
                                     />
-
-                                    {/* Provisoire : bouton selection pion */}
-                                    <div className="text-center">
-                                        <button id="pion1" onClick={() => definirPion(0)}>Pion1</button>
-                                        <button id="pion2" onClick={() => definirPion(1)}>Pion2</button>
-                                    </div>
 
                                     <br/>
                                     <div className={"parent0"}>
@@ -473,6 +491,7 @@ export default function Home() {
                                             }}>
                                         <option value="" disabled>👉 CHOISIR MODE DE JEU</option>
                                         <option value="pvp">🆚 1 CONTRE 1</option>
+                                        <option value="tvt">🆚 2 CONTRE 2</option>
                                         <option value="bot">🤖 CONTRE L'IA</option>
                                     </select>
                                 </div>
@@ -481,7 +500,7 @@ export default function Home() {
                                     <>
                                         <hr/>
                                         {/* On choisit le premier joueur, info, bio ou choisis aléatoirement entre les deux */}
-                                        <h4>Qui commence ?</h4>
+                                        <h4>Quel joueur commence ?</h4>
                                         <div role="group" className="btn-group-centered">
                                             {[
                                                 {key: "info", label: "🐧 Informaticiens", color: "#9486E1"},
@@ -511,20 +530,64 @@ export default function Home() {
                                             })}
                                         </div>
                                         <hr />
+                                        <h4>Options :</h4>
                                         <input type="checkbox" role="switch" id="brouillard" onClick={
                                             () => {
                                                 definirBrouillard(!brouillard);
                                             }
                                         }/><label htmlFor="brouillard">Brouillard</label>
                                         <br></br>
-                                        <input type="checkbox" id="equipe" onClick={() => {definirEquipe(!equipe)}}/><label htmlFor="equipe">Equipe</label>
+                                    </>
+                                )}
+                                {/* Si le mode de jeu team contre team a été selectionné */}
+                                {modeJeu === "tvt" && (
+                                    <>
+                                        <hr/>
+                                        {/* On choisit l'équipe qui commence, info, bio ou choisis aléatoirement entre les deux */}
+                                        <h4>Quel camp commence ?</h4>
+                                        <div role="group" className="btn-group-centered">
+                                            {[
+                                                {key: "info", label: "🐧 Informaticiens", color: "#9486E1"},
+                                                {key: "bio", label: "🥦 Biologistes", color: "#F17961"},
+                                                {key: "random", label: "🎲 Aléatoire", color: "#6FC1F7"}
+                                            ].map((v) => {
+                                                const selected = premierTour === v.key;
+                                                return (
+                                                    <button
+                                                        key={v.key}
+                                                        aria-pressed={selected}
+                                                        onClick={() => definirPremierTour(v.key as PremierTour)}
+                                                        style={{
+                                                            flex: "1 1 200px",
+                                                            maxWidth: "260px",
+                                                            boxSizing: "border-box",
+                                                            fontWeight: selected ? "bold" : undefined,
+                                                            textDecoration: selected ? "underline" : undefined,
+                                                            backgroundColor: v.color,
+                                                            color: "#000",
+                                                            whiteSpace: "normal"
+                                                        }}
+                                                    >
+                                                        {v.label}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                        <hr />
+                                        <h4>Options :</h4>
+                                        <input type="checkbox" role="switch" id="brouillard" onClick={
+                                            () => {
+                                                definirBrouillard(!brouillard);
+                                            }
+                                        }/><label htmlFor="brouillard">Brouillard</label>
+                                        <br></br>
                                     </>
                                 )}
                                 {/* Si le mode de jeu joueur contre robot a été selectionné */}
                                 {modeJeu === "bot" && (
                                     <>
                                         <hr/>
-                                        <h4>Choisir votre équipe</h4>
+                                        <h4>Choisissez votre camp :</h4>
                                         <div role="group" className="btn-group-centered">
                                             {/* On choisit qui est le joueur (humain), il commencera en premier */}
                                             {[
@@ -557,7 +620,7 @@ export default function Home() {
                                         {/* On choisit la difficulté de l'IA, facile par défaut */}
                                         {!brouillard && (
                                             <>
-                                                <h4>Difficulté de l’IA</h4>
+                                                <h4>Difficulté de l’IA :</h4>
                                                 <div role="group" className="btn-group-centered">
                                                     {[
                                                         { key: "stupide", emoji: "🤪", bgColor: "#4ade80" },
@@ -570,7 +633,7 @@ export default function Home() {
                                                         return (
                                                             <button
                                                                 key={v.key}
-                                                                onClick={() => definirDifficulteIA(v.key)}
+                                                                onClick={() => definirDifficulteIA(v.key as "stupide" | "facile" | "moyen" | "difficile" | "extreme")} // pour rassurer typescript
                                                                 style={{
                                                                     flex: "1 1 200px",
                                                                     maxWidth: "260px",
@@ -589,6 +652,7 @@ export default function Home() {
                                                 <hr />
                                             </>
                                         )}
+                                        <h4>Options :</h4>
                                         <input type="checkbox" role="switch" id="brouillard" onClick={
                                             () => {
                                                 if (!brouillard) {
