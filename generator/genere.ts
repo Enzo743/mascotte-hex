@@ -1,4 +1,5 @@
 import {Command} from 'commander';
+import fs from "node:fs/promises";
 
 const program = new Command();
 
@@ -456,6 +457,51 @@ function reinitialiserGrille(grille: Cellule[][], lignes: number, colonnes: numb
     }
 }
 
+async function creerCarte(grille: Cellule[][], options)
+{
+    const carteVierge = {
+        "grille":{
+            "lignes": options.lignes,
+            "colonnes": options.colonnes
+        },
+        "résidences": {},
+        "terrains": {
+            "plaine": [],
+            "foret": [],
+            "montagne": []
+        },
+        "connexions": []
+    }
+
+    for (let i = 0; i < Number(options.lignes); i++)
+    {
+        for (let j = 0; j < Number(options.colonnes); j++)
+        {
+            const coordonnees: number[] = [i, j];
+            const cellule: Cellule = grille[i][j];
+
+            console.log(cellule);
+            console.log(coordonnees);
+
+            if (cellule.type === Terrains.Plaine)
+            {
+                carteVierge.terrains.plaine.push(coordonnees);
+            }
+            if (cellule.type === Terrains.Foret)
+            {
+                carteVierge.terrains.foret.push(coordonnees);
+            }
+            if (cellule.type === Terrains.Montagne)
+            {
+                carteVierge.terrains.montagne.push(coordonnees);
+            }
+        }
+    }
+
+    await fs.writeFile(`./${options.output}.json`, JSON.stringify(carteVierge));
+
+}
+
 // Permet de créer l'aide en ligne de commande et de relier les options à une valeur
 program
     .option('-l, --lignes <LIGNES>', 'Nombre de lignes', '12')
@@ -582,6 +628,7 @@ while (!carteReussie) {
     if (toutesIlesReussies) {
         carteReussie = true;
         console.log(`\nCarte complète générée avec succès après ${tentativesCarteComplete} répartition(s) ! Youpi !`);
+        creerCarte(grille, options);
     }
 }
 
