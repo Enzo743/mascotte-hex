@@ -29,7 +29,7 @@ export enum Difficulte {
     STUPIDE
 }
 
-export type ModeJeu = "" | "pvp" | "bot";
+export type ModeJeu = "" | "pvp" | "bot" | "tvt";
 
 export type PremierTour = "info" | "bio" | "random";
 
