@@ -31,9 +31,8 @@ export default function Home() {
     const showModification = searchParams.get("showModif");
 
     /* Provisoirement pour tester le mode equipe */
-    const [numI, defNumI] = useState<number>(0);
-    const [numB, defNumB] = useState<number>(0);
     const [pion, definirPion] = useState<number>(0);
+    const [equipe, definirEquipe] = useState<boolean>(false);
 
     // États pour stocker les différents objets à la visualisation de la carte
     const [carteJSONvisu, definirCarteJSONvisu] = useState<CarteJSON | null>(null);
@@ -215,21 +214,10 @@ export default function Home() {
 
         if (contexte) {
             let joueurActuel: Joueur;
-            //if (numI === 2) defNumI(0);
-            //if (numB === 2) defNumB(0);
-            // Dans la selection du joueurActuel, remplacer num par joueurSelect
-            if (true) { // Le mode de jeu est 2 vs 2 
-                // let joueurSelect 
+            if (equipe) {
                 joueurActuel = tour === 0 ?  (pion == 0 ? contexte.joueurInfo : contexte.joueurInfo2) : (pion == 0 ? contexte.joueurBio : contexte.joueurBio2) ;
                 // joueurActuel = tour === 0 ?  (joueurSelect == contexte.joueurInfo ? contexte.joueurInfo : contexte.joueurInfo2) : (joueurSelect == contexte.joueurBio ? contexte.joueurBio : contexte.joueurBio2) ;
-                /* joueurSelect n'est pas implémanté 
-                Possibilité : 
-                    • cliqué sur le pion qu'on veut déplacer puis cliqué sur la case
-                    • sélectionner le joueur qu'on veut déplacer depuis un bouton à côté de la carte
-                */
-                //if (tour === 0) defNumI(numI+1);
-                //if (tour === 1) defNumB(numB+1);
-            }else { // Le mode de jeu est 1 vs 1
+            }else {
                joueurActuel = tour === 0 ? contexte.joueurInfo : contexte.joueurBio;
             }
             const arc: Arc | undefined = contexte.graphe.find(g =>
@@ -239,23 +227,19 @@ export default function Home() {
             if (arc && arc.voisins.some(v => v.x === position.x && v.y === position.y)) { // Si la position est bien dans les voisins du joueur
                 if (tour === 0) {
                     if (pion === 0) {
-                        console.log("tour0, pion0");
                         contexte.joueurInfo.position = position;
                         contexte.joueurInfo.mascotte = ((position.x === contexte.carte.residenceBio.x) && (position.y === contexte.carte.residenceBio.y)) ? true : contexte.joueurInfo.mascotte;
                     }
                     else {
-                        console.log("tour0, pion1");
                         contexte.joueurInfo2.position = position;
                         contexte.joueurInfo2.mascotte = ((position.x === contexte.carte.residenceBio.x) && (position.y === contexte.carte.residenceBio.y)) ? true : contexte.joueurInfo2.mascotte;
                     }
                 } else {
                     if (pion === 0) {
-                        console.log("tour1, pion0");
                         contexte.joueurBio.position = position;
                         contexte.joueurBio.mascotte = ((position.x === contexte.carte.residenceInfo.x) && (position.y === contexte.carte.residenceInfo.y)) ? true : contexte.joueurBio.mascotte;
                     }
                     else {
-                        console.log("tour1, pion1");
                         contexte.joueurBio2.position = position;
                         contexte.joueurBio2.mascotte = ((position.x === contexte.carte.residenceInfo.x) && (position.y === contexte.carte.residenceInfo.y)) ? true : contexte.joueurBio2.mascotte;
                     }
@@ -305,7 +289,7 @@ export default function Home() {
             changerTour(prochainTour);
 
             // On met à jour le graphe (avec les nouvelles positions des joueurs)
-            contexte.graphe = TraitementGraphe(contexte.carte, contexte.joueurInfo, contexte.joueurBio, contexte.joueurInfo2, contexte.joueurBio2);
+            contexte.graphe = TraitementGraphe(contexte.carte, contexte.joueurInfo, contexte.joueurBio, contexte.joueurInfo2, contexte.joueurBio2, tour, equipe);
         }
     }
 
@@ -319,7 +303,7 @@ export default function Home() {
             if (brouillard) definirDifficulteIA("stupide")
             const carte = await getCarte(carteId);
             definirCarteJSON(carte);
-            definirContexte(TraitementTotal(carte, rayon));
+            definirContexte(TraitementTotal(carte, rayon, tour, equipe));
             changerTour((premierTour === "random") ? (Math.floor(Math.random() * 2)) : (premierTour === "info" ? 0 : 1));
             definirJeuDemarre(true);
         }
@@ -365,6 +349,7 @@ export default function Home() {
                                         pion={pion}
                                         deplacement={deplacerJoueur}
                                         brouillard={brouillard}
+                                        equipe={equipe}
                                     />
 
                                     {/* Provisoire : bouton selection pion */}
@@ -531,6 +516,8 @@ export default function Home() {
                                                 definirBrouillard(!brouillard);
                                             }
                                         }/><label htmlFor="brouillard">Brouillard</label>
+                                        <br></br>
+                                        <input type="checkbox" id="equipe" onClick={() => {definirEquipe(!equipe)}}/><label htmlFor="equipe">Equipe</label>
                                     </>
                                 )}
                                 {/* Si le mode de jeu joueur contre robot a été selectionné */}

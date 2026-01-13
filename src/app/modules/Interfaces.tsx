@@ -85,6 +85,7 @@ export interface AffichageParams {
     pion: number;
     deplacement?: (position: Position) => void;
     brouillard: boolean;
+    equipe: boolean;
 }
 
 export interface Case {
