@@ -19,111 +19,203 @@ interface Cellule {
     tyrolienne?: Cellule[]
 }
 
-function generationIle(options, grille: Cellule[][], tailleIle: number, nbMassifsForet: number, nbTuilesForet: number, nbMassifsMontagne: number, nbTuilesMontagne: number): void {
-    const numIdIle: number = Math.floor(Math.random() * 100);
-    let iAleatoire: number = Math.floor(Math.random() * options.lignes);
-    let jAleatoire: number = Math.floor(Math.random() * options.colonnes);
-    const pointDepart: Cellule = grille[iAleatoire][jAleatoire]; // Point de départ de l'ile
+/**
+ * Permet de générer une île
+ */
+function generationIleAvecId(options, grille: Cellule[][], nbPlaines: number, nbForets: number, nbMontagnes: number, nbMassifsForet: number, nbMassifsMontagne: number, numIdIle: number): boolean {
+    const tailleIle = nbPlaines + nbForets + nbMontagnes;
+
+    /**
+     * Recherche du point de départ de l'île
+     * **/
+    let pointDepart: Cellule | null = null;
+    let tentatives = 0;
+
+    while (pointDepart === null && tentatives < 1000) {
+        const iAleatoire: number = Math.floor(Math.random() * options.lignes);
+        const jAleatoire: number = Math.floor(Math.random() * options.colonnes);
+
+        if (grille[iAleatoire][jAleatoire].type === Terrains.Ocean &&
+            grille[iAleatoire][jAleatoire].idIle === undefined) {
+            pointDepart = grille[iAleatoire][jAleatoire];
+        }
+        tentatives++;
+    }
+
+    if (pointDepart === null) {
+        console.error("[Erreur] - Impossible de trouver un point de départ pour l'île");
+        return false;
+    }
+
+    /**
+     * Génération du terrain de l'île avec des plaines
+     */
     let nbrHexagones: number = 0;
     const file: Cellule[] = [];
 
-    // Création de l'île
-    do {
-        file.push(pointDepart);
+    file.push(pointDepart);
 
-        // Faire un while (tant que le nombre d'hexagones de l'île est inférieur à la taille maximale de l'île)
-        while (nbrHexagones < tailleIle) {
-            // Récupération des voisins de la case à enlever dans la file
-            const caseActuelle: Cellule[] = file.splice(0, 1);
-            const voisins = getVoisins(grille, caseActuelle[0]);
+    while (nbrHexagones < tailleIle && file.length > 0) {
+        const caseActuelle: Cellule = file.shift()!;
 
-            // Choix de 2 hexagones parmi la liste des voisins
-            let j = 0;
-            do {
-                const voisinAleatoire: number = Math.floor(Math.random() * voisins.length);
+        // Si la case est déjà traitée, on passe
+        if (caseActuelle.type !== Terrains.Ocean) {
+            continue;
+        }
 
-                // On vérifie que ce soit des cases de type "Océan"
-                if (voisins[voisinAleatoire].type === Terrains.Ocean) {
-                    const voisinsDuVoisin: Cellule[] = getVoisins(grille, voisins[voisinAleatoire]);
+        const voisins = getVoisins(grille, caseActuelle);
 
-                    for (const voisinDuVoisin of voisinsDuVoisin) {
-                        /* Vérifier que les voisins du voisin ne font pas partie d'une autre île
-                        (pour ne pas avoir 2 îles collées) */
-                        if (voisinDuVoisin.idIle === undefined || voisinDuVoisin.idIle === numIdIle) {
-                            // Ajout de la case dans l'île
-                            caseActuelle[0].idIle = numIdIle;
-                            caseActuelle[0].type = Terrains.Plaine;
-
-                            // Augmenter le nombre d'hexagones de l'île
-                            nbrHexagones++;
-
-                            // Ajout dans la file du voisin
-                            file.push(voisins[voisinAleatoire]);
-                            j++;
-                        }
-                    }
-                }
+        // Vérifier qu'aucun voisin ne fait partie d'une autre île
+        let peutAjouter = true;
+        for (const voisin of voisins) {
+            if (voisin.idIle !== undefined && voisin.idIle !== numIdIle) {
+                peutAjouter = false;
+                break;
             }
-            while (j !== 2);
+        }
+
+        if (!peutAjouter) {
+            continue;
+        }
+
+        // Ajout de la case dans l'île comme PLAINE
+        caseActuelle.idIle = numIdIle;
+        caseActuelle.type = Terrains.Plaine;
+        nbrHexagones++;
+
+        // On ne prend que les voisins qui sont des océans et n'appartenant pas à une île
+        const voisinsOcean = voisins.filter(v =>
+            v.type === Terrains.Ocean &&
+            v.idIle === undefined
+        );
+
+        // Mélanger et ajouter 1 à 3 voisins
+        const nbVoisinsAAjouter = Math.min(
+            Math.floor(Math.random() * 3) + 1,
+            voisinsOcean.length
+        );
+
+        // On mélange les voisins
+        for (let i = voisinsOcean.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [voisinsOcean[i], voisinsOcean[j]] = [voisinsOcean[j], voisinsOcean[i]];
+        }
+
+        for (let i = 0; i < nbVoisinsAAjouter; i++) {
+            if (!file.includes(voisinsOcean[i])) {
+                file.push(voisinsOcean[i]);
+            }
         }
     }
-    while (pointDepart.idIle === undefined);
 
-    do {
-        iAleatoire = Math.floor(Math.random() * options.lignes);
-        jAleatoire = Math.floor(Math.random() * options.colonnes);
+    if (nbrHexagones < tailleIle) {
+        console.warn('Attention, il est impossible d\'atteindre la taille cible pour cette île');
+        return false;
     }
-    while (grille[iAleatoire][jAleatoire].idIle !== numIdIle)
 
-    if (nbMassifsForet / nbTuilesForet % 2 === 0) {
+    /**
+     * Transformation de certaines plaines en forêts
+     */
+    let totalForetsCreees = 0;
+    if (nbMassifsForet > 0 && nbForets > 0) {
+        const tuilesParMassif = Math.floor(nbForets / nbMassifsForet);
+        const reste = nbForets % nbMassifsForet;
+
         for (let i = 0; i < nbMassifsForet; i++) {
-            floodFillHexagonale(grille, pointDepart, Terrains.Foret, nbTuilesForet / nbMassifsForet);
+            let pointDepartForet: Cellule | null = null;
+            let tentatives = 0;
+
+            // Trouver un point de départ valide
+            while (pointDepartForet === null && tentatives < 200) {
+                const iAleatoire = Math.floor(Math.random() * options.lignes);
+                const jAleatoire = Math.floor(Math.random() * options.colonnes);
+
+                if (grille[iAleatoire][jAleatoire].idIle === numIdIle &&
+                    grille[iAleatoire][jAleatoire].type === Terrains.Plaine) {
+                    pointDepartForet = grille[iAleatoire][jAleatoire];
+                }
+                tentatives++;
+            }
+
+            if (pointDepartForet) {
+                const tailleForet = tuilesParMassif + (i === 0 ? reste : 0);
+                const creees = floodFillHexagonale(grille, pointDepartForet, Terrains.Foret, tailleForet, numIdIle);
+                totalForetsCreees += creees;
+            }
         }
-    } else {
-        const tabTuilesForet = [];
 
-        for (let i = 0; i < nbMassifsForet; i++) {
-            tabTuilesForet.push(nbTuilesForet / nbMassifsForet);
-        }
-
-        tabTuilesForet[0] += nbTuilesForet - ((nbTuilesForet / nbMassifsForet) * nbMassifsForet);
-
-        for (const tuilesForet of tabTuilesForet) {
-            floodFillHexagonale(grille, pointDepart, Terrains.Foret, tuilesForet);
+        // Compléter le nombre de forêts manquantes si nécessaire
+        if (totalForetsCreees < nbForets) {
+            console.log(`Attention, des forêts sont manquantes: ${nbForets - totalForetsCreees}. Complétion en cours...`);
+            completerTerrain(grille, numIdIle, Terrains.Plaine, Terrains.Foret, nbForets - totalForetsCreees);
         }
     }
 
-    do {
-        iAleatoire = Math.floor(Math.random() * options.lignes);
-        jAleatoire = Math.floor(Math.random() * options.colonnes);
-    }
-    while (grille[iAleatoire][jAleatoire].idIle !== numIdIle && grille[iAleatoire][jAleatoire].type !== Terrains.Foret)
+    /**
+     * Transformation de certaines plaines en montagnes
+     */
+    let totalMontagnesCreees = 0;
+    if (nbMassifsMontagne > 0 && nbMontagnes > 0) {
+        const tuilesParMassif = Math.floor(nbMontagnes / nbMassifsMontagne);
+        const reste = nbMontagnes % nbMassifsMontagne;
 
-    if (nbMassifsMontagne / nbTuilesMontagne % 2 === 0) {
         for (let i = 0; i < nbMassifsMontagne; i++) {
-            floodFillHexagonale(grille, pointDepart, Terrains.Montagne, nbTuilesMontagne / nbMassifsMontagne);
+            let pointDepartMontagne: Cellule | null = null;
+            let tentatives = 0;
+
+            // Trouver un point de départ valide (seulement plaine)
+            while (pointDepartMontagne === null && tentatives < 200) {
+                const iAleatoire = Math.floor(Math.random() * options.lignes);
+                const jAleatoire = Math.floor(Math.random() * options.colonnes);
+
+                if (grille[iAleatoire][jAleatoire].idIle === numIdIle &&
+                    grille[iAleatoire][jAleatoire].type === Terrains.Plaine) {
+                    pointDepartMontagne = grille[iAleatoire][jAleatoire];
+                }
+                tentatives++;
+            }
+
+            if (pointDepartMontagne) {
+                const tailleMontagne = tuilesParMassif + (i === 0 ? reste : 0);
+                const creees = floodFillHexagonale(grille, pointDepartMontagne, Terrains.Montagne, tailleMontagne, numIdIle);
+                totalMontagnesCreees += creees;
+            }
         }
-    } else {
-        const tabTuilesMontagne = [];
 
-        for (let i = 0; i < nbMassifsMontagne; i++) {
-            tabTuilesMontagne.push(nbTuilesMontagne / nbMassifsMontagne);
-        }
-
-        tabTuilesMontagne[0] += nbTuilesForet - ((nbTuilesForet / nbMassifsForet) * nbMassifsForet);
-
-        for (const tuilesMontagne of tabTuilesMontagne) {
-            floodFillHexagonale(grille, pointDepart, Terrains.Foret, tuilesMontagne);
+        // Compléter le nombre de montagnes manquantes si nécessaire
+        if (totalMontagnesCreees < nbMontagnes) {
+            console.log(`Attention, des montagnes sont manquantes: ${nbMontagnes - totalMontagnesCreees}. Complétion en cours...`);
+            completerTerrain(grille, numIdIle, Terrains.Plaine, Terrains.Montagne, nbMontagnes - totalMontagnesCreees);
         }
     }
+
+    /**
+     * On vérifie que les objectifs sont atteints
+     */
+    const plainesFinales = compterTerrainPourIle(grille, numIdIle, Terrains.Plaine);
+    const foretsFinales = compterTerrainPourIle(grille, numIdIle, Terrains.Foret);
+    const montagnesFinales = compterTerrainPourIle(grille, numIdIle, Terrains.Montagne);
+
+    const success = (plainesFinales === nbPlaines) &&
+        (foretsFinales === nbForets) &&
+        (montagnesFinales === nbMontagnes);
+
+    if (!success) {
+        console.warn(`Attention, les objectifs ne sont pas atteints: P=${plainesFinales}/${nbPlaines}, F=${foretsFinales}/${nbForets}, M=${montagnesFinales}/${nbMontagnes}`);
+    }
+
+    return success;
 }
 
+/**
+ * Permet de récupérer les voisins d'une case
+ */
 function getVoisins(grille: Cellule[][], caseActuelle: Cellule): Cellule[] {
     const voisins: Cellule[] = [];
     const directions: number[][] = [
         [1, 0],   // Droite
         [0, -1],  // Haut-droite
-        [-1, -1],  // Haut-gauche
+        [-1, -1], // Haut-gauche
         [-1, 0],  // Gauche
         [-1, 1],  // Bas-gauche
         [0, 1]    // Bas-droite
@@ -133,8 +225,8 @@ function getVoisins(grille: Cellule[][], caseActuelle: Cellule): Cellule[] {
         const x: number = caseActuelle.x + dx;
         const y: number = caseActuelle.y + dy;
 
-        if (x >= 0 && x < grille.length && y >= 0 && y < grille[0].length) {
-            const voisin: Cellule = grille[x][y];
+        if (y >= 0 && y < grille.length && x >= 0 && x < grille[0].length) {
+            const voisin: Cellule = grille[y][x];
             if (voisin) {
                 voisins.push(voisin);
             }
@@ -144,28 +236,59 @@ function getVoisins(grille: Cellule[][], caseActuelle: Cellule): Cellule[] {
     return voisins;
 }
 
-function floodFillHexagonale(grille: Cellule[][], caseDepart: Cellule, type: TerrainType, tailleMax: number): void {
+/**
+ * Fonction de flood afin de créer les massifs
+ */
+function floodFillHexagonale(grille: Cellule[][], caseDepart: Cellule, type: TerrainType, tailleMax: number, idIle: number): number {
     const file: Cellule[] = [caseDepart];
+    const visited: Set<string> = new Set();
     let taille: number = 0;
 
     while (file.length > 0 && taille < tailleMax) {
-        const caseSelec: Cellule[] = file.splice(0, 1);
-        const cx: number = caseSelec[0].x;
-        const cy: number = caseSelec[0].y;
+        const caseSelec: Cellule = file.shift()!;
+        const key = `${caseSelec.x},${caseSelec.y}`;
 
-        if (grille[cy][cx].type === Terrains.Plaine) {
-            grille[cy][cx].type = type;
+        if (visited.has(key)) {
+            continue;
+        }
+        visited.add(key);
+
+        const peutTransformer = caseSelec.idIle === idIle && caseSelec.type === Terrains.Plaine;
+
+        if (peutTransformer) {
+            caseSelec.type = type;
             taille++;
 
-            getVoisins(grille, caseSelec[0]).forEach((h: Cellule) => {
-                if (Math.random() > 0.5 && grille[h.y][h.x].type === Terrains.Plaine && h.idIle === caseDepart.idIle) {
-                    file.push(h);
+            const voisins = getVoisins(grille, caseSelec);
+
+            // Mélanger les voisins pour plus de naturel
+            for (let i = voisins.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [voisins[i], voisins[j]] = [voisins[j], voisins[i]];
+            }
+
+            for (const voisin of voisins) {
+                const voisinKey = `${voisin.x},${voisin.y}`;
+
+                if (!visited.has(voisinKey)) {
+                    const voisinValide = voisin.idIle === idIle && voisin.type === Terrains.Plaine;
+
+                    if (voisinValide && !file.includes(voisin)) {
+                        if (Math.random() > 0.1) {  // 90% de chance de prendre le voisin
+                            file.push(voisin);
+                        }
+                    }
                 }
-            });
+            }
         }
     }
+
+    return taille;
 }
 
+/**
+ * Fonction qui harmonise le nombre de tuiles par île pour atteindre les objectifs
+ */
 function bonNombreDeTuiles(type: number, somme: number, tab: number[]): void {
     if (somme > type) {
         let max = Math.max(...tab);
@@ -179,6 +302,157 @@ function bonNombreDeTuiles(type: number, somme: number, tab: number[]): void {
 
         min += type - somme;
         tab[index] = min;
+    }
+}
+
+/**
+ * Fonction qui complète les massifs quand il manque des tuiles
+ * Elle trouve les plaines adjacentes aux massifs existants pour les étendre naturellement
+ */
+function completerTerrain(grille: Cellule[][], idIle: number, typeSource: TerrainType, typeCible: TerrainType, nombre: number): number {
+    let ajoutees = 0;
+
+    while (ajoutees < nombre) {
+        // Trouver toutes les plaines adjacentes aux massifs existants du type cible
+        const plainesAdjacentes: Cellule[] = [];
+
+        for (let i = 0; i < grille.length; i++) {
+            for (let j = 0; j < grille[i].length; j++) {
+                const cellule = grille[i][j];
+
+                // On cherche des plaines de l'île
+                if (cellule.idIle === idIle && cellule.type === typeSource) {
+                    const voisins = getVoisins(grille, cellule);
+
+                    // Vérifier si au moins un voisin est du type cible
+                    const aVoisinTypeCible = voisins.some(v =>
+                        v.idIle === idIle && v.type === typeCible
+                    );
+
+                    if (aVoisinTypeCible && !plainesAdjacentes.includes(cellule)) {
+                        plainesAdjacentes.push(cellule);
+                    }
+                }
+            }
+        }
+
+        // Si on ne trouve aucune plaine adjacente, on ne peut pas continuer
+        if (plainesAdjacentes.length === 0) {
+            console.warn(`⚠️  Plus de plaines adjacentes disponibles pour étendre les massifs. ${ajoutees}/${nombre} ajoutées.`);
+            break;
+        }
+
+        // Mélanger pour une distribution naturelle
+        for (let i = plainesAdjacentes.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [plainesAdjacentes[i], plainesAdjacentes[j]] = [plainesAdjacentes[j], plainesAdjacentes[i]];
+        }
+
+        // Transformer les plaines adjacentes une par une
+        const aTransformer = Math.min(nombre - ajoutees, plainesAdjacentes.length);
+        for (let i = 0; i < aTransformer; i++) {
+            plainesAdjacentes[i].type = typeCible;
+            ajoutees++;
+        }
+    }
+
+    return ajoutees;
+}
+
+/**
+ * Fonction qui compte le nombre de tuiles d'un type donné
+ */
+function compterTerrainPourIle(grille: Cellule[][], idIle: number, type: TerrainType): number {
+    let compte = 0;
+    for (let i = 0; i < grille.length; i++) {
+        for (let j = 0; j < grille[i].length; j++) {
+            if (grille[i][j].idIle === idIle && grille[i][j].type === type) {
+                compte++;
+            }
+        }
+    }
+    return compte;
+}
+
+/**
+ * Fonction qui reinitialise une île pour une nouvelle tentative
+ */
+function nettoyerIle(grille: Cellule[][], idIle: number): void {
+    for (let i = 0; i < grille.length; i++) {
+        for (let j = 0; j < grille[i].length; j++) {
+            if (grille[i][j].idIle === idIle) {
+                grille[i][j].type = Terrains.Ocean;
+                grille[i][j].idIle = undefined;
+            }
+        }
+    }
+}
+
+/**
+ * Fonction qui réparti les terrains entre les différents îles
+ */
+function repartirTerrainsParIle(options): {
+    plaines: number[],
+    forets: number[],
+    montagnes: number[],
+    massifsMontagne: number[],
+    massifsForet: number[]
+} {
+    const tabPlaines: number[] = [];
+    const tabForets: number[] = [];
+    const tabMontagnes: number[] = [];
+    const tabMassifsMontagne: number[] = [];
+    const tabMassifsForet: number[] = [];
+
+    for (let i = 0; i < options.iles; i++) {
+        const nbPlaines: number = Math.floor(Math.random() * (options.plaines / options.iles)) + Math.floor(options.plaines / options.iles / 1.9);
+        const nbForets: number = Math.floor(Math.random() * (options.forets / options.iles)) + Math.floor(options.forets / options.iles / 1.9);
+        const nbMontagnes: number = Math.floor(Math.random() * (options.montagnes / options.iles)) + Math.floor(options.montagnes / options.iles / 1.9);
+        const massifsMontagne: number = Math.floor(Math.random() * (options.massifsMontagne / options.iles)) + Math.floor(options.massifsMontagne / options.iles / 1.9);
+        const massifsForet: number = Math.floor(Math.random() * (options.massifsForet / options.iles)) + Math.floor(options.massifsForet / options.iles / 1.9);
+
+        tabPlaines.push(nbPlaines);
+        tabForets.push(nbForets);
+        tabMontagnes.push(nbMontagnes);
+        tabMassifsMontagne.push(massifsMontagne);
+        tabMassifsForet.push(massifsForet);
+    }
+
+    const sumTabPlaines: number = tabPlaines.reduce((a: number, b: number): number => a + b, 0);
+    bonNombreDeTuiles(options.plaines, sumTabPlaines, tabPlaines);
+
+    const sumTabForets: number = tabForets.reduce((a: number, b: number): number => a + b, 0);
+    bonNombreDeTuiles(options.forets, sumTabForets, tabForets);
+
+    const sumTabMontagnes: number = tabMontagnes.reduce((a: number, b: number): number => a + b, 0);
+    bonNombreDeTuiles(options.montagnes, sumTabMontagnes, tabMontagnes);
+
+    const sumTabMassifsMontagne: number = tabMassifsMontagne.reduce((a: number, b: number): number => a + b, 0);
+    bonNombreDeTuiles(options.massifsMontagne, sumTabMassifsMontagne, tabMassifsMontagne);
+
+    const sumTabMassifsForet: number = tabMassifsForet.reduce((a: number, b: number): number => a + b, 0);
+    bonNombreDeTuiles(options.massifsForet, sumTabMassifsForet, tabMassifsForet);
+
+    return {
+        plaines: tabPlaines,
+        forets: tabForets,
+        montagnes: tabMontagnes,
+        massifsMontagne: tabMassifsMontagne,
+        massifsForet: tabMassifsForet
+    };
+}
+
+/**
+ * Fonction qui réinitialise la grille pour une nouvelle carte
+ */
+function reinitialiserGrille(grille: Cellule[][], lignes: number, colonnes: number): void {
+    for (let i = 0; i < lignes; i++) {
+        for (let j = 0; j < colonnes; j++) {
+            grille[i][j].type = Terrains.Ocean;
+            grille[i][j].idIle = undefined;
+            grille[i][j].estRiviere = undefined;
+            grille[i][j].tyrolienne = undefined;
+        }
     }
 }
 
@@ -231,43 +505,84 @@ for (let i = 0; i < options.lignes; i++) {
     }
 }
 
-const tabPlaines: number[] = [];
-const tabForets: number[] = [];
-const tabMontagnes: number[] = [];
-const tabMassifsMontagne: number[] = [];
-const tabMassifsForet: number[] = [];
+let carteReussie = false;
+let tentativesCarteComplete = 0;
+let repartition = repartirTerrainsParIle(options);
 
-for (let i = 0; i < options.iles; i++) {
-    const nbPlaines: number = Math.floor(Math.random() * (options.plaines / options.iles)) + Math.floor(options.plaines / options.iles / 1.9);
-    const nbForets: number = Math.floor(Math.random() * (options.forets / options.iles)) + Math.floor(options.forets / options.iles / 1.9);
-    const nbMontagnes: number = Math.floor(Math.random() * (options.montagnes / options.iles)) + Math.floor(options.montagnes / options.iles / 1.9);
-    const massifsMontagne: number = Math.floor(Math.random() * (options.massifs_montagne / options.iles)) + Math.floor(options.massifs_montagne / options.iles / 1.9);
-    const massifsForet: number = Math.floor(Math.random() * (options.massifs_foret / options.iles)) + Math.floor(options.massifs_foret / options.iles / 1.9);
+console.log("\n=== GÉNÉRATION DES ÎLES ===");
 
-    tabPlaines.push(nbPlaines);
-    tabForets.push(nbForets);
-    tabMontagnes.push(nbMontagnes);
-    tabMassifsMontagne.push(massifsMontagne);
-    tabMassifsForet.push(massifsForet);
-}
+while (!carteReussie) {
+    tentativesCarteComplete++;
 
-const sumTabPlaines: number = tabPlaines.reduce((a: number, b: number): number => a + b, 0);
-bonNombreDeTuiles(options.plaines, sumTabPlaines, tabPlaines);
+    if (tentativesCarteComplete > 1) {
+        console.log(`\n NOUVELLE RÉPARTITION - Tentative ${tentativesCarteComplete} pour générer la carte complète...\n`);
+        reinitialiserGrille(grille, options.lignes, options.colonnes);
+        repartition = repartirTerrainsParIle(options);
+    }
 
-const sumTabForets: number = tabForets.reduce((a: number, b: number): number => a + b, 0);
-bonNombreDeTuiles(options.forets, sumTabForets, tabForets);
+    console.log("\n Répartition des terrains pour cette tentative:");
+    for (let i = 0; i < options.iles; i++) {
+        console.log(`  Île ${i + 1}: P=${repartition.plaines[i]}, F=${repartition.forets[i]}, M=${repartition.montagnes[i]} | MF=${repartition.massifsForet[i]}, MM=${repartition.massifsMontagne[i]}`);
+    }
 
-const sumTabMontagnes: number = tabMontagnes.reduce((a: number, b: number): number => a + b, 0);
-bonNombreDeTuiles(options.montagnes, sumTabMontagnes, tabMontagnes);
+    const idsIlesGenerees: number[] = [];
+    let toutesIlesReussies = true;
 
-const sumTabMassifsMontagne: number = tabMassifsMontagne.reduce((a: number, b: number): number => a + b, 0);
-bonNombreDeTuiles(options.massifs_montagne, sumTabMassifsMontagne, tabMassifsMontagne);
+    for (let i = 0; i < options.iles; i++) {
+        console.log(`\n Île ${i + 1}:`);
+        console.log(`  Plaines: ${repartition.plaines[i]}, Forêts: ${repartition.forets[i]}, Montagnes: ${repartition.montagnes[i]}`);
+        console.log(`  Massifs forêt: ${repartition.massifsForet[i]}, Massifs montagne: ${repartition.massifsMontagne[i]}`);
 
-const sumTabMassifsForet: number = tabMassifsForet.reduce((a: number, b: number): number => a + b, 0);
-bonNombreDeTuiles(options.massifs_foret, sumTabMassifsForet, tabMassifsForet);
+        let tentativesIle = 0;
+        let success = false;
+        let idIleActuelle: number | undefined;
+        const maxTentatives = 10;
 
-for (let i = 0; i < options.iles; i++) {
-    generationIle(options, grille, tabPlaines[i] + tabMontagnes[i] + tabForets[i], tabMassifsForet[i], tabForets[i], tabMassifsMontagne[i], tabMontagnes[i]);
+        while (!success && tentativesIle < maxTentatives) {
+            if (tentativesIle > 0) {
+                console.log(`Tentative ${tentativesIle + 1}/${maxTentatives} pour l'île ${i + 1}...`);
+            }
+
+            // Générer un nouvel ID unique pour cette tentative
+            idIleActuelle = Math.floor(Math.random() * 1000000) + Date.now() + tentativesIle + i * 10000;
+
+            success = generationIleAvecId(
+                options,
+                grille,
+                repartition.plaines[i],
+                repartition.forets[i],
+                repartition.montagnes[i],
+                repartition.massifsForet[i],
+                repartition.massifsMontagne[i],
+                idIleActuelle
+            );
+
+            if (!success && idIleActuelle !== undefined) {
+                // Nettoyer l'île ratée avec son ID spécifique
+                console.log(`Génération échouée, nettoyage de l'île ${idIleActuelle}...`);
+                nettoyerIle(grille, idIleActuelle);
+            }
+
+            tentativesIle++;
+        }
+
+        if (!success) {
+            console.warn(`Impossible de générer l'île ${i + 1} après ${maxTentatives} tentatives`);
+            console.log('Nouvelle répartition des terrains nécessaire...');
+            toutesIlesReussies = false;
+            break; // Sortir de la boucle des îles pour remélanger
+        } else {
+            console.log(`Île ${i + 1} générée avec succès !`);
+            if (idIleActuelle !== undefined) {
+                idsIlesGenerees.push(idIleActuelle);
+            }
+        }
+    }
+
+    if (toutesIlesReussies) {
+        carteReussie = true;
+        console.log(`\nCarte complète générée avec succès après ${tentativesCarteComplete} répartition(s) ! Youpi !`);
+    }
 }
 
 console.log(grille);
