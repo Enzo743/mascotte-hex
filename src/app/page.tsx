@@ -570,7 +570,7 @@ export default function Home() {
                                                         return (
                                                             <button
                                                                 key={v.key}
-                                                                onClick={() => definirDifficulteIA("facile")} //v.key
+                                                                onClick={() => definirDifficulteIA(v.key)}
                                                                 style={{
                                                                     flex: "1 1 200px",
                                                                     maxWidth: "260px",
