@@ -158,8 +158,17 @@ export class File {
     }
 }
 
-export type CarteAJouer = "surveillant" | "copiesACorriger" | "constructionBarrage" | "destructionBarrage" 
-    | "destructionTyrolienne" | "reparationTyrolienne" | undefined;
+
+/* === TEMP ===
+*/
+export type CarteAJouer = 
+    [0, "🥸 Surveillant"] | 
+    [1, "📄 Corrections"] | 
+    [2, "🦫 Castor"] | 
+    [3, "🚜 Budlozer"] | 
+    [4, "✂️ Tenaille"] | 
+    [5, "🪢 Corde"] | 
+    undefined;
 
 export class Pioche {
     private pioche: CarteAJouer[] = [];
