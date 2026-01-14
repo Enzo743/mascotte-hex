@@ -16,6 +16,7 @@ interface Cellule {
     y: number;
     type?: TerrainType;
     idIle?: number;
+    idMassif?: number;
     estRiviere?: boolean;
     tyrolienne?: Cellule[]
 }
@@ -123,6 +124,7 @@ function generationIleAvecId(options, grille: Cellule[][], nbPlaines: number, nb
         const reste = nbForets % nbMassifsForet;
 
         for (let i = 0; i < nbMassifsForet; i++) {
+            const numIdMassif = Math.floor(Math.random() * nbForets / nbMassifsForet) + Date.now() + nbForets;
             let pointDepartForet: Cellule | null = null;
             let tentatives = 0;
 
@@ -140,7 +142,7 @@ function generationIleAvecId(options, grille: Cellule[][], nbPlaines: number, nb
 
             if (pointDepartForet) {
                 const tailleForet = tuilesParMassif + (i === 0 ? reste : 0);
-                const creees = floodFillHexagonale(grille, pointDepartForet, Terrains.Foret, tailleForet, numIdIle);
+                const creees = floodFillHexagonale(grille, pointDepartForet, Terrains.Foret, tailleForet, numIdIle, numIdMassif);
                 totalForetsCreees += creees;
             }
         }
@@ -161,6 +163,7 @@ function generationIleAvecId(options, grille: Cellule[][], nbPlaines: number, nb
         const reste = nbMontagnes % nbMassifsMontagne;
 
         for (let i = 0; i < nbMassifsMontagne; i++) {
+            const numIdMassif = Math.floor(Math.random() * nbMontagnes / nbMassifsMontagne) + Date.now() + nbMontagnes;
             let pointDepartMontagne: Cellule | null = null;
             let tentatives = 0;
 
@@ -178,7 +181,7 @@ function generationIleAvecId(options, grille: Cellule[][], nbPlaines: number, nb
 
             if (pointDepartMontagne) {
                 const tailleMontagne = tuilesParMassif + (i === 0 ? reste : 0);
-                const creees = floodFillHexagonale(grille, pointDepartMontagne, Terrains.Montagne, tailleMontagne, numIdIle);
+                const creees = floodFillHexagonale(grille, pointDepartMontagne, Terrains.Montagne, tailleMontagne, numIdIle, numIdMassif);
                 totalMontagnesCreees += creees;
             }
         }
@@ -213,14 +216,27 @@ function generationIleAvecId(options, grille: Cellule[][], nbPlaines: number, nb
  */
 function getVoisins(grille: Cellule[][], caseActuelle: Cellule): Cellule[] {
     const voisins: Cellule[] = [];
-    const directions: number[][] = [
-        [1, 0],   // Droite
-        [0, -1],  // Haut-droite
-        [-1, -1], // Haut-gauche
-        [-1, 0],  // Gauche
-        [-1, 1],  // Bas-gauche
-        [0, 1]    // Bas-droite
-    ];
+    let directions: number[][];
+
+    if (caseActuelle.x % 2 === 0) {
+        directions = [
+            [0, 1],   // Droite
+            [-1, 0],  // Haut-droite
+            [-1, -1], // Haut-gauche
+            [0, -1],  // Gauche
+            [1, -1],  // Bas-gauche
+            [1, 0]    // Bas-droite
+        ];
+    } else {
+        directions = [
+            [0, 1],   // Droite
+            [-1, 1],  // Haut-droite
+            [-1, 0], // Haut-gauche
+            [0, -1],  // Gauche
+            [1, 0],  // Bas-gauche
+            [1, 1]    // Bas-droite
+        ];
+    }
 
     for (const [dx, dy] of directions) {
         const x: number = caseActuelle.x + dx;
@@ -240,7 +256,7 @@ function getVoisins(grille: Cellule[][], caseActuelle: Cellule): Cellule[] {
 /**
  * Fonction de flood afin de créer les massifs
  */
-function floodFillHexagonale(grille: Cellule[][], caseDepart: Cellule, type: TerrainType, tailleMax: number, idIle: number): number {
+function floodFillHexagonale(grille: Cellule[][], caseDepart: Cellule, type: TerrainType, tailleMax: number, idIle: number, idMassif: number): number {
     const file: Cellule[] = [caseDepart];
     const visited: Set<string> = new Set();
     let taille: number = 0;
@@ -258,6 +274,7 @@ function floodFillHexagonale(grille: Cellule[][], caseDepart: Cellule, type: Ter
 
         if (peutTransformer) {
             caseSelec.type = type;
+            caseSelec.idMassif = idMassif;
             taille++;
 
             const voisins = getVoisins(grille, caseSelec);
@@ -272,11 +289,27 @@ function floodFillHexagonale(grille: Cellule[][], caseDepart: Cellule, type: Ter
                 const voisinKey = `${voisin.x},${voisin.y}`;
 
                 if (!visited.has(voisinKey)) {
-                    const voisinValide = voisin.idIle === idIle && voisin.type === Terrains.Plaine;
+                    const voisinsDuVoisin: Cellule[] = getVoisins(grille, voisin);
 
-                    if (voisinValide && !file.includes(voisin)) {
-                        if (Math.random() > 0.1) {  // 90% de chance de prendre le voisin
-                            file.push(voisin);
+                    // Vérifier qu'aucun voisin du voisin n'appartient à un autre massif du même type
+                    const aVoisinMemType = voisinsDuVoisin.some(v =>
+                        v.idIle === idIle &&
+                        v.type === type &&
+                        v.idMassif !== undefined &&
+                        v.idMassif !== idMassif
+                    );
+
+                    for (const voisinDuVoisin of voisinsDuVoisin) {
+                        const voisinValide = voisin.idIle === idIle &&
+                            voisin.type === Terrains.Plaine &&
+                            voisinDuVoisin.idIle === idIle &&
+                            voisinDuVoisin.idMassif === undefined &&
+                            !aVoisinMemType;  // Ajout de cette condition
+
+                        if (voisinValide && !file.includes(voisin)) {
+                            if (Math.random() > 0.1) {  // 90% de chance de prendre le voisin
+                                file.push(voisin);
+                            }
                         }
                     }
                 }
@@ -383,6 +416,7 @@ function nettoyerIle(grille: Cellule[][], idIle: number): void {
         for (let j = 0; j < grille[i].length; j++) {
             if (grille[i][j].idIle === idIle) {
                 grille[i][j].type = Terrains.Ocean;
+                grille[i][j].idMassif = undefined;
                 grille[i][j].idIle = undefined;
             }
         }
@@ -451,16 +485,16 @@ function reinitialiserGrille(grille: Cellule[][], lignes: number, colonnes: numb
         for (let j = 0; j < colonnes; j++) {
             grille[i][j].type = Terrains.Ocean;
             grille[i][j].idIle = undefined;
+            grille[i][j].idMassif = undefined;
             grille[i][j].estRiviere = undefined;
             grille[i][j].tyrolienne = undefined;
         }
     }
 }
 
-async function creerCarte(grille: Cellule[][], options)
-{
+async function creerCarte(grille: Cellule[][], options) {
     const carteVierge = {
-        "grille":{
+        "grille": {
             "lignes": options.lignes,
             "colonnes": options.colonnes
         },
@@ -473,26 +507,18 @@ async function creerCarte(grille: Cellule[][], options)
         "connexions": []
     }
 
-    for (let i = 0; i < Number(options.lignes); i++)
-    {
-        for (let j = 0; j < Number(options.colonnes); j++)
-        {
+    for (let i = 0; i < Number(options.lignes); i++) {
+        for (let j = 0; j < Number(options.colonnes); j++) {
             const coordonnees: number[] = [i, j];
             const cellule: Cellule = grille[i][j];
 
-            console.log(cellule);
-            console.log(coordonnees);
-
-            if (cellule.type === Terrains.Plaine)
-            {
+            if (cellule.type === Terrains.Plaine) {
                 carteVierge.terrains.plaine.push(coordonnees);
             }
-            if (cellule.type === Terrains.Foret)
-            {
+            if (cellule.type === Terrains.Foret) {
                 carteVierge.terrains.foret.push(coordonnees);
             }
-            if (cellule.type === Terrains.Montagne)
-            {
+            if (cellule.type === Terrains.Montagne) {
                 carteVierge.terrains.montagne.push(coordonnees);
             }
         }
