@@ -182,58 +182,87 @@ export function Affichage({contexte, rayon, tour, pion, deplacement, brouillard,
                         const posBio: Case | undefined = contexte.carte.cases.find((c) => c.id === `${posBioX}-${posBioY}`);
                         const posBio2: Case | undefined = contexte.carte.cases.find((c) => c.id === `${posBio2X}-${posBio2Y}`);
                         
-                        const tailleDecalage: number = 10;
-                        let decalageInfo = 0;
-                        let decalageBio = 0;
-                        let decalageMascotteInfo = 0;
-                        let decalageMascotteBio = 0;
+                        
                         if (equipe) {
                             if (!posInfo || !posInfo2 || !posBio || !posBio2 || !mascotteInfo || !mascotteBio) return;
-                            /* Ça fonctionne sur certaines cases et pas sur d'autres, y a une certaine symétrie je crois 
-                            Mais en gros des fois on rentre pas dans le if alors qu'on devrait et du coup les pions se superposent */
-                            if (posInfo.positionMatrice.x == posInfo2.positionMatrice.x && posInfo.positionMatrice.y == posInfo2.positionMatrice.y 
-                                && contexte.carte.residenceInfo.x != posInfo.positionMatrice.x && contexte.carte.residenceInfo.y != posInfo.positionMatrice.y) {
-                                decalageInfo = tailleDecalage;
-                                decalageMascotteBio = contexte.joueurInfo.mascotte ? tailleDecalage : (contexte.joueurInfo2.mascotte ? -tailleDecalage : 0);
+                            const infoMemeCaseInfo2 = posInfo.positionMatrice.x === posInfo2.positionMatrice.x && posInfo.positionMatrice.y === posInfo2.positionMatrice.y;
+                            const bioMemeCaseBio2 = posBio.positionMatrice.x === posBio2.positionMatrice.x && posBio.positionMatrice.y === posBio2.positionMatrice.y;
+                            const infoMemeCaseBio = posInfo.positionMatrice.x === posBio.positionMatrice.x && posInfo.positionMatrice.y === posBio.positionMatrice.y;
+                            const infoMemeCaseBio2 = posInfo.positionMatrice.x === posBio2.positionMatrice.x && posInfo.positionMatrice.y === posBio2.positionMatrice.y;
+                            const info2MemeCaseBio = posInfo2.positionMatrice.x === posBio.positionMatrice.x && posInfo2.positionMatrice.y === posBio.positionMatrice.y;
+                            const info2MemeCaseBio2 = posInfo2.positionMatrice.x === posBio2.positionMatrice.x && posInfo2.positionMatrice.y === posBio2.positionMatrice.y;
+                            
+                            const tailleDecalage: number = 10;
+                            let decalageInfoX = 0;
+                            let decalageInfoY = 0;
+                            let decalageInfo2X = 0;
+                            let decalageInfo2Y = 0;
+                            let decalageBioX = 0;
+                            let decalageBioY = 0;
+                            let decalageBio2X = 0;
+                            let decalageBio2Y = 0;
+                            let decalageMascotteInfoX = 0;
+                            let decalageMascotteInfoY = 0;
+                            let decalageMascotteBioX = 0;
+                            let decalageMascotteBioY = 0;
+                            
+                            if (bioMemeCaseBio2) {
+                                decalageBioX = -tailleDecalage;
+                                decalageBio2X = tailleDecalage;
                             }
-                            if (posBio.positionCanvas.x == posBio2.positionCanvas.x && posBio.positionCanvas.y == posBio2.positionCanvas.y
-                                && contexte.carte.residenceBio.x != posBio.positionMatrice.x && contexte.carte.residenceBio.y != posBio.positionMatrice.y) {
-                                decalageBio = tailleDecalage;
-                                decalageMascotteInfo = contexte.joueurBio.mascotte ? tailleDecalage : (contexte.joueurBio2.mascotte ? -tailleDecalage : 0);
+                            if (infoMemeCaseInfo2) {
+                                decalageInfoX = -tailleDecalage;
+                                decalageInfo2X = tailleDecalage;
+                            }
+                            if (infoMemeCaseBio) {
+                                decalageBioY = -tailleDecalage;
+                                decalageInfoY = tailleDecalage;
+                            }
+                            if (infoMemeCaseBio2) {
+                                decalageInfoY = tailleDecalage;
+                                decalageBio2Y = -tailleDecalage;
+                            }
+                            if (info2MemeCaseBio) {
+                                decalageBioY = -tailleDecalage;
+                                decalageInfo2Y = 10;
+                            }
+                            if (info2MemeCaseBio2) {
+                                decalageBio2Y = -tailleDecalage;
+                                decalageInfo2Y = tailleDecalage;
                             }
                             return (
                                 <>
                                     <Circle
-                                        x = {posInfo.positionCanvas.x + decalageInfo}
-                                        y = {posInfo.positionCanvas.y}
+                                        x = {posInfo.positionCanvas.x + decalageInfoX}
+                                        y = {posInfo.positionCanvas.y + decalageInfoY}
                                         radius = {rayon / 2}
                                         fill = "#9486E1"
                                         stroke = "black"
                                     />
                                     <Circle
-                                        x = {posInfo2.positionCanvas.x - decalageInfo}
-                                        y = {posInfo2.positionCanvas.y}
+                                        x = {posInfo2.positionCanvas.x + decalageInfo2X}
+                                        y = {posInfo2.positionCanvas.y + decalageInfo2Y}
                                         radius = {rayon / 2}
                                         fill = "#9486E1"
                                         stroke = "white"
                                     />
                                     <Circle
-                                        x = {posBio.positionCanvas.x + decalageBio}
-                                        y = {posBio.positionCanvas.y}
+                                        x = {posBio.positionCanvas.x + decalageBioX}
+                                        y = {posBio.positionCanvas.y + decalageBioY}
                                         radius = {rayon / 2}
                                         fill = "#F17961"
                                         stroke = "black"
                                     />
                                     <Circle
-                                        x = {posBio2.positionCanvas.x - decalageBio}
-                                        y = {posBio2.positionCanvas.y}
+                                        x = {posBio2.positionCanvas.x + decalageBio2X}
+                                        y = {posBio2.positionCanvas.y + decalageBio2Y}
                                         radius = {rayon / 2}
                                         fill = "#F17961"
                                         stroke = "white"
                                     />
                                     <Text
-                                        x = {mascotteBio.positionCanvas.x + decalageMascotteBio}
-                                        y = {mascotteBio.positionCanvas.y}
+                                        x = {mascotteBio.positionCanvas.x + decalageMascotteBioX}
+                                        y = {mascotteBio.positionCanvas.y + decalageMascotteBioY}
                                         text = {contexte.carte.residenceBio.x === contexte.joueurBio.position.x && 
                                                 contexte.carte.residenceBio.y === contexte.joueurBio.position.y &&
                                                 !contexte.joueurInfo.mascotte && !contexte.joueurInfo2.mascotte
@@ -247,8 +276,8 @@ export function Affichage({contexte, rayon, tour, pion, deplacement, brouillard,
                                         offsetY = {rayon/3.5}
                                     />
                                     <Text
-                                        x = {mascotteInfo.positionCanvas.x + decalageMascotteInfo}
-                                        y = {mascotteInfo.positionCanvas.y}
+                                        x = {mascotteInfo.positionCanvas.x + decalageMascotteInfoX}
+                                        y = {mascotteInfo.positionCanvas.y + decalageMascotteInfoY}
                                         text = {contexte.carte.residenceInfo.x === contexte.joueurInfo.position.x && 
                                                 contexte.carte.residenceInfo.y === contexte.joueurInfo.position.y &&
                                                 !contexte.joueurBio.mascotte && !contexte.joueurBio2.mascotte

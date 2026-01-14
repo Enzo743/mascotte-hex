@@ -375,24 +375,51 @@ export function TraitementGraphe(carte: Carte, joueurInfo: Joueur, joueurBio: Jo
     // ^ Probablement besoin d'utiliser les cases adjacentes pour que le bot se déplace quand même.
     let positionsJoueurs: Position[]
     if (equipe) {
-        if (tour === 0) { // Y a un tour de décalage, c'est à l'équipe bio de jouer
-            positionsJoueurs = joueurInfo.position.x === carte.residenceInfo.x && joueurInfo.position.y === carte.residenceInfo.y ? 
-                [joueurInfo2.position] :
-                joueurInfo2.position.x === carte.residenceInfo.x && joueurInfo2.position.y === carte.residenceInfo.y ? 
-                    [joueurInfo.position] :
-                    [joueurInfo.position, joueurInfo2.position];
+        if (tour === 0) { // C'est à l'équipe bio de jouer
+            positionsJoueurs = [joueurInfo.position, joueurInfo2.position];
+            // Le pion info est sur une résidence
+            if (joueurInfo.position.x === carte.residenceInfo.x && joueurInfo.position.y === carte.residenceInfo.y ||
+                joueurInfo.position.x === carte.residenceBio.x && joueurInfo.position.y === carte.residenceBio.y) {
+                    positionsJoueurs = [joueurInfo2.position];
+                }
+            // Le pion info2 est sur une résidence 
+            if (joueurInfo2.position.x === carte.residenceInfo.x && joueurInfo2.position.y === carte.residenceInfo.y ||
+                joueurInfo2.position.x === carte.residenceBio.x && joueurInfo2.position.y === carte.residenceBio.y) {
+                    positionsJoueurs = [joueurInfo.position];
+            } 
+            // Les 2 pions info sont sur une résidence
+            if ((joueurInfo.position.x === carte.residenceInfo.x && joueurInfo.position.y === carte.residenceInfo.y ||
+                joueurInfo.position.x === carte.residenceBio.x && joueurInfo.position.y === carte.residenceBio.y)
+                &&
+                (joueurInfo2.position.x === carte.residenceInfo.x && joueurInfo2.position.y === carte.residenceInfo.y ||
+                joueurInfo2.position.x === carte.residenceBio.x && joueurInfo2.position.y === carte.residenceBio.y)) {
+                    positionsJoueurs = [];
+            }
         }else {
             positionsJoueurs = [joueurBio.position, joueurBio2.position];
-            positionsJoueurs = joueurBio.position.x === carte.residenceBio.x && joueurBio.position.y === carte.residenceBio.y ?
-                [joueurBio2.position] :
-                joueurBio2.position.x === carte.residenceBio.x && joueurBio2.position.y === carte.residenceBio.y ?
-                    [joueurBio.position] :
-                    [joueurBio.position, joueurBio2.position];
+            // Le pion bio est sur une résidence
+            if (joueurBio.position.x === carte.residenceBio.x && joueurBio.position.y === carte.residenceBio.y ||
+                joueurBio.position.x === carte.residenceInfo.x && joueurBio.position.y === carte.residenceInfo.y) {
+                positionsJoueurs = [joueurBio2.position];
+            }
+            // le pion bio2 est sur une résidence
+            if (joueurBio2.position.x === carte.residenceBio.x && joueurBio2.position.y === carte.residenceBio.y ||
+                joueurBio2.position.x === carte.residenceInfo.x && joueurBio2.position.y === carte.residenceInfo.y) {
+                positionsJoueurs = [joueurBio.position];
+            }
+            // Les 2 pions bio sont sur une résidences
+            if ((joueurBio.position.x === carte.residenceBio.x && joueurBio.position.y === carte.residenceBio.y ||
+                joueurBio.position.x === carte.residenceInfo.x && joueurBio.position.y === carte.residenceInfo.y) 
+                &&
+                (joueurBio2.position.x === carte.residenceBio.x && joueurBio2.position.y === carte.residenceBio.y ||
+                joueurBio2.position.x === carte.residenceInfo.x && joueurBio2.position.y === carte.residenceInfo.y)) {
+                positionsJoueurs = [];
+            }
         }
     }else {
         positionsJoueurs = [joueurInfo.position, joueurBio.position];
     }
-    
+
     for (const arc of graphe) {
         arc.voisins = arc.voisins.filter(voisin => 
             !positionsJoueurs.some(pos => pos.x === voisin.x && pos.y === voisin.y)
