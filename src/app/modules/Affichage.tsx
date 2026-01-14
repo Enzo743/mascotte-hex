@@ -338,6 +338,11 @@ export function Affichage({contexte, rayon, tour, pion, deplacement, brouillard,
                     */}
                     {contexte.carte.cases.map((c: Case) => {
                         const [x, y] = c.id.split("-").map(Number);
+                        const visible = casesVisibles.some(v =>
+                            v.x === x &&
+                            v.y === y
+                        );
+                        if (!visible) {return null;}
                         const adjacent = voisins.some(
                             (voisin) => voisin.x === x && voisin.y === y
                         );
