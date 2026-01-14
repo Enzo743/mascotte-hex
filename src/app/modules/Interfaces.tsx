@@ -94,8 +94,8 @@ export interface Case {
     positionCanvas: Position;
     residenceInfo: boolean;
     residenceBio: boolean;
-    riviere: boolean;
-    tyrolienne: {nombre: number; sorties: Position[]}; 
+    riviere: {nombre: number; sorties: Position[]};
+    tyrolienne: {nombre: number; sorties: Position[]};
     type: string;
     couleur: string
 }
