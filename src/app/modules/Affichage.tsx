@@ -236,11 +236,11 @@ export function Affichage({contexte, rayon, tour, pion, deplacement, brouillard,
                                         y = {mascotteBio.positionCanvas.y}
                                         text = {contexte.carte.residenceBio.x === contexte.joueurBio.position.x && 
                                                 contexte.carte.residenceBio.y === contexte.joueurBio.position.y &&
-                                                !contexte.joueurInfo.mascotte
+                                                !contexte.joueurInfo.mascotte && !contexte.joueurInfo2.mascotte
                                                 || 
                                                 contexte.carte.residenceBio.x === contexte.joueurBio2.position.x && 
                                                 contexte.carte.residenceBio.y === contexte.joueurBio2.position.y &&
-                                                !contexte.joueurInfo2.mascotte
+                                                !contexte.joueurInfo2.mascotte && !contexte.joueurInfo.mascotte
                                                 ? "" : "🥦"}
                                         fontSize = {rayon/2}
                                         offsetX = {rayon/3.5}
@@ -251,11 +251,11 @@ export function Affichage({contexte, rayon, tour, pion, deplacement, brouillard,
                                         y = {mascotteInfo.positionCanvas.y}
                                         text = {contexte.carte.residenceInfo.x === contexte.joueurInfo.position.x && 
                                                 contexte.carte.residenceInfo.y === contexte.joueurInfo.position.y &&
-                                                !contexte.joueurBio.mascotte
+                                                !contexte.joueurBio.mascotte && !contexte.joueurBio2.mascotte
                                                 || 
                                                 contexte.carte.residenceInfo.x === contexte.joueurInfo2.position.x && 
                                                 contexte.carte.residenceInfo.y === contexte.joueurInfo2.position.y &&
-                                                !contexte.joueurBio2.mascotte
+                                                !contexte.joueurBio2.mascotte && !contexte.joueurBio.mascotte
                                                 ? "" : "🐧"}
                                         fontSize = {rayon/2}
                                         offsetX = {rayon/3.5}

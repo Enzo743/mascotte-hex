@@ -158,7 +158,7 @@ export class File {
     }
 }
 
-export type CarteAJouer = "surveillant" | "copiesACorriger" | "constructionBarrage" | "destrcutionBarrage" 
+export type CarteAJouer = "surveillant" | "copiesACorriger" | "constructionBarrage" | "destructionBarrage" 
     | "destructionTyrolienne" | "reparationTyrolienne" | undefined;
 
 export class Pioche {
