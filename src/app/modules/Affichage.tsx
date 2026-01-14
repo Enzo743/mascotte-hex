@@ -342,7 +342,7 @@ export function Affichage({contexte, rayon, tour, pion, deplacement, brouillard,
                             v.x === x &&
                             v.y === y
                         );
-                        if (!visible) {return null;}
+                        if (brouillard && !visible) {return null;}
                         const adjacent = voisins.some(
                             (voisin) => voisin.x === x && voisin.y === y
                         );

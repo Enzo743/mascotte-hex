@@ -5,12 +5,12 @@ import {cheminRandom, plusCourtChemin} from "@/app/modules/Bot";
 import GestionnaireModal from "@/app/components/editeur/modals/GestionnaireModal";
 import {getCarte} from "@/app/actions/getCarte";
 import GrilleEditeur from "@/app/components/editeur/GrilleEditeur";
-import {Arc, CarteJSON, Contexte, DifficulteIA, Joueur, ModeJeu, Noeud, Position, PremierTour} from "@/app/modules/Interfaces";
+import {Arc, CarteJSON, Case, Contexte, DifficulteIA, Joueur, ModeJeu, Noeud, Position, PremierTour} from "@/app/modules/Interfaces";
 import Link from "next/link";
 import {useRouter, useSearchParams} from "next/navigation";
 import NouveauPopUpModal from "@/app/components/editeur/modals/NouveauPopUpModal";
 import {useEffect, useState} from "react";
-import {Case, Connexion} from "@/app/components/Structure";
+import {Connexion} from "@/app/components/Structure";
 import {Terrain} from "@/app/components/Terrain";
 import {TraitementCarte, TraitementGraphe, TraitementTotal} from "@/app/modules/Traitement";
 import VictoirePopUpModal from "@/app/components/VictoirePopUpModal";
@@ -79,6 +79,21 @@ export default function Home() {
             document.removeEventListener("mousedown", clic);
         };
     }, [jeuDemarre, equipe]);
+
+    useEffect(() => {
+        const touche = (event: KeyboardEvent) => {
+            if (event.key === "t") {
+                utiliserTyrolienne();
+            } else if (event.key === "r") {
+                utiliserRiviere();
+            }
+        }
+
+        document.addEventListener("keydown", touche);
+        return () => {
+            document.removeEventListener("keydown", touche);
+        }
+    }, [utiliserTyrolienne, utiliserRiviere]);
 
     // Recalcule les positions des hexagones, leurs tailles, si la taille de la carte est ajustée
     // Et affiche donc la nouvelle carte en résultant
@@ -266,6 +281,30 @@ export default function Home() {
                 }
                 tourSuivant();
             }
+        }
+    }
+
+    function utiliserTyrolienne() {
+        if (!contexte) return;
+        const joueurActuel: Joueur = tour === 0 ?  (pion == 0 ? contexte.joueurInfo : contexte.joueurInfo2) : (pion == 0 ? contexte.joueurBio : contexte.joueurBio2);
+        const emplacement: Case | undefined = contexte.carte.cases.find(c =>
+                c.positionMatrice.x === joueurActuel.position.x &&
+                c.positionMatrice.y === joueurActuel.position.y
+        );
+        if (emplacement && emplacement.tyrolienne.nombre > 0) {
+            deplacerJoueur(emplacement.tyrolienne.sorties[Math.floor(Math.random() * emplacement.tyrolienne.nombre)]);
+        }
+    }
+
+    function utiliserRiviere() {
+        if (!contexte) return;
+        const joueurActuel: Joueur = tour === 0 ?  (pion == 0 ? contexte.joueurInfo : contexte.joueurInfo2) : (pion == 0 ? contexte.joueurBio : contexte.joueurBio2);
+        const emplacement: Case | undefined = contexte.carte.cases.find(c =>
+                c.positionMatrice.x === joueurActuel.position.x &&
+                c.positionMatrice.y === joueurActuel.position.y
+        );
+        if (emplacement && emplacement.riviere.nombre > 0) {
+            deplacerJoueur(emplacement.riviere.sorties[Math.floor(Math.random() * emplacement.riviere.nombre)]);
         }
     }
 

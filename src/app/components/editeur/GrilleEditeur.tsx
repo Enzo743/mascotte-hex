@@ -15,8 +15,8 @@ export default function GrilleEditeur(
     }: {
         rayon: number;
         hexagones: Case[];
-        mascotteInfo: null | Case;
-        mascotteBio: null | Case;
+        mascotteInfo: undefined | Case;
+        mascotteBio: undefined | Case;
         rivieres: Connexion[];
         tyroliennes: Connexion[];
         onClick: (hex: Case) => void;
