@@ -220,20 +220,20 @@ function getVoisins(grille: Cellule[][], caseActuelle: Cellule): Cellule[] {
 
     if (caseActuelle.x % 2 === 0) {
         directions = [
-            [0, 1],   // Droite
-            [-1, 0],  // Haut-droite
+            [1, 0],   // Droite
+            [0, -1],  // Haut-droite
             [-1, -1], // Haut-gauche
-            [0, -1],  // Gauche
-            [1, -1],  // Bas-gauche
-            [1, 0]    // Bas-droite
+            [-1, 0],  // Gauche
+            [-1, 1],  // Bas-gauche
+            [0, 1]    // Bas-droite
         ];
     } else {
         directions = [
-            [0, 1],   // Droite
-            [-1, 1],  // Haut-droite
-            [-1, 0], // Haut-gauche
-            [0, -1],  // Gauche
-            [1, 0],  // Bas-gauche
+            [1, 0],   // Droite
+            [1, -1],  // Haut-droite
+            [0, -1], // Haut-gauche
+            [-1, 0],  // Gauche
+            [0, 1],  // Bas-gauche
             [1, 1]    // Bas-droite
         ];
     }
@@ -509,7 +509,7 @@ async function creerCarte(grille: Cellule[][], options) {
 
     for (let i = 0; i < Number(options.lignes); i++) {
         for (let j = 0; j < Number(options.colonnes); j++) {
-            const coordonnees: number[] = [i, j];
+            const coordonnees: number[] = [j, i];
             const cellule: Cellule = grille[i][j];
 
             if (cellule.type === Terrains.Plaine) {

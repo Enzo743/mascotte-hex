@@ -88,7 +88,7 @@ export function TraitementCarte(carteJSON: CarteJSON, rayon: number): Carte {
                 positionCanvas: {x: 10+x, y: 10+y},
                 residenceInfo: carteJSON.résidences.info[0] === j && carteJSON.résidences.info[0] === i ? true : false,
                 residenceBio: carteJSON.résidences.bio[0] === j && carteJSON.résidences.info[0] === i ? true : false,
-                riviere: false,
+                riviere: {nombre: 0, sorties: []},
                 tyrolienne: {nombre: 0, sorties: []},
                 type: "ocean", // Todo : utiliser plutôt une énumération ?
                 couleur: "#748BF8" // Todo : plutôt implémenter les couleurs dans la partie visuelle.
@@ -140,10 +140,6 @@ export function TraitementCarte(carteJSON: CarteJSON, rayon: number): Carte {
                 x: connexion.tuiles[i][0],
                 y: connexion.tuiles[i][1]
             })
-            const affectation: Case | undefined = carte.cases.find(c => c.id === `${connexion.tuiles[i][0]}-${connexion.tuiles[i][1]}`);
-            if (affectation) {
-                affectation.riviere = true; // Important pour la suite (graphe).
-            }
         }
         carte.rivieres.push(riviere);
     });
@@ -215,6 +211,11 @@ export function TraitementGraphe(carte: Carte, joueurInfo: Joueur, joueurBio: Jo
                             x: riviere.parcours[i+3].x,
                             y: riviere.parcours[i+3].y 
                         });
+                        const caseRiviere: Case | undefined = carte.cases.find(c => c.id === `${riviere.parcours[i].x}-${riviere.parcours[i].y}`);
+                        if (caseRiviere) {
+                            caseRiviere.riviere.nombre++;
+                            caseRiviere.riviere.sorties.push({x: riviere.parcours[i+3].x, y: riviere.parcours[i+3].y});
+                        }
                     }
                 }
                 if (riviere.parcours.length >= 3) {
@@ -227,6 +228,11 @@ export function TraitementGraphe(carte: Carte, joueurInfo: Joueur, joueurBio: Jo
                             x: riviere.embouchure.x,
                             y: riviere.embouchure.y 
                         });
+                        const caseRiviere: Case | undefined = carte.cases.find(c => c.id === `${riviere.parcours[riviere.parcours.length - 3].x}-${riviere.parcours[riviere.parcours.length - 3].y}`);
+                        if (caseRiviere) {
+                            caseRiviere.riviere.nombre++;
+                            caseRiviere.riviere.sorties.push({x: riviere.embouchure.x, y: riviere.embouchure.y});
+                        }
                     }
                 }
                 if (riviere.parcours.length >= 2) {
@@ -240,17 +246,28 @@ export function TraitementGraphe(carte: Carte, joueurInfo: Joueur, joueurBio: Jo
                         if (indice) {
                             const suite: Position[] = extension.parcours.slice(indice);
                             if (affectation) {
+                                let destination: Position | null = null;
+
                                 if (suite.length >= 2) {
                                     affectation.voisins.push({
                                         x: suite[1].x,
                                         y: suite[1].y 
                                     });
+                                    destination = {x: suite[1].x, y: suite[1].y};
                                 } else {
                                     affectation.voisins.push({
                                         x: riviere.embouchure.x,
                                         y: riviere.embouchure.y 
                                     });
-                                } 
+                                    destination = {x: riviere.embouchure.x, y: riviere.embouchure.y};
+                                }
+                                if (destination) {
+                                    const caseRiviere: Case | undefined = carte.cases.find(c => c.id === `${riviere.parcours[riviere.parcours.length - 2].x}-${riviere.parcours[riviere.parcours.length - 2].y}`);
+                                    if (caseRiviere) {
+                                        caseRiviere.riviere.nombre++;
+                                        caseRiviere.riviere.sorties.push(destination);
+                                    }
+                                }
                             }
                         }
                     }
@@ -266,21 +283,32 @@ export function TraitementGraphe(carte: Carte, joueurInfo: Joueur, joueurBio: Jo
                         if (indice) {
                             const suite: Position[] = extension.parcours.slice(indice);
                             if (affectation) {
+                                let destination: Position | null = null;
                                 if (suite.length >= 3) {
                                     affectation.voisins.push({
                                         x: suite[2].x,
                                         y: suite[2].y 
                                     });
+                                    destination = {x: suite[2].x, y: suite[2].y};
                                 } else if (suite.length >= 2) {
                                     affectation.voisins.push({
                                         x: suite[1].x,
                                         y: suite[1].y 
                                     });
+                                    destination = {x: suite[1].x, y: suite[1].y};
                                 } else {
                                     affectation.voisins.push({
                                         x: riviere.embouchure.x,
                                         y: riviere.embouchure.y 
                                     });
+                                    destination = {x: riviere.embouchure.x, y: riviere.embouchure.y};
+                                }
+                                if (destination) {
+                                    const caseRiviere: Case | undefined = carte.cases.find(c => c.id === `${riviere.parcours[riviere.parcours.length - 1].x}-${riviere.parcours[riviere.parcours.length - 1].y}`);
+                                    if (caseRiviere) {
+                                        caseRiviere.riviere.nombre++;
+                                        caseRiviere.riviere.sorties.push(destination);
+                                    }
                                 }
                             }
                         }
@@ -297,6 +325,11 @@ export function TraitementGraphe(carte: Carte, joueurInfo: Joueur, joueurBio: Jo
                             x: riviere.parcours[i+3].x,
                             y: riviere.parcours[i+3].y 
                         });
+                        const caseRiviere: Case | undefined = carte.cases.find(c => c.id === `${riviere.parcours[i].x}-${riviere.parcours[i].y}`);
+                        if (caseRiviere) {
+                            caseRiviere.riviere.nombre++;
+                            caseRiviere.riviere.sorties.push({x: riviere.parcours[i+3].x, y: riviere.parcours[i+3].y});
+                        }
                     }
                 }
                 if (riviere.parcours.length >= 3) {
@@ -309,6 +342,11 @@ export function TraitementGraphe(carte: Carte, joueurInfo: Joueur, joueurBio: Jo
                             x: riviere.parcours[riviere.parcours.length - 1].x,
                             y: riviere.parcours[riviere.parcours.length - 1].y 
                         });
+                        const caseRiviere: Case | undefined = carte.cases.find(c => c.id === `${riviere.parcours[riviere.parcours.length - 3].x}-${riviere.parcours[riviere.parcours.length - 3].y}`);
+                        if (caseRiviere) {
+                            caseRiviere.riviere.nombre++;
+                            caseRiviere.riviere.sorties.push({x: riviere.parcours[riviere.parcours.length - 1].x, y: riviere.parcours[riviere.parcours.length - 1].y});
+                        }
                     }
                 }
                 if (riviere.parcours.length >= 2) {
@@ -321,6 +359,11 @@ export function TraitementGraphe(carte: Carte, joueurInfo: Joueur, joueurBio: Jo
                             x: riviere.parcours[riviere.parcours.length - 1].x,
                             y: riviere.parcours[riviere.parcours.length - 1].y 
                         });
+                        const caseRiviere: Case | undefined = carte.cases.find(c => c.id === `${riviere.parcours[riviere.parcours.length - 2].x}-${riviere.parcours[riviere.parcours.length - 2].y}`);
+                        if (caseRiviere) {
+                            caseRiviere.riviere.nombre++;
+                            caseRiviere.riviere.sorties.push({x: riviere.parcours[riviere.parcours.length - 1].x, y: riviere.parcours[riviere.parcours.length - 1].y});
+                        }
                     }
                 }
             }
@@ -332,18 +375,10 @@ export function TraitementGraphe(carte: Carte, joueurInfo: Joueur, joueurBio: Jo
     // ^ Probablement besoin d'utiliser les cases adjacentes pour que le bot se déplace quand même.
     let positionsJoueurs: Position[]
     if (equipe) {
-        if (tour === 0) { // Y a un tour de décalage, c'est à l'équipe bio de jouer
-            positionsJoueurs = joueurInfo.position.x === carte.residenceInfo.x && joueurInfo.position.y === carte.residenceInfo.y ? 
-                [joueurInfo2.position] :
-                joueurInfo2.position.x === carte.residenceInfo.x && joueurInfo2.position.y === carte.residenceInfo.y ? 
-                    [joueurInfo.position] :
-                    [joueurInfo.position, joueurInfo2.position];
+        if (tour === 0) {
+            positionsJoueurs = [joueurInfo.position, joueurInfo2.position];
         }else {
-            positionsJoueurs = joueurBio.position.x === carte.residenceBio.x && joueurBio.position.y === carte.residenceBio.y ?
-                [joueurBio2.position] :
-                joueurBio2.position.x === carte.residenceBio.x && joueurBio2.position.y === carte.residenceBio.y ?
-                    [joueurBio.position] :
-                    [joueurBio.position, joueurBio2.position];
+            positionsJoueurs = [joueurBio.position, joueurBio2.position];
         }
     }else {
         positionsJoueurs = [joueurInfo.position, joueurBio.position];
