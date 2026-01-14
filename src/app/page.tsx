@@ -48,16 +48,26 @@ export default function Home() {
     const [premierTour, definirPremierTour] = useState<PremierTour | undefined>(undefined);
     const [difficulteIA, definirDifficulteIA] = useState<DifficulteIA>("facile");
     const [brouillard, definirBrouillard] = useState<boolean>(false);
+    const [modeCarte, definirmodeCarte] = useState<boolean>(false);
     const [equipe, definirEquipe] = useState<boolean>(false);
 
     // Etats de l'avancement du jeu, on sait ici si le jeu a démarré, finit, et quel est le joueur (ou bot) qui doit jouer
     const [jeuDemarre, definirJeuDemarre] = useState<boolean>(false);
     const [tour, changerTour] = useState<number>(0);
     const [pion, definirPion] = useState<number>(0);
-    const [pioche] = useState<Pioche>(new Pioche());
-    const [piocheInfo] = useState<Pioche>(new Pioche());
-    const [piocheBio] = useState<Pioche>(new Pioche());
+    const [pioche, definirPioche] = useState<Pioche>(new Pioche());
+    const [piocheInfo, setPiocheInfo] = useState<CarteAJouer[]>([]);
+    const [piocheBio, setPiocheBio] = useState<CarteAJouer[]>([]);
     const [victoire, definirVictoire] = useState<"Info" | "Bio" | null>(null);
+
+    const descriptionCartes = [
+        "Place un enseignant sur une case, interdisant le passage sur cette case et les cases voisines.",
+        "Fait disparaître un enseignant présent sur le plateau, libérant le passage pour tous les joueurs.",
+        "Permet de construire un barrage sur une case rivière, bloquant tout déplacement en radeau sur cette case.",
+        "Facilite la destruction d'un barrage construit par un autre, rendant le chemin accessible à nouveau.",
+        "Permet de détruire le point de départ d'une tyrolienne, rendant son utilisation impossible pour tous.",
+        "Permet de réparer une tyrolienne détruite, rétablissant ainsi son point de départ.",
+    ];
 
     useEffect(() => {
         const empecherMenu = (event: MouseEvent) => {
@@ -95,6 +105,46 @@ export default function Home() {
             document.removeEventListener("keydown", touche);
         }
     }, [utiliserTyrolienne, utiliserRiviere]);
+
+    useEffect(() => {
+        let interval: number | null = null;
+
+        const onKeyDown = (e: KeyboardEvent) => {
+            if (e.key === "ArrowUp") {
+                e.preventDefault();
+                if (!interval) {
+                    interval = window.setInterval(() => {
+                        definirRayon(r => Math.min(r + 1, 100));
+                    }, 50); // vitesse
+                }
+            }
+            if (e.key === "ArrowDown") {
+                e.preventDefault();
+                if (!interval) {
+                    interval = window.setInterval(() => {
+                        definirRayon(r => Math.max(r - 1, 10));
+                    }, 50);
+                }
+            }
+        };
+
+        const onKeyUp = () => {
+            if (interval) {
+                clearInterval(interval);
+                interval = null;
+            }
+        };
+
+        window.addEventListener("keydown", onKeyDown, { passive: false });
+        window.addEventListener("keyup", onKeyUp);
+
+        return () => {
+            window.removeEventListener("keydown", onKeyDown);
+            window.removeEventListener("keyup", onKeyUp);
+            if (interval) clearInterval(interval);
+        };
+    }, []);
+
 
     // Recalcule les positions des hexagones, leurs tailles, si la taille de la carte est ajustée
     // Et affiche donc la nouvelle carte en résultant
@@ -353,6 +403,25 @@ export default function Home() {
         }
     }
 
+    function utiliserCarte(info: boolean, position: number) {
+        if (info && tour === 0) {
+            setPiocheInfo(prev => {
+                const copie = [...prev];
+                pioche.ajouter(copie[position]);
+                copie[position] = pioche.piocher();
+                return copie;
+            });
+        } else if (!info && tour === 1) {
+            setPiocheBio(prev => {
+                const copie = [...prev];
+                pioche.ajouter(copie[position]);
+                copie[position] = pioche.piocher();
+                return copie;
+            });
+        }
+    }
+
+
     /* === demarrerJeu === 
     Fonction appelée dès que le bouton pour démarrer la partie est appuyé
     La carte, le mode de jeu, le premier joueur et la difficulté de l'IA ont été sélectionnés en fonction de ce que le joueur à choisi
@@ -370,21 +439,22 @@ export default function Home() {
             const tourDepart = (premierTour === "random") ? Math.floor(Math.random() * 2) : (premierTour === "info" ? 0 : 1);
             changerTour(tourDepart);
             definirJeuDemarre(true);
-            pioche.ajouter("surveillant");
-            pioche.ajouter("surveillant");
+            definirPioche(new Pioche());
+            pioche.ajouter([0, "🥸 Surveillant"]);
+            pioche.ajouter([0, "🥸 Surveillant"]);
             for (let i = 0; i < 3; i++) {
-                pioche.ajouter("destructionBarrage");
-                pioche.ajouter("destructionTyrolienne");
+                pioche.ajouter([3, "🚜 Budlozer"]);
+                pioche.ajouter([4, "✂️ Tenaille"]);
             }
-            for (let i = 0; i < 4; i++) pioche.ajouter("copiesACorriger");
-            for (let i = 0; i < 5; i++) pioche.ajouter("constructionBarrage");
-            for (let i = 0; i < 7; i++) pioche.ajouter("reparationTyrolienne");
+            for (let i = 0; i < 4; i++) pioche.ajouter([1, "📄 Corrections"]);
+            for (let i = 0; i < 5; i++) pioche.ajouter([2, "🦫 Castor"]);
+            for (let i = 0; i < 7; i++) pioche.ajouter([5, "🪢 Corde"]);
             pioche.melanger();
                 for (let i = 0; i < 3; i++) {
-                    piocheInfo.ajouter(pioche.piocher());
-                    piocheBio.ajouter(pioche.piocher());
+                    piocheInfo.push(pioche.piocher());
+                    piocheBio.push(pioche.piocher());
                 }
-            }
+        }
     }
 
     if (jeuDemarre && contexte) {
@@ -411,46 +481,57 @@ export default function Home() {
                     }}
                 />}
 
-                <header className={"head-compact"}>
-                    <h1 className={"titre-head"}>{`Jeu en cours sur la carte "${carteId}"`}</h1>
-                </header>
                 <main>
                     <div className={"container-fluid visualiser"}>
                         <div className={"sidebar-right"}>
                             <div className={"grille2"}>
                                 <div className={"contenu-visu"}>
-                                    {/* Appel à la fonction affichage pour afficher la carte */}
-                                    <Affichage
-                                        contexte={contexte}
-                                        rayon={rayon}
-                                        tour={tour}
-                                        pion={pion}
-                                        deplacement={deplacerJoueur}
-                                        brouillard={brouillard}
-                                        equipe={equipe}
-                                    />
+                                    <main className="game-grid">
+                                        {/* Menu gauche */}
+                                        <aside className="menu-left">
+                                            <h3 className="menu-title">{`Jeu en cours sur la carte "${carteId}"`}</h3>
+                                            <p className="menu-subtitle">Touches :</p>
+                                            <ul className="menu-touches">
+                                                <li>⬆️ Flèche haut : Zoomer la carte</li>
+                                                <li>⬇️ Flèche bas : Dézoomer la carte</li>
+                                                <li>T : Prendre une tyrolienne</li>
+                                                <li>R : Prendre une rivière</li>
+                                            </ul>
 
-                                    <br/>
-                                    <div className={"parent0"}>
-                                        <div className={"parent1 div0-1"}>
-                                            <h4 className="text-center">Cartes du joueur info</h4>
-                                        </div>
-                                        <div className={"parent1 div0-2"}>
-                                            <h4 className="text-center">Cartes du joueur bio</h4>
-                                        </div>
-                                    </div>
-                                    <div className={"parent0"}>
-                                        <div className={"parent1 div0-1"}>
-                                            <article className={"div1-1"}><header>Carte x</header></article>
-                                            <article className={"div1-2"}><header>Carte x</header></article>
-                                            <article className={"div1-3"}><header>Carte x</header></article>
-                                        </div>
-                                        <div className={"parent1 div0-2"}>
-                                            <article className={"div1-1"}><header>Carte x</header></article>
-                                            <article className={"div1-2"}><header>Carte x</header></article>
-                                            <article className={"div1-3"}><header>Carte x</header></article>
-                                        </div>
-                                    </div>
+                                            <p className="menu-info">💧 Vous pouvez emprunter une rivière</p>
+                                            <p className="menu-info">🪂 Vous pouvez emprunter une tyrolienne</p>
+
+                                            <div className="menu-cards">
+                                                {piocheInfo.map((c, i) => (
+                                                    <div key={i} className="menu-card menu-card-info" onClick={() => {utiliserCarte(true, i)}}>
+                                                        {c[1]}
+                                                        <span className="tooltip">{descriptionCartes[c[0]]}</span>
+                                                    </div>
+                                                ))}
+                                                {piocheBio.map((c, i) => (
+                                                    <div key={i} className="menu-card menu-card-bio" onClick={() => {utiliserCarte(false, i)}}>
+                                                        {c[1]}
+                                                        <span className="tooltip">{descriptionCartes[c[0]]}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            {victoire && <p className="menu-victoire">🏆 L'équipe {victoire} a gagné !</p>}
+                                        </aside>
+
+                                        {/* Affichage de la carte / jeu */}
+                                        <section className="display-right">
+                                            <Affichage
+                                                contexte={contexte}
+                                                rayon={rayon}
+                                                tour={tour}
+                                                pion={pion}
+                                                deplacement={deplacerJoueur}
+                                                brouillard={brouillard}
+                                                equipe={equipe}
+                                            />
+                                        </section>
+                                    </main>
                                     <button
                                         onClick={() => {
                                             router.push("/");
@@ -466,26 +547,6 @@ export default function Home() {
                             </div>
                         </div>
                     </div>
-
-                    <div className="zoom-vertical">
-                        <div className="zoom-vertical-icon">
-                            {/* Curseur pour changer la taille de la carte */}
-                            <TbZoom size={24}/>
-                        </div>
-
-                        <input
-                            className="zoom-vertical-range"
-                            type={"range"}
-                            min={10}
-                            max={100}
-                            onChange={(e) => definirRayon(Number(e.currentTarget.value))}
-                        />
-
-                        <div className="zoom-vertical-value">
-                            {rayon}
-                        </div>
-                    </div>
-
                 </main>
             </>
         );
@@ -590,6 +651,9 @@ export default function Home() {
                                                 definirBrouillard(!brouillard);
                                             }
                                         }/><label htmlFor="brouillard">Brouillard</label>
+                                        <br />
+                                        <input type="checkbox" role="switch" id="modeCarte" onClick={() => {definirmodeCarte(!modeCarte);}}/>
+                                        <label htmlFor="modeCarte">Cartes</label>
                                         <br></br>
                                     </>
                                 )}
@@ -634,6 +698,9 @@ export default function Home() {
                                                 definirBrouillard(!brouillard);
                                             }
                                         }/><label htmlFor="brouillard">Brouillard</label>
+                                        <br />
+                                        <input type="checkbox" role="switch" id="modeCarte" onClick={() => {definirmodeCarte(!modeCarte);}}/>
+                                        <label htmlFor="modeCarte">Cartes</label>
                                         <br></br>
                                     </>
                                 )}
@@ -715,6 +782,9 @@ export default function Home() {
                                                 definirBrouillard(!brouillard);
                                             }
                                         }/><label htmlFor="brouillard">Brouillard</label>
+                                        <br />
+                                        <input type="checkbox" role="switch" id="modeCarte" onClick={() => {definirmodeCarte(!modeCarte);}}/>
+                                        <label htmlFor="modeCarte">Cartes</label>
                                     </>
                                 )}
                             {/* Boutons qui permettent de choisir une carte et de lancer une partie */}
