@@ -236,11 +236,11 @@ export function Affichage({contexte, rayon, tour, pion, deplacement, brouillard,
                                         y = {mascotteBio.positionCanvas.y}
                                         text = {contexte.carte.residenceBio.x === contexte.joueurBio.position.x && 
                                                 contexte.carte.residenceBio.y === contexte.joueurBio.position.y &&
-                                                !contexte.joueurInfo.mascotte
+                                                !contexte.joueurInfo.mascotte && !contexte.joueurInfo2.mascotte
                                                 || 
                                                 contexte.carte.residenceBio.x === contexte.joueurBio2.position.x && 
                                                 contexte.carte.residenceBio.y === contexte.joueurBio2.position.y &&
-                                                !contexte.joueurInfo2.mascotte
+                                                !contexte.joueurInfo2.mascotte && !contexte.joueurInfo.mascotte
                                                 ? "" : "🥦"}
                                         fontSize = {rayon/2}
                                         offsetX = {rayon/3.5}

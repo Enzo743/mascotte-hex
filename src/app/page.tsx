@@ -30,15 +30,11 @@ export default function Home() {
     const show = searchParams.get("show");
     const showModification = searchParams.get("showModif");
 
-    /* Provisoirement pour tester le mode equipe */
-    const [pion, definirPion] = useState<number>(0);
-    const [equipe, definirEquipe] = useState<boolean>(false);
-
     // États pour stocker les différents objets à la visualisation de la carte
     const [carteJSONvisu, definirCarteJSONvisu] = useState<CarteJSON | null>(null);
     const [hexagones, definirHexagones] = useState<Case[]>([]);
-    const [residenceInfo, definirResidenceInfo] = useState(null);
-    const [residenceBio, definirResidenceBio] = useState(null);
+    const [residenceInfo, definirResidenceInfo] = useState<Case | undefined>(undefined);
+    const [residenceBio, definirResidenceBio] = useState<Case | undefined>(undefined);
     const [tyroliennes, definirTyroliennes] = useState<Connexion[]>([]);
     const [rivieres, definirRivieres] = useState<Connexion[]>([]);
 
@@ -52,10 +48,12 @@ export default function Home() {
     const [premierTour, definirPremierTour] = useState<PremierTour | undefined>(undefined);
     const [difficulteIA, definirDifficulteIA] = useState<DifficulteIA>("facile");
     const [brouillard, definirBrouillard] = useState<boolean>(false);
+    const [equipe, definirEquipe] = useState<boolean>(false);
 
     // Etats de l'avancement du jeu, on sait ici si le jeu a démarré, finit, et quel est le joueur (ou bot) qui doit jouer
     const [jeuDemarre, definirJeuDemarre] = useState<boolean>(false);
     const [tour, changerTour] = useState<number>(0);
+    const [pion, definirPion] = useState<number>(0);
     const [victoire, definirVictoire] = useState<"Info" | "Bio" | null>(null);
 
     useEffect(() => {
@@ -129,8 +127,8 @@ export default function Home() {
             const riv = carte.connexions.filter(c => c.type === "riviere");
 
             definirHexagones(hex);
-            definirResidenceBio(residenceBio); // Faudrait que celui qui a fait ca règle ce problème de type
-            definirResidenceInfo(residenceInfo); // celui la aussi fin c'est le meme
+            definirResidenceBio(residenceBio);
+            definirResidenceInfo(residenceInfo);
             definirTyroliennes(tyrol);
             definirRivieres(riv);
         }
@@ -236,7 +234,6 @@ export default function Home() {
             let joueurActuel: Joueur;
             if (equipe) {
                 joueurActuel = tour === 0 ?  (pion == 0 ? contexte.joueurInfo : contexte.joueurInfo2) : (pion == 0 ? contexte.joueurBio : contexte.joueurBio2) ;
-                // joueurActuel = tour === 0 ?  (joueurSelect == contexte.joueurInfo ? contexte.joueurInfo : contexte.joueurInfo2) : (joueurSelect == contexte.joueurBio ? contexte.joueurBio : contexte.joueurBio2) ;
             }else {
                joueurActuel = tour === 0 ? contexte.joueurInfo : contexte.joueurBio;
             }
