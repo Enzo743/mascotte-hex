@@ -158,7 +158,27 @@ export class File {
     }
 }
 
-/* Intérfaces des  cartes à jouer */
-export interface CarteAJouer {
-    type: string;
+export type CarteAJouer = "surveillant" | "copiesACorriger" | "constructionBarrage" | "destrcutionBarrage" 
+    | "destructionTyrolienne" | "reparationTyrolienne" | undefined;
+
+export class Pioche {
+    private pioche: CarteAJouer[] = [];
+
+    // Ajouter une carte à la pioche
+    ajouter(carte: CarteAJouer | undefined): void { 
+        this.pioche.push(carte);
+    }
+
+    // Retire et renvoie la carte indice 0 de la pioche
+    piocher(): CarteAJouer | undefined { 
+        return this.pioche.shift();
+    }
+
+    // Melange la pioche
+    melanger(): void {
+        for (let i = this.pioche.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1)); // indice aléatoire entre 0 et i
+            [this.pioche[i], this.pioche[j]] = [this.pioche[j], this.pioche[i]];   // permutation via déstructuration
+        }
+    }
 }

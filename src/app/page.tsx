@@ -5,7 +5,7 @@ import {cheminRandom, plusCourtChemin} from "@/app/modules/Bot";
 import GestionnaireModal from "@/app/components/editeur/modals/GestionnaireModal";
 import {getCarte} from "@/app/actions/getCarte";
 import GrilleEditeur from "@/app/components/editeur/GrilleEditeur";
-import {Arc, CarteJSON, Contexte, DifficulteIA, Joueur, ModeJeu, Noeud, Position, PremierTour} from "@/app/modules/Interfaces";
+import {Arc, CarteAJouer, CarteJSON, Contexte, DifficulteIA, Joueur, ModeJeu, Noeud, Pioche, Position, PremierTour} from "@/app/modules/Interfaces";
 import Link from "next/link";
 import {useRouter, useSearchParams} from "next/navigation";
 import NouveauPopUpModal from "@/app/components/editeur/modals/NouveauPopUpModal";
@@ -54,6 +54,9 @@ export default function Home() {
     const [jeuDemarre, definirJeuDemarre] = useState<boolean>(false);
     const [tour, changerTour] = useState<number>(0);
     const [pion, definirPion] = useState<number>(0);
+    const [pioche] = useState<Pioche>(new Pioche());
+    const [piocheInfo] = useState<Pioche>(new Pioche());
+    const [piocheBio] = useState<Pioche>(new Pioche());
     const [victoire, definirVictoire] = useState<"Info" | "Bio" | null>(null);
 
     useEffect(() => {
@@ -327,6 +330,31 @@ export default function Home() {
             const tourDepart = (premierTour === "random") ? Math.floor(Math.random() * 2) : (premierTour === "info" ? 0 : 1);
             changerTour(tourDepart);
             definirJeuDemarre(true);
+            /*
+            On est peut-être pas obligé de mettre le if 
+            if (true) { // mode jeu de carte 
+                const surveillant: CarteAJouer = "surveillant";
+                const copiesACorriger: CarteAJouer = "copiesACorriger";
+                const constructionBarrage: CarteAJouer = "constructionBarrage";
+                const destrcutionBarrage: CarteAJouer = "destrcutionBarrage";
+                const destructionTyrolienne: CarteAJouer = "destructionTyrolienne";
+                const reparationTyrolienne: CarteAJouer = "reparationTyrolienne";
+                
+                pioche.ajouter(surveillant);
+                pioche.ajouter(surveillant);
+                for (let i = 0; i < 3; i++) {
+                    pioche.ajouter(destrcutionBarrage);
+                    pioche.ajouter(destructionTyrolienne);
+                }
+                for (let i = 0; i < 4; i++) pioche.ajouter(copiesACorriger);
+                for (let i = 0; i < 5; i++) pioche.ajouter(constructionBarrage);
+                for (let i = 0; i < 7; i++) pioche.ajouter(reparationTyrolienne);
+                pioche.melanger();
+                for (let i = 0; i < 3; i++) {
+                    piocheInfo.ajouter(pioche.piocher());
+                    piocheBio.ajouter(pioche.piocher());
+                }
+            }*/
         }
     }
 
