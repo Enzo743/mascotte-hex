@@ -454,7 +454,7 @@ export default function Home() {
                     piocheInfo.push(pioche.piocher());
                     piocheBio.push(pioche.piocher());
                 }
-        }
+            }
     }
 
     if (jeuDemarre && contexte) {

@@ -375,14 +375,24 @@ export function TraitementGraphe(carte: Carte, joueurInfo: Joueur, joueurBio: Jo
     // ^ Probablement besoin d'utiliser les cases adjacentes pour que le bot se déplace quand même.
     let positionsJoueurs: Position[]
     if (equipe) {
-        if (tour === 0) {
-            positionsJoueurs = [joueurInfo.position, joueurInfo2.position];
+        if (tour === 0) { // Y a un tour de décalage, c'est à l'équipe bio de jouer
+            positionsJoueurs = joueurInfo.position.x === carte.residenceInfo.x && joueurInfo.position.y === carte.residenceInfo.y ? 
+                [joueurInfo2.position] :
+                joueurInfo2.position.x === carte.residenceInfo.x && joueurInfo2.position.y === carte.residenceInfo.y ? 
+                    [joueurInfo.position] :
+                    [joueurInfo.position, joueurInfo2.position];
         }else {
             positionsJoueurs = [joueurBio.position, joueurBio2.position];
+            positionsJoueurs = joueurBio.position.x === carte.residenceBio.x && joueurBio.position.y === carte.residenceBio.y ?
+                [joueurBio2.position] :
+                joueurBio2.position.x === carte.residenceBio.x && joueurBio2.position.y === carte.residenceBio.y ?
+                    [joueurBio.position] :
+                    [joueurBio.position, joueurBio2.position];
         }
     }else {
         positionsJoueurs = [joueurInfo.position, joueurBio.position];
     }
+    
     for (const arc of graphe) {
         arc.voisins = arc.voisins.filter(voisin => 
             !positionsJoueurs.some(pos => pos.x === voisin.x && pos.y === voisin.y)
