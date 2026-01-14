@@ -370,32 +370,21 @@ export default function Home() {
             const tourDepart = (premierTour === "random") ? Math.floor(Math.random() * 2) : (premierTour === "info" ? 0 : 1);
             changerTour(tourDepart);
             definirJeuDemarre(true);
-            /*
-            On est peut-être pas obligé de mettre le if 
-            if (true) { // mode jeu de carte 
-                const surveillant: CarteAJouer = "surveillant";
-                const copiesACorriger: CarteAJouer = "copiesACorriger";
-                const constructionBarrage: CarteAJouer = "constructionBarrage";
-                const destrcutionBarrage: CarteAJouer = "destrcutionBarrage";
-                const destructionTyrolienne: CarteAJouer = "destructionTyrolienne";
-                const reparationTyrolienne: CarteAJouer = "reparationTyrolienne";
-                
-                pioche.ajouter(surveillant);
-                pioche.ajouter(surveillant);
-                for (let i = 0; i < 3; i++) {
-                    pioche.ajouter(destrcutionBarrage);
-                    pioche.ajouter(destructionTyrolienne);
-                }
-                for (let i = 0; i < 4; i++) pioche.ajouter(copiesACorriger);
-                for (let i = 0; i < 5; i++) pioche.ajouter(constructionBarrage);
-                for (let i = 0; i < 7; i++) pioche.ajouter(reparationTyrolienne);
-                pioche.melanger();
+            pioche.ajouter("surveillant");
+            pioche.ajouter("surveillant");
+            for (let i = 0; i < 3; i++) {
+                pioche.ajouter("destructionBarrage");
+                pioche.ajouter("destructionTyrolienne");
+            }
+            for (let i = 0; i < 4; i++) pioche.ajouter("copiesACorriger");
+            for (let i = 0; i < 5; i++) pioche.ajouter("constructionBarrage");
+            for (let i = 0; i < 7; i++) pioche.ajouter("reparationTyrolienne");
+            pioche.melanger();
                 for (let i = 0; i < 3; i++) {
                     piocheInfo.ajouter(pioche.piocher());
                     piocheBio.ajouter(pioche.piocher());
                 }
-            }*/
-        }
+            }
     }
 
     if (jeuDemarre && contexte) {
