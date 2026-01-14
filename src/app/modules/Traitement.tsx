@@ -392,6 +392,13 @@ export function TraitementGraphe(carte: Carte, joueurInfo: Joueur, joueurBio: Jo
     }else {
         positionsJoueurs = [joueurInfo.position, joueurBio.position];
     }
+    
+    for (const arc of graphe) {
+        arc.voisins = arc.voisins.filter(voisin => 
+            !positionsJoueurs.some(pos => pos.x === voisin.x && pos.y === voisin.y)
+        );
+    }
+
     return graphe;
 }
 
