@@ -96,18 +96,18 @@ export function useLogiqueJeu() {
                 if (tour === 0) {
                     if (pion === 0) {
                         contexte.joueurInfo.position = position;
-                        contexte.joueurInfo.mascotte = ((position.x === contexte.carte.residenceBio.x) && (position.y === contexte.carte.residenceBio.y)) ? true : contexte.joueurInfo.mascotte;
+                        contexte.joueurInfo.mascotte = ((position.x === contexte.carte.residenceBio.x) && (position.y === contexte.carte.residenceBio.y) && !contexte.joueurInfo2.mascotte) ? true : contexte.joueurInfo.mascotte;
                     } else {
                         contexte.joueurInfo2.position = position;
-                        contexte.joueurInfo2.mascotte = ((position.x === contexte.carte.residenceBio.x) && (position.y === contexte.carte.residenceBio.y)) ? true : contexte.joueurInfo2.mascotte;
+                        contexte.joueurInfo2.mascotte = ((position.x === contexte.carte.residenceBio.x) && (position.y === contexte.carte.residenceBio.y) && !contexte.joueurInfo.mascotte) ? true : contexte.joueurInfo2.mascotte;
                     }
                 } else {
                     if (pion === 0) {
                         contexte.joueurBio.position = position;
-                        contexte.joueurBio.mascotte = ((position.x === contexte.carte.residenceInfo.x) && (position.y === contexte.carte.residenceInfo.y)) ? true : contexte.joueurBio.mascotte;
+                        contexte.joueurBio.mascotte = ((position.x === contexte.carte.residenceInfo.x) && (position.y === contexte.carte.residenceInfo.y) && !contexte.joueurBio2.mascotte) ? true : contexte.joueurBio.mascotte;
                     } else {
                         contexte.joueurBio2.position = position;
-                        contexte.joueurBio2.mascotte = ((position.x === contexte.carte.residenceInfo.x) && (position.y === contexte.carte.residenceInfo.y)) ? true : contexte.joueurBio2.mascotte;
+                        contexte.joueurBio2.mascotte = ((position.x === contexte.carte.residenceInfo.x) && (position.y === contexte.carte.residenceInfo.y) && !contexte.joueurBio.mascotte) ? true : contexte.joueurBio2.mascotte;
                     }
                 }
                 tourSuivant();
