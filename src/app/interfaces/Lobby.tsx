@@ -1,9 +1,13 @@
+// Dépendances
 import Link from "next/link";
 import GrilleEditeur from "@/app/components/editeur/GrilleEditeur";
 import NouveauPopUpModal from "@/app/components/editeur/modals/NouveauPopUpModal";
 import GestionnaireModal from "@/app/components/editeur/modals/GestionnaireModal";
 import { ModeJeu, PremierTour } from "@/app/modules/Interfaces";
 
+/* === Lobby ===
+Todo : Commenter vite fait
+*/
 export default function Lobby({ data, actions }: any) {
     return (
         <>
@@ -33,7 +37,7 @@ export default function Lobby({ data, actions }: any) {
                                     mascotteBio={data.residenceBio}
                                     rivieres={data.rivieres}
                                     tyroliennes={data.tyroliennes}
-                                    onClick={() => { }}
+                                    onClick={() => {}}
                                 />}
                                 <br />
                             </div>
@@ -48,9 +52,9 @@ export default function Lobby({ data, actions }: any) {
                                     data.definirBrouillard(false);
                                 }}>
                                     <option value="" disabled>👉 CHOISIR MODE DE JEU</option>
-                                    <option value="pvp">🆚 1 CONTRE 1</option>
-                                    <option value="tvt">🆚 2 CONTRE 2</option>
-                                    <option value="bot">🤖 CONTRE L'IA</option>
+                                    <option value="pvp" onClick={() => {actions.changerModeDeJeu; console.log("tqt");}}>🆚 1 CONTRE 1</option>
+                                    <option value="tvt" onClick={() => {actions.changerModeDeJeu; console.log("tqt");}}>🆚 2 CONTRE 2</option>
+                                    <option value="bot" onClick={() => {actions.changerModeDeJeu; console.log("tqt");}}>🤖 CONTRE L'IA</option>
                                 </select>
                             </div>
                             {data.modeJeu && (
@@ -107,7 +111,7 @@ export default function Lobby({ data, actions }: any) {
                                     <h4>Options :</h4>
                                     <input type="checkbox" role="switch" checked={data.brouillard} onChange={() => data.definirBrouillard(!data.brouillard)} />
                                     <label>Brouillard</label><br />
-                                    <input type="checkbox" role="switch" checked={data.modeCarte} onChange={() => data.definirmodeCarte(!data.modeCarte)} />
+                                    <input type="checkbox" role="switch" checked={data.modeCarte} onChange={() => data.definirModeCarte(!data.modeCarte)} />
                                     <label>Cartes</label>
                                 </>
                             )}
