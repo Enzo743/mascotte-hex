@@ -179,6 +179,13 @@ export function TraitementGraphe(carte: Carte, joueurInfo: Joueur, joueurBio: Jo
         }
     }
 
+    carte.cases.forEach(c => {
+        c.riviere.sorties = [];
+        c.riviere.nombre = 0;
+        c.tyrolienne.sorties = [];
+        c.tyrolienne.nombre = 0;
+    });
+
     // Ajout des arêtes liées aux tyroliennes.
     carte.tyroliennes.forEach((tyrolienne: Tyrolienne) => {
         const affectation: Arc | undefined = graphe.find(g =>
@@ -190,6 +197,18 @@ export function TraitementGraphe(carte: Carte, joueurInfo: Joueur, joueurBio: Jo
                 x: tyrolienne.sortie.x,
                 y: tyrolienne.sortie.y
             });
+
+            const caseEntree = carte.cases.find(c => 
+                c.positionMatrice.x === tyrolienne.entree.x && 
+                c.positionMatrice.y === tyrolienne.entree.y
+            );
+            if (caseEntree) {
+                caseEntree.tyrolienne.nombre++;
+                caseEntree.tyrolienne.sorties.push({
+                    x: tyrolienne.sortie.x, 
+                    y: tyrolienne.sortie.y
+                });
+            }
         }
     });
 
