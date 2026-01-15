@@ -52,9 +52,9 @@ export default function Lobby({ data, actions }: any) {
                                     data.definirBrouillard(false);
                                 }}>
                                     <option value="" disabled>👉 CHOISIR MODE DE JEU</option>
-                                    <option value="pvp" onClick={() => {actions.changerModeDeJeu; console.log("tqt");}}>🆚 1 CONTRE 1</option>
-                                    <option value="tvt" onClick={() => {actions.changerModeDeJeu; console.log("tqt");}}>🆚 2 CONTRE 2</option>
-                                    <option value="bot" onClick={() => {actions.changerModeDeJeu; console.log("tqt");}}>🤖 CONTRE L'IA</option>
+                                    <option value="pvp" onClick={() => {actions.changerModeDeJeu}}>🆚 1 CONTRE 1</option>
+                                    <option value="tvt" onClick={() => {actions.changerModeDeJeu}}>🆚 2 CONTRE 2</option>
+                                    <option value="bot" onClick={() => {actions.changerModeDeJeu}}>🤖 CONTRE L'IA</option>
                                 </select>
                             </div>
                             {data.modeJeu && (
