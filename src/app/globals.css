@@ -661,3 +661,235 @@ grid-row-gap: 0px;
     margin-top: 0;
     padding: 1rem;
 }
+
+/* TEMP */
+/* --- RESET & LAYOUT --- */
+.game-layout {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden;
+    z-index: 10000;
+}
+
+/* --- SIDEBAR (GRIS) --- */
+.sidebar {
+    width: 22%;
+    min-width: 260px;
+    background-color: #2d2d2d;
+    color: white;
+    padding: 1.5rem;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-inner {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    /* Ajout pour permettre le scroll si la carte devient très grande */
+    overflow-y: auto;
+    overflow-x: hidden; 
+}
+
+.sidebar-header {
+    flex-shrink: 0; /* Le header ne doit pas rétrécir */
+}
+
+.title {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+    color: #fff;
+    text-transform: uppercase;
+}
+
+.badge {
+    display: inline-block;
+    background: #444;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+
+.pion-info {
+    font-size: 0.9rem;
+    margin-top: 10px;
+    color: #aaa;
+}
+
+/* --- CAROUSEL & CARTES --- */
+.cards-section {
+    margin: 1rem 0;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.carousel-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Pousse les flèches aux extrémités */
+    gap: 0;
+    width: 100%;
+}
+
+.nav-arrow {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
+    padding: 0; /* Suppression du padding pour coller au bord */
+    min-width: 30px; /* Zone de clic minimale */
+    transition: opacity 0.2s;
+    z-index: 2;
+    flex-shrink: 0;
+}
+
+.nav-arrow:disabled {
+    opacity: 0.2;
+    cursor: default;
+}
+
+.card-wrapper {
+    perspective: 1000px;
+    flex: 1; /* Prend tout l'espace restant entre les flèches */
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    padding: 0 5px; /* Petit espace de sécurité par rapport aux flèches */
+}
+
+.balatro-card {
+    background: #fff;
+    color: #1a1a1a;
+    border-radius: 10px;
+    padding: 15px;
+    
+    /* Adaptation de la taille */
+    width: 100%;
+    max-width: 260px; /* Limite pour ne pas être énorme sur grand écran */
+    height: auto; /* Permet de grandir selon le contenu */
+    min-height: 220px; /* Taille de base */
+    
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 6px 6px 0px rgba(0,0,0,0.3);
+    transform: rotate(-2deg);
+    border: 3px solid #fff;
+    transition: transform 0.3s ease;
+}
+
+.card-tag { 
+    font-size: 0.6rem; 
+    color: #777; 
+    font-weight: bold; 
+    margin-bottom: 5px;
+}
+
+.card-main-info {
+    font-size: 1.2rem;
+    font-weight: 800;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.card-tooltip {
+    font-size: 0.75rem;
+    text-align: center;
+    color: #444;
+    background: #f0f0f0;
+    padding: 8px;
+    border-radius: 4px;
+    width: 100%;
+    line-height: 1.2;
+    margin-bottom: 10px;
+}
+
+.card-blue { border-top: 10px solid #9486E1; }
+.card-red { border-top: 10px solid #F17961; }
+
+.btn-card-action {
+    background: #1a1a1a;
+    color: white;
+    border: none;
+    padding: 8px 10px;
+    font-size: 0.75rem;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: auto; /* Pousse le bouton vers le bas */
+}
+
+.no-card {
+    color: #aaa;
+    font-style: italic;
+}
+
+/* --- ZONE INTERACTIVE (RIVIERE ETC) --- */
+.actions-temp {
+    margin-bottom: 1rem;
+    background: rgba(255,255,255,0.05);
+    padding: 10px;
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+
+.info-text { font-size: 0.8rem; margin-bottom: 8px; }
+
+.btn-group { display: flex; flex-direction: column; gap: 5px; }
+
+.btn-action {
+    background: #444;
+    border: none;
+    color: white;
+    padding: 6px;
+    font-size: 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-action:hover { background: #555; }
+
+/* --- BOUTON RETOUR --- */
+.game-controls {
+    flex-shrink: 0;
+}
+
+.btn-simple {
+    width: 100%;
+    padding: 12px;
+    background: transparent;
+    border: 2px solid #e74c3c;
+    color: #e74c3c;
+    cursor: pointer;
+    font-weight: bold;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.btn-simple:hover {
+    background: #e74c3c;
+    color: white;
+}
+
+/* --- ZONE CANVAS (BLEU) --- */
+.canvas-container {
+    flex: 1;
+    background-color: #1e3a5f;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
