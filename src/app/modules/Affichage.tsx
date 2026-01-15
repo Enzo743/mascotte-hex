@@ -192,7 +192,16 @@ export function Affichage({contexte, rayon, tour, pion, deplacement, brouillard,
                             const info2MemeCaseBio = posInfo2.positionMatrice.x === posBio.positionMatrice.x && posInfo2.positionMatrice.y === posBio.positionMatrice.y;
                             const info2MemeCaseBio2 = posInfo2.positionMatrice.x === posBio2.positionMatrice.x && posInfo2.positionMatrice.y === posBio2.positionMatrice.y;
                             
-                            const tailleDecalage: number = 10;
+                            // Valeurs pour les pions supperposés, 3 et 4 pions: rayon*0.9 / 3, 2 pions: rayon / 3
+                            const tailleDecalage = infoMemeCaseInfo2 && bioMemeCaseBio2 && infoMemeCaseBio ? rayon*0.9 / 3 : 
+                                bioMemeCaseBio2 && infoMemeCaseBio || bioMemeCaseBio2 && info2MemeCaseBio || infoMemeCaseInfo2 && infoMemeCaseBio || infoMemeCaseInfo2 && infoMemeCaseBio2 ? rayon*0.9 / 3 :
+                                    infoMemeCaseInfo2 || bioMemeCaseBio2 || infoMemeCaseBio || info2MemeCaseBio || infoMemeCaseBio2 || info2MemeCaseBio2 ? rayon / 3 : 0;
+                            
+                            // Valeurs pour les pions supperposés, 4 pions: rayon*1.1 / 3, 3 pions: rayon*1.2 / 3, 2 pions: rayon*1.4 / 3
+                            const tailleRayon = infoMemeCaseInfo2 && bioMemeCaseBio2 && infoMemeCaseBio ? rayon*1.1 / 3 : 
+                                bioMemeCaseBio2 && infoMemeCaseBio || bioMemeCaseBio2 && info2MemeCaseBio || infoMemeCaseInfo2 && infoMemeCaseBio || infoMemeCaseInfo2 && infoMemeCaseBio2 ? rayon*1.2 / 3 :
+                                    infoMemeCaseInfo2 || bioMemeCaseBio2 || infoMemeCaseBio || info2MemeCaseBio || infoMemeCaseBio2 || info2MemeCaseBio2 ? rayon*1.4 / 3 : rayon / 2;
+
                             let decalageInfoX = 0;
                             let decalageInfoY = 0;
                             let decalageInfo2X = 0;
@@ -205,63 +214,100 @@ export function Affichage({contexte, rayon, tour, pion, deplacement, brouillard,
                             let decalageMascotteInfoY = 0;
                             let decalageMascotteBioX = 0;
                             let decalageMascotteBioY = 0;
+
                             
                             if (bioMemeCaseBio2) {
                                 decalageBioX = -tailleDecalage;
                                 decalageBio2X = tailleDecalage;
+                                if (contexte.joueurBio.mascotte) {
+                                    decalageMascotteInfoX = -tailleDecalage - 1;
+                                }
+                                if (contexte.joueurBio2.mascotte) {
+                                    decalageMascotteInfoX = tailleDecalage;
+                                }
                             }
                             if (infoMemeCaseInfo2) {
                                 decalageInfoX = -tailleDecalage;
                                 decalageInfo2X = tailleDecalage;
+                                if (contexte.joueurInfo.mascotte) {
+                                    decalageMascotteBioX = -tailleDecalage - 1;
+                                }
+                                if (contexte.joueurInfo2.mascotte) {
+                                    decalageMascotteBioX = tailleDecalage + 1;
+                                }
                             }
                             if (infoMemeCaseBio) {
                                 decalageBioY = -tailleDecalage;
                                 decalageInfoY = tailleDecalage;
+                                if (contexte.joueurBio.mascotte) {
+                                    decalageMascotteInfoY = -tailleDecalage;
+                                }
+                                if (contexte.joueurInfo.mascotte) {
+                                    decalageMascotteBioY = tailleDecalage + 3;
+                                }
                             }
                             if (infoMemeCaseBio2) {
                                 decalageInfoY = tailleDecalage;
                                 decalageBio2Y = -tailleDecalage;
+                                if (contexte.joueurBio2.mascotte) {
+                                    decalageMascotteInfoY = -tailleDecalage;
+                                }
+                                if (contexte.joueurInfo.mascotte) {
+                                    decalageMascotteBioY = tailleDecalage + 3;
+                                }
                             }
                             if (info2MemeCaseBio) {
                                 decalageBioY = -tailleDecalage;
-                                decalageInfo2Y = 10;
+                                decalageInfo2Y = tailleDecalage;
+                                if (contexte.joueurBio.mascotte) {
+                                    decalageMascotteInfoY = -tailleDecalage;
+                                }
+                                if (contexte.joueurInfo2.mascotte) {
+                                    decalageMascotteBioY = tailleDecalage + 3;
+                                }
                             }
                             if (info2MemeCaseBio2) {
                                 decalageBio2Y = -tailleDecalage;
                                 decalageInfo2Y = tailleDecalage;
+                                if (contexte.joueurBio2.mascotte) {
+                                    decalageMascotteInfoY = -tailleDecalage;
+                                }
+                                if (contexte.joueurInfo2.mascotte) {
+                                    decalageMascotteBioY = tailleDecalage + 3;
+                                }
                             }
                             return (
                                 <>
                                     <Circle
                                         x = {posInfo.positionCanvas.x + decalageInfoX}
                                         y = {posInfo.positionCanvas.y + decalageInfoY}
-                                        radius = {rayon / 2}
+                                        radius = {tailleRayon}
                                         fill = "#9486E1"
                                         stroke = "black"
                                     />
                                     <Circle
                                         x = {posInfo2.positionCanvas.x + decalageInfo2X}
                                         y = {posInfo2.positionCanvas.y + decalageInfo2Y}
-                                        radius = {rayon / 2}
+                                        radius = {tailleRayon}
                                         fill = "#9486E1"
                                         stroke = "white"
                                     />
                                     <Circle
                                         x = {posBio.positionCanvas.x + decalageBioX}
                                         y = {posBio.positionCanvas.y + decalageBioY}
-                                        radius = {rayon / 2}
+                                        radius = {tailleRayon}
                                         fill = "#F17961"
                                         stroke = "black"
                                     />
                                     <Circle
                                         x = {posBio2.positionCanvas.x + decalageBio2X}
                                         y = {posBio2.positionCanvas.y + decalageBio2Y}
-                                        radius = {rayon / 2}
+                                        radius = {tailleRayon}
                                         fill = "#F17961"
                                         stroke = "white"
                                     />
                                     <Text
-                                        x = {mascotteBio.positionCanvas.x + decalageMascotteBioX}
+                                        x = {mascotteBio.positionCanvas.x + 1 + decalageMascotteBioX}
                                         y = {mascotteBio.positionCanvas.y + decalageMascotteBioY}
                                         text = {contexte.carte.residenceBio.x === contexte.joueurBio.position.x && 
                                                 contexte.carte.residenceBio.y === contexte.joueurBio.position.y &&
