@@ -1,0 +1,82 @@
+import { Affichage } from "@/app/modules/Affichage";
+
+export default function Jeu({ data, actions }: any) {
+    return (
+        <div className="game-layout">
+            <aside className="sidebar">
+                <div className="sidebar-inner">
+                    <div className="sidebar-header">
+                        <h2 className="title">CARTE "{data.carteId}"</h2>
+                        <div className="game-status">
+                            {data.modeJeu === "pvp" && <span className="badge">🆚 1V1</span>}
+                            {data.modeJeu === "tvt" && <span className="badge">🆚 2V2</span>}
+                            {data.modeJeu === "bot" && <span className="badge">🤖 BOT {data.difficulteIA.toUpperCase()}</span>}
+                            {data.brouillard && <span className="badge">🌫️ BROUILLARD</span>}
+                            {data.modeCarte && <span className="badge">🦫 CARTE</span>}
+                        </div>
+                        {data.equipe && <div className="pion-info">Pion n°{data.pion + 1} sélectionné</div>}
+                    </div>
+                    <div className="cards-section">
+                        {data.modeCarte && (
+                            <div className="carousel-container">
+                                <button
+                                    className="nav-arrow"
+                                    disabled={data.indexCarte === 0}
+                                    onClick={() => data.setIndexCarte(data.indexCarte - 1)}
+                                >‹</button>
+                                <div className="card-wrapper">
+                                    {((data.tour === 0 ? data.piocheInfo : data.piocheBio)[data.indexCarte]) ? (
+                                        <div className={`balatro-card ${data.tour === 0 ? 'card-blue' : 'card-red'}`}>
+                                            <div className="card-tag">CARTE {data.indexCarte + 1} / 3</div>
+                                            <div className="card-main-info">
+                                                {(data.tour === 0 ? data.piocheInfo : data.piocheBio)[data.indexCarte][1]}
+                                            </div>
+                                            <div className="card-tooltip">
+                                                {data.descriptionCartes[(data.tour === 0 ? data.piocheInfo : data.piocheBio)[data.indexCarte][0]]}
+                                            </div>
+                                            <button
+                                                className="btn-card-action"
+                                                onClick={() => actions.utiliserCarte(data.tour === 0, data.indexCarte)}
+                                            >
+                                                UTILISER
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="no-card">Pas de carte</div>
+                                    )}
+                                </div>
+                                <button
+                                    className="nav-arrow"
+                                    disabled={data.indexCarte === 2}
+                                    onClick={() => data.setIndexCarte(data.indexCarte + 1)}
+                                >›</button>
+                            </div>
+                        )}
+                    </div>
+                    <div className="actions-temp">
+                        <p className="info-text">Vous êtes sur une rivière</p>
+                        <div className="btn-group">
+                            <button className="btn-action">Traverser 1</button>
+                            <button className="btn-action">Traverser 2</button>
+                            <button className="btn-action">Traverser 3</button>
+                        </div>
+                    </div>
+                    <div className="game-controls">
+                        <button className="btn-simple" onClick={() => actions.quitter()}>RETOUR</button>
+                    </div>
+                </div>
+            </aside>
+            <main className="canvas-container">
+                <Affichage
+                    contexte={data.contexte}
+                    rayon={data.rayon}
+                    tour={data.tour}
+                    pion={data.pion}
+                    deplacement={actions.deplacerJoueur}
+                    brouillard={data.brouillard}
+                    equipe={data.equipe}
+                />
+            </main>
+        </div>
+    );
+}
