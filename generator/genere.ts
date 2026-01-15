@@ -11,6 +11,11 @@ const Terrains = {
 } as const;
 type TerrainType = typeof Terrains[keyof typeof Terrains];
 
+interface CelluleTyro {
+    estDebut: boolean;
+    celluleSuivante: Cellule | undefined;
+}
+
 interface Cellule {
     x: number;
     y: number;
@@ -20,7 +25,7 @@ interface Cellule {
     estResidenceInfo: boolean;
     estResidenceBio: boolean;
     estRiviere?: boolean;
-    tyrolienne?: Cellule[];
+    tyrolienne?: CelluleTyro;
 }
 
 interface Options {
@@ -90,6 +95,57 @@ function estEmplacementValidePourIle(grille: Cellule[][], x: number, y: number, 
     const voisins: Cellule[] = getVoisins(grille, x, y, lignes, colonnes);
 
     return voisins.every((v: Cellule): boolean => v.idIle === undefined || v.idIle === idIleActuelle); // Est valide si aucun voisin n'appartient à une autre île
+}
+
+/**
+ * Permet d'interpoler entre deux hexagones et retourner toutes les cases traversées
+ */
+function getHexagonesEntreDeuxPoints(grille: Cellule[][], depart: Cellule, arrivee: Cellule, options: Options): Cellule[] {
+    // Conversion offset vers axial (q, r)
+    const offsetVersAxial = (x: number, y: number): [number, number] => {
+        const q: number = x - Math.floor(y / 2);
+        return [q, y];
+    };
+
+    // Conversion axial vers offset
+    const axialVersOffset = (q: number, r: number): [number, number] => {
+        const x: number = q + Math.floor(r / 2);
+        return [x, r];
+    };
+
+    const [q1, r1]: [number, number] = offsetVersAxial(depart.x, depart.y);
+    const [q2, r2]: [number, number] = offsetVersAxial(arrivee.x, arrivee.y);
+
+    // Calculer la distance en coordonnées cubiques
+    const distance: number = Math.max(
+        Math.abs(q2 - q1),
+        Math.abs(r2 - r1),
+        Math.abs((q2 + r2) - (q1 + r1))
+    );
+
+    const casesTraversees: Cellule[] = [];
+
+    // Interpoler pour chaque étape
+    for (let i: number = 0; i <= distance; i++) {
+        const t: number = distance === 0 ? 0 : i / distance;
+
+        // Interpolation linéaire
+        const q: number = Math.round(q1 + (q2 - q1) * t);
+        const r: number = Math.round(r1 + (r2 - r1) * t);
+
+        // Conversion vers offset
+        const [x, y]: [number, number] = axialVersOffset(q, r);
+
+        // Vérifier les limites et ajouter la cellule
+        if (x >= 0 && x < options.colonnes && y >= 0 && y < options.lignes) {
+            const cellule: Cellule = grille[y][x];
+            if (!casesTraversees.some((c: Cellule): boolean => c.x === cellule.x && c.y === cellule.y)) {
+                casesTraversees.push(cellule);
+            }
+        }
+    }
+
+    return casesTraversees;
 }
 
 /**
@@ -238,6 +294,48 @@ function construireIle(grille: Cellule[][], options: Options, idIle: number, nbP
     };
 }
 
+/**
+ * Permet de générer des tyroliennes
+ */
+function genererTyrolienne(grille: Cellule[][], tuilesIles: Cellule[][], options: Options, tuileDepart: Cellule,
+                           idIleFin: number): boolean {
+    const voisinsTuileDepart: Cellule[] = getVoisins(grille, tuileDepart.x, tuileDepart.y,
+        options.lignes, options.colonnes);
+
+    if (!tuileDepart.estResidenceInfo && !tuileDepart.estResidenceBio
+        && (voisinsTuileDepart.filter((voisin: Cellule): boolean => voisin.estResidenceInfo).length === 0)
+        && (voisinsTuileDepart.filter((voisin: Cellule): boolean => voisin.estResidenceBio).length === 0)
+        && !tuileDepart.tyrolienne) {
+
+        const tuilesDestination = [...tuilesIles[idIleFin - 1]];
+        tuilesDestination.sort(() => Math.random() - 0.5);
+
+        for (const tuileFin of tuilesDestination) {
+            const voisinsTuileFin: Cellule[] = getVoisins(grille, tuileFin.x, tuileFin.y,
+                options.lignes, options.colonnes);
+
+            if ((tuileFin.type === Terrains.Foret || tuileFin.type === Terrains.Plaine)
+                && tuileDepart !== tuileFin
+                && !voisinsTuileDepart.includes(tuileFin)
+                && !tuileFin.estResidenceBio && !tuileFin.estResidenceInfo
+                && !tuileFin.tyrolienne
+                && (voisinsTuileFin.filter((voisin: Cellule): boolean => voisin.estResidenceInfo).length === 0)
+                && (voisinsTuileFin.filter((voisin: Cellule): boolean => voisin.estResidenceBio).length === 0)) {
+
+                const tuilesEntreLesDeuxPoints: Cellule[] = getHexagonesEntreDeuxPoints(grille, tuileDepart,
+                    tuileFin, options);
+
+                if (!tuilesEntreLesDeuxPoints.some((tuile: Cellule): boolean => tuile.type === Terrains.Montagne)) {
+                    tuileDepart.tyrolienne = {estDebut: true, celluleSuivante: tuileFin};
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
 /*
  * Permet de générer une carte en fonction des options passées dans la ligne de commande
  */
@@ -307,18 +405,22 @@ function genererCarteComplete(options: Options): Cellule[][] | null {
 
         let indiceAleatoireInfo: number = Math.floor(Math.random() * tuilesIles[idIleResInfo - 1].length);
         let indiceAleatoireBio: number = Math.floor(Math.random() * tuilesIles[idIleResBio - 1].length);
+        let tuileInfoAleatoire: Cellule = tuilesIles[idIleResInfo - 1][indiceAleatoireInfo];
+        let tuileBioAleatoire: Cellule = tuilesIles[idIleResBio - 1][indiceAleatoireBio];
 
-        while ((tuilesIles[idIleResInfo - 1][indiceAleatoireInfo].type === Terrains.Ocean || tuilesIles[idIleResInfo - 1][indiceAleatoireInfo].type === Terrains.Montagne)
-        || (tuilesIles[idIleResBio - 1][indiceAleatoireBio].type === Terrains.Ocean || tuilesIles[idIleResBio - 1][indiceAleatoireBio].type === Terrains.Montagne)) {
+        while ((tuileInfoAleatoire.type === Terrains.Ocean || tuileInfoAleatoire.type === Terrains.Montagne) || (tuileBioAleatoire.type === Terrains.Ocean || tuileBioAleatoire.type === Terrains.Montagne)) {
             indiceAleatoireInfo = Math.floor(Math.random() * tuilesIles[idIleResInfo - 1].length);
             indiceAleatoireBio = Math.floor(Math.random() * tuilesIles[idIleResBio - 1].length);
+            tuileInfoAleatoire = tuilesIles[idIleResInfo - 1][indiceAleatoireInfo];
+            tuileBioAleatoire = tuilesIles[idIleResBio - 1][indiceAleatoireBio];
         }
 
-        tuilesIles[idIleResInfo - 1][indiceAleatoireInfo].estResidenceInfo = true;
-        tuilesIles[idIleResBio - 1][indiceAleatoireBio].estResidenceBio = true;
+        tuileInfoAleatoire.estResidenceInfo = true;
+        tuileBioAleatoire.estResidenceBio = true;
 
         if (carteValide) {
             console.log(`Succès à la tentative ${tentative}`);
+            console.log(grille);
             return grille;
         }
     }
@@ -385,6 +487,11 @@ if (options.iles > options.massifs_montagne || options.iles > options.massifs_fo
     process.exit(1);
 }
 
+if (options.tyroliennes < 2) {
+    console.error("[Erreur] - Il doit y avoir au moins 2 tyroliennes pour relier les îles entre elles !");
+    process.exit(1);
+}
+
 // Lancement de la génération
 const grilleFinale: Cellule[][] | null = genererCarteComplete(options);
 
@@ -417,6 +524,17 @@ if (grilleFinale) {
             if (cellule.estResidenceBio) {
                 sortieData.résidences.bio.push(x);
                 sortieData.résidences.bio.push(y);
+            }
+            if (cellule.tyrolienne?.estDebut && cellule.tyrolienne?.celluleSuivante != undefined) {
+                const connexionTyro = {
+                    type: "tyrolienne",
+                    tuiles: [
+                        [cellule.x, cellule.y],
+                        [cellule.tyrolienne?.celluleSuivante.x, cellule.tyrolienne?.celluleSuivante.y]
+                    ]
+                };
+
+                sortieData.connexions.push(connexionTyro);
             }
         }
     }
