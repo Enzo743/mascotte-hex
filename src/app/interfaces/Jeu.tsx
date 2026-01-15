@@ -1,5 +1,9 @@
+// Dépendances
 import { Affichage } from "@/app/modules/Affichage";
 
+/* === Jeu ===
+Todo : Commenter vite fait
+*/
 export default function Jeu({ data, actions }: any) {
     return (
         <div className="game-layout">
@@ -14,9 +18,15 @@ export default function Jeu({ data, actions }: any) {
                             {data.brouillard && <span className="badge">🌫️ BROUILLARD</span>}
                             {data.modeCarte && <span className="badge">🦫 CARTE</span>}
                         </div>
-                        {data.equipe && <div className="pion-info">Pion n°{data.pion + 1} sélectionné</div>}
+                        {data.equipe && <p className="">Pion n°{data.pion + 1} sélectionné</p>}
                     </div>
-                    <div className="cards-section">
+                    <h4>Controles :</h4>
+                    <p><b>⬆️</b> Agrandir la carte</p>
+                    <p><b>⬇️</b> : Rétrécir la carte</p>
+                    <p><b>T</b> : Emprunter une tyrolienne au hasard</p>
+                    <p><b>R</b> : Emprunter une riviere au hasard</p>
+                    {data.equipe && <p><b>Clic droit</b> : Changer le pion</p>}
+                    {data.modeCarte && (<div className="cards-section">
                         {data.modeCarte && (
                             <div className="carousel-container">
                                 <button
@@ -53,13 +63,28 @@ export default function Jeu({ data, actions }: any) {
                             </div>
                         )}
                     </div>
-                    <div className="actions-temp">
-                        <p className="info-text">Vous êtes sur une rivière</p>
-                        <div className="btn-group">
-                            <button className="btn-action">Traverser 1</button>
-                            <button className="btn-action">Traverser 2</button>
-                            <button className="btn-action">Traverser 3</button>
-                        </div>
+                    )}
+                    <div className="interactive-actions">
+                        {data.caseActuelle?.tyrolienne.nombre > 0 && (
+                            <div className="actions-temp tyrolienne-block">
+                                <p className="info-text">🚠 {data.caseActuelle?.tyrolienne.nombre} tyrolienne disponible</p>
+                                <div className="btn-group">
+                                    {data.caseActuelle.tyrolienne.sorties.map((sortie: any, index: number) => (
+                                        <button key={index} className="btn-action" onClick={() => actions.deplacerJoueur(sortie)}>Emprunter la tyrolienne n°{index + 1}</button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                        {data.caseActuelle?.riviere.nombre > 0 && (
+                            <div className="actions-temp riviere-block">
+                                <p className="info-text">🛶 {data.caseActuelle?.riviere.nombre} rivière disponible</p>
+                                <div className="btn-group">
+                                    {data.caseActuelle.riviere.sorties.map((sortie: any, index: number) => (
+                                        <button key={index} className="btn-action" onClick={() => actions.deplacerJoueur(sortie)}>Emprunter la rivière n°{index + 1}</button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                     <div className="game-controls">
                         <button className="btn-simple" onClick={() => actions.quitter()}>RETOUR</button>
