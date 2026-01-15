@@ -1,3 +1,4 @@
+// Dépendances
 "use client";
 import { useLogiqueJeu } from "@/app/logique/useLogiqueJeu";
 import Lobby from "@/app/interfaces/Lobby";
@@ -10,13 +11,15 @@ export default function Home() {
         demarrerJeu: logique.demarrerJeu,
         deplacerJoueur: logique.deplacerJoueur,
         utiliserCarte: logique.utiliserCarte,
-        quitter: () => {
-            logique.router.push("/");
+        changerModeDeJeu: () => {
+            // On remet à neuf les states quand on change de mode de jeu 
+            logique.definirPremierTour("info");
+            logique.definirBrouillard(false);
+            logique.definirModeCarte(false);
             logique.definirDifficulteIA("facile");
-            logique.definirModeJeu("");
-            logique.definirPremierTour(undefined);
-            logique.definirJeuDemarre(false);
-        }
+        },
+        // Si on appuie sur RETOUR, on recharge simplement la page pour réinitialiser tous les states
+        quitter: () => {window.location.href = "/";}
     };
 
     if (logique.jeuDemarre && logique.contexte) {
