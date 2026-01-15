@@ -419,6 +419,68 @@ function genererCarteComplete(options: Options): Cellule[][] | null {
         tuileBioAleatoire.estResidenceBio = true;
 
         if (carteValide) {
+            // Tyroliennes obligatoires entre les résidences
+            let tyrolienneAller: boolean = false;
+            let tyrolienneRetour: boolean = false;
+
+            const foretsDepartAller = tuilesIles[idIleResInfo - 1]
+                .filter((cellule: Cellule): boolean => cellule.type === Terrains.Foret && !cellule.estResidenceInfo);
+
+            for (const depart of foretsDepartAller) {
+                if (genererTyrolienne(grille, tuilesIles, options, depart, idIleResBio)) {
+                    tyrolienneAller = true;
+                    break;
+                }
+            }
+
+            const foretsDepartRetour = tuilesIles[idIleResBio - 1]
+                .filter((cellule: Cellule): boolean => cellule.type === Terrains.Foret && !cellule.estResidenceBio);
+
+            for (const depart of foretsDepartRetour) {
+                if (genererTyrolienne(grille, tuilesIles, options, depart, idIleResInfo)) {
+                    tyrolienneRetour = true;
+                    break;
+                }
+            }
+
+            if (!tyrolienneAller || !tyrolienneRetour) {
+                carteValide = false;
+                console.log("Impossible de placer les tyroliennes obligatoires, regénération de la carte !");
+            } else {
+                // Tyroliennes supplémentaires
+                let nbTyroliennes = 2;
+                let tentatives = 0;
+
+                while (nbTyroliennes < options.tyroliennes && tentatives < 200) {
+                    tentatives++;
+
+                    // Sélectionner une île aléatoire de départ
+                    const idIleAleatoireDebut: number = tabIdIle[Math.floor(Math.random() * tabIdIle.length)];
+                    const tabTuilesValides: Cellule[] = tuilesIles[idIleAleatoireDebut - 1]
+                        .filter((tuile: Cellule): boolean => tuile.type === Terrains.Foret && !tuile.tyrolienne);
+
+                    if (tabTuilesValides.length > 0) {
+                        const indiceAleatoireDebut: number = Math.floor(Math.random() * tabTuilesValides.length);
+                        const tuileAleatoire: Cellule = tabTuilesValides[indiceAleatoireDebut];
+                        const idIleAleatoireFin: number = tabIdIle[Math.floor(Math.random() * tabIdIle.length)];
+
+                        if (genererTyrolienne(grille, tuilesIles, options, tuileAleatoire, idIleAleatoireFin)) {
+                            nbTyroliennes++;
+                            tentatives = 0; // Réinitialiser le compteur après un succès
+                        }
+                    }
+                }
+
+                if (nbTyroliennes < options.tyroliennes) {
+                    carteValide = false;
+                    console.log(`Impossible de placer toutes les tyroliennes (${nbTyroliennes}/${options.tyroliennes}), regénération de la carte !`);
+                } else {
+                    console.log(`${nbTyroliennes} tyroliennes générées avec succès`);
+                }
+            }
+        }
+
+        if (carteValide) {
             console.log(`Succès à la tentative ${tentative}`);
             console.log(grille);
             return grille;
