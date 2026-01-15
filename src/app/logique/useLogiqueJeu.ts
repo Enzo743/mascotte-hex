@@ -1,16 +1,17 @@
+// Dépendances
 "use client";
 import { useEffect, useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getCarte } from "@/app/actions/getCarte";
 import { cheminRandom, plusCourtChemin } from "@/app/modules/Bot";
 import { TraitementCarte, TraitementGraphe, TraitementTotal } from "@/app/modules/Traitement";
-import { Terrain } from "@/app/components/Terrain";
-import { 
-    Arc, Case, CarteJSON, Contexte, DifficulteIA, 
-    Joueur, ModeJeu, Noeud, Pioche, Position, 
-    PremierTour, CarteAJouer, Connexion 
-} from "@/app/modules/Interfaces";
+// Voir @1
+// import { Terrain } from "@/app/components/Terrain";
+import { Arc, Case, CarteJSON, Contexte, DifficulteIA, Joueur, ModeJeu, Noeud, Pioche, Position, PremierTour, CarteAJouer, Connexion} from "@/app/modules/Interfaces";
 
+/* === useLogiqueJeu ===
+Todo : Commenter TOUT, fin histoire qu'on puisse un peu comprendre
+*/
 export function useLogiqueJeu() {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -21,6 +22,7 @@ export function useLogiqueJeu() {
     const showModification = searchParams.get("showModif");
 
     const [indexCarte, setIndexCarte] = useState(0);
+    // Voir @1
     // const [carteJSONvisu, definirCarteJSONvisu] = useState<CarteJSON | null>(null);
     const [hexagones, definirHexagones] = useState<Case[]>([]);
     const [residenceInfo, definirResidenceInfo] = useState<Case | undefined>(undefined);
@@ -31,10 +33,10 @@ export function useLogiqueJeu() {
     const [rayon, definirRayon] = useState<number>(60);
     const [carteJSON, definirCarteJSON] = useState<CarteJSON | null>(null);
     const [modeJeu, definirModeJeu] = useState<ModeJeu | undefined>("");
-    const [premierTour, definirPremierTour] = useState<PremierTour | undefined>(undefined);
+    const [premierTour, definirPremierTour] = useState<PremierTour | undefined>("info");
     const [difficulteIA, definirDifficulteIA] = useState<DifficulteIA>("facile");
     const [brouillard, definirBrouillard] = useState<boolean>(false);
-    const [modeCarte, definirmodeCarte] = useState<boolean>(false);
+    const [modeCarte, definirModeCarte] = useState<boolean>(false);
     const [equipe, definirEquipe] = useState<boolean>(false);
     const [jeuDemarre, definirJeuDemarre] = useState<boolean>(false);
     const [tour, changerTour] = useState<number>(0);
@@ -54,7 +56,16 @@ export function useLogiqueJeu() {
         "Permet de réparer une tyrolienne détruite, rétablissant ainsi son point de départ.",
     ];
 
-    /* === Commenté, en attendant de potentiellement le retravailler (erreurs de type) ===
+    // Utile (par la suite) pour l'affichage des boutons tyrolienne et riviere
+    const joueurActuel = tour === 0 
+        ? (pion === 0 ? contexte?.joueurInfo : contexte?.joueurInfo2) 
+        : (pion === 0 ? contexte?.joueurBio : contexte?.joueurBio2);
+    const caseActuelle = contexte?.carte.cases.find(c => 
+        c.positionMatrice.x === joueurActuel?.position.x && 
+        c.positionMatrice.y === joueurActuel?.position.y
+    );
+
+    /* @1 === Commenté, en attendant de potentiellement le retravailler (erreurs de type) ===
     async function showCarteVisu() {
         if (carteId && residenceBio !== null && residenceInfo !== null) {
             const carte: CarteJSON = await getCarte(carteId);
@@ -341,7 +352,7 @@ export function useLogiqueJeu() {
         if (tour === tourIA) deplacerIA();
     }, [tour, contexte, modeJeu, premierTour]);
 
-    /*
+    /* Voir @1 
     useEffect(() => {
         if (carteId) showCarteVisu();
     }, [carteId, rayon]);
@@ -352,10 +363,10 @@ export function useLogiqueJeu() {
         indexCarte, setIndexCarte, hexagones, residenceInfo, residenceBio,
         tyroliennes, rivieres, contexte, rayon, modeJeu, definirModeJeu,
         premierTour, definirPremierTour, difficulteIA, definirDifficulteIA,
-        brouillard, definirBrouillard, modeCarte, definirmodeCarte,
+        brouillard, definirBrouillard, modeCarte, definirModeCarte,
         equipe, jeuDemarre, definirJeuDemarre, tour, pion, piocheInfo, 
         piocheBio, victoire, descriptionCartes, demarrerJeu, 
         deplacerJoueur, utiliserCarte, utiliserTyrolienne, 
-        utiliserRiviere, router
+        utiliserRiviere, router, definirVictoire, caseActuelle
     };
 }
