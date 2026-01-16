@@ -25,7 +25,7 @@ interface Cellule {
     x: number;
     y: number;
     type: TerrainType;
-    idIle?: number;
+    idIle: number;
     idMassif?: number;
     estResidenceInfo: boolean;
     estResidenceBio: boolean;
@@ -99,7 +99,7 @@ function getVoisins(grille: Cellule[][], x: number, y: number, lignes: number, c
 function estEmplacementValidePourIle(grille: Cellule[][], x: number, y: number, idIleActuelle: number, lignes: number, colonnes: number): boolean {
     const voisins: Cellule[] = getVoisins(grille, x, y, lignes, colonnes);
 
-    return voisins.every((v: Cellule): boolean => v.idIle === undefined || v.idIle === idIleActuelle); // Est valide si aucun voisin n'appartient à une autre île
+    return voisins.every((v: Cellule): boolean => v.idIle === -1 || v.idIle === undefined || v.idIle === idIleActuelle); // Est valide si aucun voisin n'appartient à une autre île
 }
 
 /**
@@ -266,7 +266,7 @@ function construireIle(grille: Cellule[][], options: Options, idIle: number, nbP
         for (const v of voisins) {
             if (tuilesIle.length >= totalTuiles) break;
 
-            if (v.type === Terrains.Ocean && v.idIle === undefined) {
+            if (v.type === Terrains.Ocean && v.idIle === -1) {
                 if (estEmplacementValidePourIle(grille, v.x, v.y, idIle, lignes, colonnes)) {
                     v.type = Terrains.Plaine;
                     v.idIle = idIle;
@@ -312,8 +312,8 @@ function genererTyrolienne(grille: Cellule[][], tuilesIles: Cellule[][], options
         && (voisinsTuileDepart.filter((voisin: Cellule): boolean => voisin.estResidenceBio).length === 0)
         && !tuileDepart.tyrolienne) {
 
-        const tuilesDestination = [...tuilesIles[idIleFin - 1]];
-        tuilesDestination.sort(() => Math.random() - 0.5);
+        const tuilesDestination: Cellule[] = [...tuilesIles[idIleFin - 1]];
+        tuilesDestination.sort((): number => Math.random() - 0.5);
 
         for (const tuileFin of tuilesDestination) {
             const voisinsTuileFin: Cellule[] = getVoisins(grille, tuileFin.x, tuileFin.y,
@@ -357,7 +357,7 @@ function genererRiviere(grille: Cellule[][], options: Options, caseActuelle: Cel
     }
 
     cheminRiviere.push(caseActuelle);
-    const voisinsCase = getVoisins(grille, caseActuelle.x, caseActuelle.y, options.lignes, options.colonnes);
+    const voisinsCase: Cellule[] = getVoisins(grille, caseActuelle.x, caseActuelle.y, options.lignes, options.colonnes);
     voisinsCase.sort((): number => Math.random() - 0.5);
     for (const voisin of voisinsCase) {
         const generationPossible = genererRiviere(grille, options, voisin, cheminRiviere, riviereEchec);
@@ -366,7 +366,7 @@ function genererRiviere(grille: Cellule[][], options: Options, caseActuelle: Cel
         }
     }
 
-    const indiceCase = cheminRiviere.indexOf(caseActuelle);
+    const indiceCase: number = cheminRiviere.indexOf(caseActuelle);
     if (indiceCase !== -1) {
         cheminRiviere.splice(indiceCase, 1);
     }
@@ -393,7 +393,7 @@ function genererCarteComplete(options: Options): Cellule[][] | null {
             const ligne: Cellule[] = [];
 
             for (let x: number = 0; x < options.colonnes; x++) {
-                ligne.push({x, y, type: Terrains.Ocean, estResidenceInfo: false, estResidenceBio: false});
+                ligne.push({x, y, type: Terrains.Ocean, idIle: -1, estResidenceInfo: false, estResidenceBio: false});
             }
 
             grille.push(ligne);
@@ -495,8 +495,8 @@ function genererCarteComplete(options: Options): Cellule[][] | null {
                 console.log("Impossible de placer les tyroliennes obligatoires, regénération de la carte !");
             } else {
                 // Tyroliennes supplémentaires
-                let nbTyroliennes = 2;
-                let tentatives = 0;
+                let nbTyroliennes: number = 2;
+                let tentatives: number = 0;
 
                 while (nbTyroliennes < options.tyroliennes && tentatives < 200) {
                     tentatives++;
@@ -594,12 +594,35 @@ function genererCarteComplete(options: Options): Cellule[][] | null {
         }
 
         if (carteValide) {
+            console.log("Vérification de la validité de la carte en cours...\n");
+
+            let resInfo: Cellule | null = null;
+            let resBio: Cellule | null = null;
+
+            for (let y: number = 0; y < options.lignes; y++) {
+                for (let x: number = 0; x < options.colonnes; x++) {
+                    if (grille[y][x].estResidenceInfo) resInfo = grille[y][x];
+                    if (grille[y][x].estResidenceBio) resBio = grille[y][x];
+                }
+            }
+
+            if (resInfo && resBio) {
+                if (!estCheminMeneARome(grille, options, resInfo, resBio, tuilesIles) || !estCheminMeneARome(grille, options, resBio, resInfo, tuilesIles)) {
+                    console.warn("Carte invalide ! Regénération d'une carte !");
+                    carteValide = false;
+                } else {
+                    console.log("Carte valide ! Whoooohooo !");
+                }
+            }
+        }
+
+        if (carteValide) {
             console.log(`Succès à la tentative ${tentative}`);
             return grille;
         }
     }
 
-    console.error("Échec : Impossible de générer la carte avec ces contraintes.");
+    console.error("Échec : Impossible de générer la carte avec ces contraintes. Veuillez recommencer avec de nouveaux paramètres !");
     return null;
 }
 
@@ -663,6 +686,11 @@ if (options.iles > options.massifs_montagne || options.iles > options.massifs_fo
 
 if (options.tyroliennes < 2) {
     console.error("[Erreur] - Il doit y avoir au moins 2 tyroliennes pour relier les îles entre elles !");
+    process.exit(1);
+}
+
+if (options.longueur_rivieres >= options.plaines + options.forets * 0.8) {
+    console.error("[Erreur] - Il ne peut pas y avoir autant de rivières sur la carte !");
     process.exit(1);
 }
 
