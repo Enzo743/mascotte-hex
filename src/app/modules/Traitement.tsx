@@ -212,178 +212,55 @@ export function TraitementGraphe(carte: Carte, joueurInfo: Joueur, joueurBio: Jo
         }
     });
 
-    // Ajout des arêtes liées aux rivières.
-    // Alors, ça marche, mais c'est affreusement optimisé.
-    // 
-    // Todo : Factoriser et optimiser le code.
-    carte.rivieres.forEach((riviere: Riviere) => {
-        const embouchure: Case | undefined = carte.cases.find(c => c.id === `${riviere.embouchure.x}-${riviere.embouchure.y}`);
-        if (embouchure) {
-            if (embouchure.type !== "ocean") { // Si la rivière ne finit dans l'océan, elle doit rejoindre une autre rivière (galère à implémenter).
-                for(let i: number = 0; i < riviere.parcours.length - 3; i++) {
-                    const affectation: Arc | undefined = graphe.find(g =>
-                        (g.noeud.x === riviere.parcours[i].x) &&
-                        (g.noeud.y === riviere.parcours[i].y)
-                    );
-                    if (affectation) {
-                        affectation.voisins.push({
-                            x: riviere.parcours[i+3].x,
-                            y: riviere.parcours[i+3].y 
-                        });
-                        const caseRiviere: Case | undefined = carte.cases.find(c => c.id === `${riviere.parcours[i].x}-${riviere.parcours[i].y}`);
-                        if (caseRiviere) {
-                            caseRiviere.riviere.nombre++;
-                            caseRiviere.riviere.sorties.push({x: riviere.parcours[i+3].x, y: riviere.parcours[i+3].y});
-                        }
-                    }
-                }
-                if (riviere.parcours.length >= 3) {
-                    const affectation: Arc | undefined = graphe.find(g =>
-                        (g.noeud.x === riviere.parcours[riviere.parcours.length - 3].x) &&
-                        (g.noeud.y === riviere.parcours[riviere.parcours.length - 3].y)
-                    );
-                    if (affectation) {
-                        affectation.voisins.push({
-                            x: riviere.embouchure.x,
-                            y: riviere.embouchure.y 
-                        });
-                        const caseRiviere: Case | undefined = carte.cases.find(c => c.id === `${riviere.parcours[riviere.parcours.length - 3].x}-${riviere.parcours[riviere.parcours.length - 3].y}`);
-                        if (caseRiviere) {
-                            caseRiviere.riviere.nombre++;
-                            caseRiviere.riviere.sorties.push({x: riviere.embouchure.x, y: riviere.embouchure.y});
-                        }
-                    }
-                }
-                if (riviere.parcours.length >= 2) {
-                    const affectation: Arc | undefined = graphe.find(g =>
-                        (g.noeud.x === riviere.parcours[riviere.parcours.length - 2].x) &&
-                        (g.noeud.y === riviere.parcours[riviere.parcours.length - 2].y)
-                    );
-                    const extension: Riviere | undefined = carte.rivieres.find(r => r.parcours.some(p => p.x === riviere.embouchure.x && p.y === riviere.embouchure.y));
-                    if (extension) {
-                        const indice: number = extension.parcours.findIndex(p => p.x === riviere.embouchure.x && p.y === riviere.embouchure.y);
-                        if (indice) {
-                            const suite: Position[] = extension.parcours.slice(indice);
-                            if (affectation) {
-                                let destination: Position | null = null;
+    const estCastor = (x: number, y: number): boolean => {
+        return castors.some(c => c.x === x && c.y === y);
+    };
 
-                                if (suite.length >= 2) {
-                                    affectation.voisins.push({
-                                        x: suite[1].x,
-                                        y: suite[1].y 
-                                    });
-                                    destination = {x: suite[1].x, y: suite[1].y};
-                                } else {
-                                    affectation.voisins.push({
-                                        x: riviere.embouchure.x,
-                                        y: riviere.embouchure.y 
-                                    });
-                                    destination = {x: riviere.embouchure.x, y: riviere.embouchure.y};
-                                }
-                                if (destination) {
-                                    const caseRiviere: Case | undefined = carte.cases.find(c => c.id === `${riviere.parcours[riviere.parcours.length - 2].x}-${riviere.parcours[riviere.parcours.length - 2].y}`);
-                                    if (caseRiviere) {
-                                        caseRiviere.riviere.nombre++;
-                                        caseRiviere.riviere.sorties.push(destination);
-                                    }
-                                }
-                            }
-                        }
-                    }
+    // Ajout des arêtes liées aux tyroliennes.
+    carte.rivieres.forEach((riviere: Riviere) => {
+        const embouchureCase: Case | undefined = carte.cases.find(c => c.id === `${riviere.embouchure.x}-${riviere.embouchure.y}`);
+        if (!embouchureCase) return;
+        const estVersOcean = embouchureCase.type === "ocean";
+        let cheminComplet: Position[] = [...riviere.parcours];
+        const extension = carte.rivieres.find(r => 
+            r !== riviere && r.parcours.some(p => p.x === riviere.embouchure.x && p.y === riviere.embouchure.y)
+        );
+        if (!estVersOcean) {
+            cheminComplet.push(riviere.embouchure);
+            if (extension) {
+                const idx = extension.parcours.findIndex(p => p.x === riviere.embouchure.x && p.y === riviere.embouchure.y);
+                const suite = extension.parcours.slice(idx + 1, idx + 4);
+                cheminComplet.push(...suite);
+            }
+        } else {
+        }
+        for (let i = 0; i < cheminComplet.length; i++) {
+            const depart = cheminComplet[i];
+            if (estCastor(depart.x, depart.y)) continue;
+            const noeudDepart = graphe.find(g => g.noeud.x === depart.x && g.noeud.y === depart.y);
+            if (!noeudDepart) continue;
+            let destination: Position | null = null;
+            for (let j = 1; j <= 3; j++) {
+                const indexCible = i + j;
+                if (indexCible >= cheminComplet.length) {
+                    destination = cheminComplet[cheminComplet.length - 1];
+                    break;
                 }
-                if (riviere.parcours.length >= 1) {
-                    const affectation: Arc | undefined = graphe.find(g =>
-                        (g.noeud.x === riviere.parcours[riviere.parcours.length - 1].x) &&
-                        (g.noeud.y === riviere.parcours[riviere.parcours.length - 1].y)
-                    );
-                    const extension: Riviere | undefined = carte.rivieres.find(r => r.parcours.some(p => p.x === riviere.embouchure.x && p.y === riviere.embouchure.y));
-                    if (extension) {
-                        const indice: number = extension.parcours.findIndex(p => p.x === riviere.embouchure.x && p.y === riviere.embouchure.y);
-                        if (indice) {
-                            const suite: Position[] = extension.parcours.slice(indice);
-                            if (affectation) {
-                                let destination: Position | null = null;
-                                if (suite.length >= 3) {
-                                    affectation.voisins.push({
-                                        x: suite[2].x,
-                                        y: suite[2].y 
-                                    });
-                                    destination = {x: suite[2].x, y: suite[2].y};
-                                } else if (suite.length >= 2) {
-                                    affectation.voisins.push({
-                                        x: suite[1].x,
-                                        y: suite[1].y 
-                                    });
-                                    destination = {x: suite[1].x, y: suite[1].y};
-                                } else {
-                                    affectation.voisins.push({
-                                        x: riviere.embouchure.x,
-                                        y: riviere.embouchure.y 
-                                    });
-                                    destination = {x: riviere.embouchure.x, y: riviere.embouchure.y};
-                                }
-                                if (destination) {
-                                    const caseRiviere: Case | undefined = carte.cases.find(c => c.id === `${riviere.parcours[riviere.parcours.length - 1].x}-${riviere.parcours[riviere.parcours.length - 1].y}`);
-                                    if (caseRiviere) {
-                                        caseRiviere.riviere.nombre++;
-                                        caseRiviere.riviere.sorties.push(destination);
-                                    }
-                                }
-                            }
-                        }
-                    }
+                const caseActuelle = cheminComplet[indexCible];
+                if (estCastor(caseActuelle.x, caseActuelle.y)) {
+                    destination = caseActuelle;
+                    break;
                 }
-            } else { // Si la rivère finit dans un océan, c'est plus facile.
-                for(let i: number = 0; i < riviere.parcours.length - 3; i++) {
-                    const affectation: Arc | undefined = graphe.find(g =>
-                        (g.noeud.x === riviere.parcours[i].x) &&
-                        (g.noeud.y === riviere.parcours[i].y)
-                    );
-                    if (affectation) {
-                        affectation.voisins.push({
-                            x: riviere.parcours[i+3].x,
-                            y: riviere.parcours[i+3].y 
-                        });
-                        const caseRiviere: Case | undefined = carte.cases.find(c => c.id === `${riviere.parcours[i].x}-${riviere.parcours[i].y}`);
-                        if (caseRiviere) {
-                            caseRiviere.riviere.nombre++;
-                            caseRiviere.riviere.sorties.push({x: riviere.parcours[i+3].x, y: riviere.parcours[i+3].y});
-                        }
-                    }
+                if (j === 3) {
+                    destination = caseActuelle;
                 }
-                if (riviere.parcours.length >= 3) {
-                    const affectation: Arc | undefined = graphe.find(g =>
-                        (g.noeud.x === riviere.parcours[riviere.parcours.length - 3].x) &&
-                        (g.noeud.y === riviere.parcours[riviere.parcours.length - 3].y)
-                    );
-                    if (affectation) {
-                        affectation.voisins.push({
-                            x: riviere.parcours[riviere.parcours.length - 1].x,
-                            y: riviere.parcours[riviere.parcours.length - 1].y 
-                        });
-                        const caseRiviere: Case | undefined = carte.cases.find(c => c.id === `${riviere.parcours[riviere.parcours.length - 3].x}-${riviere.parcours[riviere.parcours.length - 3].y}`);
-                        if (caseRiviere) {
-                            caseRiviere.riviere.nombre++;
-                            caseRiviere.riviere.sorties.push({x: riviere.parcours[riviere.parcours.length - 1].x, y: riviere.parcours[riviere.parcours.length - 1].y});
-                        }
-                    }
-                }
-                if (riviere.parcours.length >= 2) {
-                    const affectation: Arc | undefined = graphe.find(g =>
-                        (g.noeud.x === riviere.parcours[riviere.parcours.length - 2].x) &&
-                        (g.noeud.y === riviere.parcours[riviere.parcours.length - 2].y)
-                    );
-                    if (affectation) {
-                        affectation.voisins.push({
-                            x: riviere.parcours[riviere.parcours.length - 1].x,
-                            y: riviere.parcours[riviere.parcours.length - 1].y 
-                        });
-                        const caseRiviere: Case | undefined = carte.cases.find(c => c.id === `${riviere.parcours[riviere.parcours.length - 2].x}-${riviere.parcours[riviere.parcours.length - 2].y}`);
-                        if (caseRiviere) {
-                            caseRiviere.riviere.nombre++;
-                            caseRiviere.riviere.sorties.push({x: riviere.parcours[riviere.parcours.length - 1].x, y: riviere.parcours[riviere.parcours.length - 1].y});
-                        }
-                    }
+            }
+            if (destination && (destination.x !== depart.x || destination.y !== depart.y)) {
+                noeudDepart.voisins.push({ x: destination.x, y: destination.y });
+                const caseVisu = carte.cases.find(c => c.id === `${depart.x}-${depart.y}`);
+                if (caseVisu) {
+                    caseVisu.riviere.nombre++;
+                    caseVisu.riviere.sorties.push({ x: destination.x, y: destination.y });
                 }
             }
         }
@@ -439,11 +316,51 @@ export function TraitementGraphe(carte: Carte, joueurInfo: Joueur, joueurBio: Jo
         positionsJoueurs = [joueurInfo.position, joueurBio.position];
     }
 
+    // Zone des surveillants
+    const zonesInterdites = new Set<string>();
+    surveillants.forEach(s => {
+        zonesInterdites.add(`${s.x}-${s.y}`);
+        const i = s.x;
+        const j = s.y;
+        const voisinsSurveillant: number[][] = (j % 2 === 1) 
+            ? [[i, j - 1], [i + 1, j - 1], [i - 1, j], [i + 1, j], [i, j + 1], [i + 1, j + 1]] 
+            : [[i - 1, j - 1], [i, j - 1], [i - 1, j], [i + 1, j], [i - 1, j + 1], [i, j + 1]];
+        voisinsSurveillant.forEach(([vx, vy]) => {
+            zonesInterdites.add(`${vx}-${vy}`);
+        });
+    });
+
     for (const arc of graphe) {
         arc.voisins = arc.voisins.filter(voisin => 
             !positionsJoueurs.some(pos => pos.x === voisin.x && pos.y === voisin.y)
         );
+        arc.voisins = arc.voisins.filter(voisin => 
+            !casse.some(pos => pos.x === voisin.x && pos.y === voisin.y)
+        );
+        arc.voisins = arc.voisins.filter(voisin => {
+            const cle = `${voisin.x}-${voisin.y}`;
+            return !zonesInterdites.has(cle);
+        });
     }
+
+    carte.tyroliennes.forEach((tyrolienne: Tyrolienne) => {
+        const estCassee = casse.some(pos => 
+            pos.x === tyrolienne.entree.x && pos.y === tyrolienne.entree.y
+        );
+
+        if (estCassee) {
+            const arcDepart: Arc | undefined = graphe.find(g =>
+                (g.noeud.x === tyrolienne.entree.x) &&
+                (g.noeud.y === tyrolienne.entree.y)
+            );
+
+            if (arcDepart) {
+                arcDepart.voisins = arcDepart.voisins.filter(voisin => 
+                    !(voisin.x === tyrolienne.sortie.x && voisin.y === tyrolienne.sortie.y)
+                );
+            }
+        }
+    });
 
     return graphe;
 }
