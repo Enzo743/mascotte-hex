@@ -161,8 +161,8 @@ export class File {
     }
 }
 
-
-/* === TEMP ===
+/* === CarteAJouer, Pioche ===
+Toutes les interfaces liées à l'option carte
 */
 export type CarteAJouer = 
     [0, "🥸 Surveillant"] | 
