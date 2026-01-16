@@ -96,12 +96,12 @@ export function useLogiqueJeu() {
     const deplacerJoueur = useCallback((position: Position) => {
         if (tour === 5 || tour === 6) {
             definirSurveillants(prev => [...prev, position]);
-            tour === 5 ? changerTour(0) : changerTour(1);
+            tour === 5 ? changerTour(1) : changerTour(0);
             return;
         }
         else if (tour === 7 || tour === 8) {
             definirSurveillants(prev => prev.filter(p => !(p.x === position.x && p.y === position.y)));
-            tour === 7 ? changerTour(0) : changerTour(1);
+            tour === 7 ? changerTour(1) : changerTour(0);
             return;
         }
         if (modeJeu == "bot" && ((premierTour === "info" && tour === 1) || (premierTour === "bio" && tour === 0))) return;
@@ -193,7 +193,6 @@ export function useLogiqueJeu() {
             }
             const prochainTour = tour === 0 ? 1 : 0;
             changerTour(prochainTour);
-            contexte.graphe = TraitementGraphe(contexte.carte, contexte.joueurInfo, contexte.joueurBio, contexte.joueurInfo2, contexte.joueurBio2, tour, equipe, surveillants, castors, casse);
         }
     }
 
@@ -300,16 +299,20 @@ export function useLogiqueJeu() {
                 if (caseActuelle && caseActuelle.riviere.nombre > 0) {
                     if (!castors.some(c => c.x === caseActuelle.positionMatrice.x && c.y === caseActuelle.positionMatrice.y)) definirCastors(prev => [...prev, caseActuelle.positionMatrice]);
                 }
+                info ? changerTour(1) : changerTour(0);
             } else if (carte[0] === 3) {
                 definirCastors(prev => prev.filter(p => !(p.x === joueurActuel?.position.x && p.y === joueurActuel?.position.y)));
+                info ? changerTour(1) : changerTour(0);
             } else if (carte[0] == 4) {
                 if (caseActuelle && caseActuelle.tyrolienne.nombre > 0) {
                     if (!casse.some(c => c.x === caseActuelle.positionMatrice.x && c.y === caseActuelle.positionMatrice.y)) definirCasse(prev => [...prev, caseActuelle.positionMatrice]);
                 }
+                info ? changerTour(1) : changerTour(0);
             } else if (carte[0] === 5) {
                 if (caseActuelle && caseActuelle.tyrolienne.nombre > 0) {
                     definirCasse(prev => prev.filter(p => !(p.x === joueurActuel?.position.x && p.y === joueurActuel?.position.y)));
                 }
+                info ? changerTour(1) : changerTour(0);
             }
         }
         if (info && tour === 0) {
@@ -416,6 +419,24 @@ export function useLogiqueJeu() {
         const tourIA = premierTour === "info" ? 1 : 0;
         if (tour === tourIA) deplacerIA();
     }, [tour, contexte, modeJeu, premierTour]);
+
+    useEffect(() => {
+        if (contexte && jeuDemarre) {
+            const nouveauGraphe = TraitementGraphe(
+                contexte.carte, 
+                contexte.joueurInfo, 
+                contexte.joueurBio, 
+                contexte.joueurInfo2, 
+                contexte.joueurBio2, 
+                tour, 
+                equipe,
+                surveillants,
+                castors,
+                casse
+            );
+            definirContexte(prev => prev ? { ...prev, graphe: nouveauGraphe } : prev);
+        }
+    }, [tour, contexte?.joueurInfo.position, contexte?.joueurBio.position]);
 
     /* Voir @1 
     useEffect(() => {
