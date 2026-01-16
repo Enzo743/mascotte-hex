@@ -45,6 +45,7 @@ export default function Jeu({ data, actions }: any) {
                                                 {data.descriptionCartes[(data.tour === 0 ? data.piocheInfo : data.piocheBio)[data.indexCarte][0]]}
                                             </div>
                                             <button
+                                                disabled={data.tour >= 5 && data.tour <= 8} // Empeche d'utiliser une carte pendant l'assignation d'un surveillant / d'une correction
                                                 className="btn-card-action"
                                                 onClick={() => actions.utiliserCarte(data.tour === 0, data.indexCarte)}
                                             >
