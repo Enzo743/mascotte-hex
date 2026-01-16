@@ -6,7 +6,7 @@ import {Arc, Carte, CarteJSON, Case, Connexion, Contexte, Joueur, Position, Rivi
 Génère la carte du jeu ainsi que le graphe associé.
 Appeler cette fonction uniquement en début de partie ou si changer la carte ainsi que le graphe est nécessaire.
 */
-export function TraitementTotal(carteJSON: CarteJSON, rayon: number, tour: number, equipe: boolean): Contexte {
+export function TraitementTotal(carteJSON: CarteJSON, rayon: number, tour: number, equipe: boolean, surveillants: Position[], castors: Position[], casse: Position[]): Contexte {
     const carte: Carte = TraitementCarte(carteJSON, rayon);
     const joueurInfo: Joueur = {
             position: {
@@ -36,7 +36,7 @@ export function TraitementTotal(carteJSON: CarteJSON, rayon: number, tour: numbe
             },
             mascotte: false
     }
-    const graphe: Arc[] = TraitementGraphe(carte, joueurInfo, joueurBio, joueurInfo2, joueurBio2, tour, equipe);
+    const graphe: Arc[] = TraitementGraphe(carte, joueurInfo, joueurBio, joueurInfo2, joueurBio2, tour, equipe, surveillants, castors, casse);
 
     return {
         carte: carte,
@@ -152,7 +152,7 @@ export function TraitementCarte(carteJSON: CarteJSON, rayon: number): Carte {
 Prends en entrée la carte du jeu précédemment générée et construis un graphe orienté.
 Il représente tous les déplacements possibles, utile pour l'implémentation des règles du jeu, mais surtout pour le bot.
 */
-export function TraitementGraphe(carte: Carte, joueurInfo: Joueur, joueurBio: Joueur, joueurInfo2: Joueur, joueurBio2: Joueur, tour: number, equipe: boolean): Arc[] {
+export function TraitementGraphe(carte: Carte, joueurInfo: Joueur, joueurBio: Joueur, joueurInfo2: Joueur, joueurBio2: Joueur, tour: number, equipe: boolean, surveillants: Position[], castors: Position[], casse: Position[]): Arc[] {
     const graphe: Arc[] = [];
 
     // Ajout des arêtes entre les différents terrains.
