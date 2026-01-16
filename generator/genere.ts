@@ -341,6 +341,41 @@ function genererTyrolienne(grille: Cellule[][], tuilesIles: Cellule[][], options
     return false;
 }
 
+/**
+ * Permet de générer une rivière
+ */
+function genererRiviere(grille: Cellule[][], options: Options, caseActuelle: Cellule, cheminRiviere: Cellule[],
+                        riviereEchec: Cellule[]): boolean {
+    if (caseActuelle.type === Terrains.Ocean || caseActuelle.riviere) {
+        cheminRiviere.push(caseActuelle);
+        return true;
+    }
+
+    if (caseActuelle.type === Terrains.Montagne || caseActuelle.estResidenceBio || caseActuelle.estResidenceInfo
+        || cheminRiviere.includes(caseActuelle) || riviereEchec.includes(caseActuelle)) {
+        return false;
+    }
+
+    cheminRiviere.push(caseActuelle);
+    const voisinsCase = getVoisins(grille, caseActuelle.x, caseActuelle.y, options.lignes, options.colonnes);
+    voisinsCase.sort((): number => Math.random() - 0.5);
+    for (const voisin of voisinsCase) {
+        const generationPossible = genererRiviere(grille, options, voisin, cheminRiviere, riviereEchec);
+        if (generationPossible) {
+            return true;
+        }
+    }
+
+    const indiceCase = cheminRiviere.indexOf(caseActuelle);
+    if (indiceCase !== -1) {
+        cheminRiviere.splice(indiceCase, 1);
+    }
+
+    riviereEchec.push(caseActuelle);
+
+    return false;
+}
+
 /*
  * Permet de générer une carte en fonction des options passées dans la ligne de commande
  */
@@ -490,6 +525,71 @@ function genererCarteComplete(options: Options): Cellule[][] | null {
                 } else {
                     console.log(`\n${nbTyroliennes} tyroliennes générées avec succès\n`);
                 }
+            }
+        }
+
+        if (carteValide) {
+            const tuilesRiviere: Set<Cellule> = new Set();
+            const riviereEchec: Cellule[] = [];
+            let tentativesRiviere: number = 0;
+
+            while (tuilesRiviere.size < options.longueur_rivieres && tentativesRiviere < 50) {
+                tentativesRiviere++;
+
+                const idIleAleatoireDebut: number = tabIdIle[Math.floor(Math.random() * tabIdIle.length)];
+                const tuilesIleAleatoire: Cellule[] = tuilesIles[idIleAleatoireDebut - 1];
+                const tuileDepart: Cellule = tuilesIleAleatoire[Math.floor(Math.random() * tuilesIleAleatoire.length)];
+
+                if (tuileDepart.type === Terrains.Montagne || tuileDepart.type === Terrains.Ocean || riviereEchec.includes(tuileDepart)) continue;
+
+                const voisinsDepart: Cellule[] = getVoisins(grille, tuileDepart.x, tuileDepart.y, options.lignes, options.colonnes);
+                let departPossible: boolean = false;
+
+                if (tuileDepart.riviere) {
+                    departPossible = voisinsDepart.some((v: Cellule): boolean => v.type !== Terrains.Montagne
+                        && v.type !== Terrains.Ocean);
+                } else {
+                    departPossible = voisinsDepart.some((v: Cellule): boolean => v.type !== Terrains.Montagne
+                        && v.type !== Terrains.Ocean && v.riviere === undefined);
+                }
+
+                if (!departPossible) {
+                    riviereEchec.push(tuileDepart);
+                    continue;
+                }
+
+                const cheminRiviere: Cellule[] = [];
+                const succes: boolean = genererRiviere(grille, options, tuileDepart, cheminRiviere, riviereEchec);
+
+                if (succes && cheminRiviere.length > 3) {
+                    const derniereCase: Cellule = cheminRiviere[cheminRiviere.length - 1];
+                    const connecteEau: boolean = (derniereCase.type === Terrains.Ocean || derniereCase.riviere !== undefined);
+
+                    if (connecteEau) {
+                        const doublons: Cellule[] = cheminRiviere.filter((c: Cellule): boolean => tuilesRiviere.has(c));
+
+                        if (cheminRiviere.length - 1 - doublons.length + tuilesRiviere.size <= options.longueur_rivieres) {
+                            console.log(`Rivière créée (taille ${cheminRiviere.length}), plus que ${options.longueur_rivieres - tuilesRiviere.size} cases rivières à placer !`);
+
+                            for (let i = 0; i < cheminRiviere.length - 1; i++) {
+                                const tuileCourante: Cellule = cheminRiviere[i];
+                                const tuileSuivante: Cellule = cheminRiviere[i + 1];
+
+                                tuileCourante.riviere = {estDebut: (i === 0), celluleSuivante: tuileSuivante};
+                                tuilesRiviere.add(tuileCourante);
+                            }
+                        }
+                    }
+                }
+            }
+
+            tentativesRiviere = 0;
+
+            if (tuilesRiviere.size !== options.longueur_rivieres) {
+                console.warn(`Attention, il n'y a pas le bon nombre de cases ayant des rivières (${tuilesRiviere.size}/${options.longueur_rivieres}). Regénération de la carte !\n`);
+                carteValide = false;
+            } else {
+                console.log("Toutes les cases rivières ont été placées !\n");
             }
         }
 
