@@ -8,6 +8,7 @@ import { TraitementCarte, TraitementGraphe, TraitementTotal } from "@/app/module
 // Voir @1
 // import { Terrain } from "@/app/components/Terrain";
 import { Arc, Case, CarteJSON, Contexte, DifficulteIA, Joueur, ModeJeu, Noeud, Pioche, Position, PremierTour, CarteAJouer, Connexion} from "@/app/modules/Interfaces";
+import { cp } from "node:fs";
 
 /* === useLogiqueJeu ===
 Todo : Commenter TOUT, fin histoire qu'on puisse un peu comprendre
@@ -45,6 +46,9 @@ export function useLogiqueJeu() {
     const [piocheInfo, setPiocheInfo] = useState<CarteAJouer[]>([]);
     const [piocheBio, setPiocheBio] = useState<CarteAJouer[]>([]);
     const [victoire, definirVictoire] = useState<"Info" | "Bio" | null>(null);
+    const [surveillants, definirSurveillants] = useState<Position[]>([]);
+    const [castors, definirCastors] = useState<Position[]>([]);
+    const [casse, definirCasse] = useState<Position[]>([]);
 
     // Description des cartes à jouer, en fonction de leur indice
     const descriptionCartes = [
@@ -90,6 +94,16 @@ export function useLogiqueJeu() {
     */
 
     const deplacerJoueur = useCallback((position: Position) => {
+        if (tour === 5 || tour === 6) {
+            definirSurveillants(prev => [...prev, position]);
+            tour === 5 ? changerTour(0) : changerTour(1);
+            return;
+        }
+        else if (tour === 7 || tour === 8) {
+            definirSurveillants(prev => prev.filter(p => !(p.x === position.x && p.y === position.y)));
+            tour === 7 ? changerTour(0) : changerTour(1);
+            return;
+        }
         if (modeJeu == "bot" && ((premierTour === "info" && tour === 1) || (premierTour === "bio" && tour === 0))) return;
         if (tour > 1) return;
         if (contexte) {
@@ -179,7 +193,7 @@ export function useLogiqueJeu() {
             }
             const prochainTour = tour === 0 ? 1 : 0;
             changerTour(prochainTour);
-            contexte.graphe = TraitementGraphe(contexte.carte, contexte.joueurInfo, contexte.joueurBio, contexte.joueurInfo2, contexte.joueurBio2, tour, equipe);
+            contexte.graphe = TraitementGraphe(contexte.carte, contexte.joueurInfo, contexte.joueurBio, contexte.joueurInfo2, contexte.joueurBio2, tour, equipe, surveillants, castors, casse);
         }
     }
 
@@ -247,7 +261,7 @@ export function useLogiqueJeu() {
             definirEquipe(estEquipe);
             const carte = await getCarte(carteId);
             definirCarteJSON(carte);
-            const nouveauContexte = TraitementTotal(carte, rayon, tour, estEquipe);
+            const nouveauContexte = TraitementTotal(carte, rayon, tour, estEquipe, surveillants, castors, casse);
             definirContexte(nouveauContexte);
             const tourDepart = (premierTour === "random") ? Math.floor(Math.random() * 2) : (premierTour === "info" ? 0 : 1);
             changerTour(tourDepart);
@@ -276,6 +290,28 @@ export function useLogiqueJeu() {
     }
 
     function utiliserCarte(info: boolean, position: number) {
+        const carte: CarteAJouer = info ? piocheInfo[position] : piocheBio[position];
+        if (carte) {
+            if (carte[0] === 0) {
+                info ? changerTour(5) : changerTour(6);
+            } else if (carte[0] === 1) {
+                info ? changerTour(7) : changerTour(8);
+            } else if (carte[0] === 2) {
+                if (caseActuelle && caseActuelle.riviere.nombre > 0) {
+                    if (!castors.some(c => c.x === caseActuelle.positionMatrice.x && c.y === caseActuelle.positionMatrice.y)) definirCastors(prev => [...prev, caseActuelle.positionMatrice]);
+                }
+            } else if (carte[0] === 3) {
+                definirCastors(prev => prev.filter(p => !(p.x === joueurActuel?.position.x && p.y === joueurActuel?.position.y)));
+            } else if (carte[0] == 4) {
+                if (caseActuelle && caseActuelle.tyrolienne.nombre > 0) {
+                    if (!casse.some(c => c.x === caseActuelle.positionMatrice.x && c.y === caseActuelle.positionMatrice.y)) definirCasse(prev => [...prev, caseActuelle.positionMatrice]);
+                }
+            } else if (carte[0] === 5) {
+                if (caseActuelle && caseActuelle.tyrolienne.nombre > 0) {
+                    definirCasse(prev => prev.filter(p => !(p.x === joueurActuel?.position.x && p.y === joueurActuel?.position.y)));
+                }
+            }
+        }
         if (info && tour === 0) {
             setPiocheInfo(prev => {
                 const copie = [...prev];
@@ -292,6 +328,35 @@ export function useLogiqueJeu() {
             });
         }
     }
+
+    useEffect(() => {
+        let emoji = "";
+        if (tour === 5 || tour === 6) {
+            emoji = "🥸"; // Surveillant
+        } else if (tour === 7 || tour === 8) {
+            emoji = "📄";
+        }
+        if (emoji !== "") {
+            const svgEmoji = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+                    <text 
+                        x="50%" 
+                        y="50%" 
+                        font-size="50"
+                        text-anchor="middle" 
+                        dominant-baseline="central"
+                    >${emoji}</text>
+                </svg>
+            `;
+            const url = `data:image/svg+xml;utf8,${encodeURIComponent(svgEmoji)}`;
+            document.body.style.cursor = `url('${url}') 32 32, auto`;
+        } else {
+            document.body.style.cursor = 'auto';
+        }
+        return () => {
+            document.body.style.cursor = 'auto';
+        };
+    }, [tour]);
 
     useEffect(() => {
         const empecherMenu = (event: MouseEvent) => event.preventDefault();
@@ -367,6 +432,7 @@ export function useLogiqueJeu() {
         equipe, jeuDemarre, definirJeuDemarre, tour, pion, piocheInfo, 
         piocheBio, victoire, descriptionCartes, demarrerJeu, 
         deplacerJoueur, utiliserCarte, utiliserTyrolienne, 
-        utiliserRiviere, router, definirVictoire, caseActuelle
+        utiliserRiviere, router, definirVictoire, caseActuelle, surveillants, definirSurveillants, castors, definirCastors,
+        casse, definirCasse
     };
 }

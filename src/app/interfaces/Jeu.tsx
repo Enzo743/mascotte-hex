@@ -100,6 +100,9 @@ export default function Jeu({ data, actions }: any) {
                     deplacement={actions.deplacerJoueur}
                     brouillard={data.brouillard}
                     equipe={data.equipe}
+                    surveillants={data.surveillants}
+                    castors={data.castors}
+                    casse={data.casse}
                 />
             </main>
         </div>

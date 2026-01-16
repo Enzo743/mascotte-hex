@@ -86,6 +86,9 @@ export interface AffichageParams {
     deplacement?: (position: Position) => void;
     brouillard: boolean;
     equipe: boolean;
+    surveillants: Position[];
+    castors: Position[];
+    casse: Position[];
 }
 
 export interface Case {
@@ -102,7 +105,7 @@ export interface Case {
 
 export interface Tyrolienne {
     entree: Position;
-    sortie: Position
+    sortie: Position;
 }
 
 export interface Riviere {

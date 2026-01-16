@@ -16,6 +16,11 @@ interface CelluleTyro {
     celluleSuivante: Cellule | undefined;
 }
 
+interface CelluleRiviere {
+    estDebut: boolean;
+    celluleSuivante: Cellule | undefined;
+}
+
 interface Cellule {
     x: number;
     y: number;
@@ -24,7 +29,7 @@ interface Cellule {
     idMassif?: number;
     estResidenceInfo: boolean;
     estResidenceBio: boolean;
-    estRiviere?: boolean;
+    riviere?: CelluleRiviere;
     tyrolienne?: CelluleTyro;
 }
 
@@ -336,15 +341,51 @@ function genererTyrolienne(grille: Cellule[][], tuilesIles: Cellule[][], options
     return false;
 }
 
+/**
+ * Permet de générer une rivière
+ */
+function genererRiviere(grille: Cellule[][], options: Options, caseActuelle: Cellule, cheminRiviere: Cellule[],
+                        riviereEchec: Cellule[]): boolean {
+    if (caseActuelle.type === Terrains.Ocean || caseActuelle.riviere) {
+        cheminRiviere.push(caseActuelle);
+        return true;
+    }
+
+    if (caseActuelle.type === Terrains.Montagne || caseActuelle.estResidenceBio || caseActuelle.estResidenceInfo
+        || cheminRiviere.includes(caseActuelle) || riviereEchec.includes(caseActuelle)) {
+        return false;
+    }
+
+    cheminRiviere.push(caseActuelle);
+    const voisinsCase = getVoisins(grille, caseActuelle.x, caseActuelle.y, options.lignes, options.colonnes);
+    voisinsCase.sort((): number => Math.random() - 0.5);
+    for (const voisin of voisinsCase) {
+        const generationPossible = genererRiviere(grille, options, voisin, cheminRiviere, riviereEchec);
+        if (generationPossible) {
+            return true;
+        }
+    }
+
+    const indiceCase = cheminRiviere.indexOf(caseActuelle);
+    if (indiceCase !== -1) {
+        cheminRiviere.splice(indiceCase, 1);
+    }
+
+    riviereEchec.push(caseActuelle);
+
+    return false;
+}
+
 /*
  * Permet de générer une carte en fonction des options passées dans la ligne de commande
  */
 function genererCarteComplete(options: Options): Cellule[][] | null {
     const nbTentativesMax: number = 200;
 
-    console.log(`\n--- DÉBUT GÉNÉRATION (${options.lignes}x${options.colonnes}) ---`);
+    console.log(`---------------------------- Début de la génération de la carte (${options.lignes}x${options.colonnes}) ! ----------------------------\n\n`);
 
     for (let tentative: number = 1; tentative <= nbTentativesMax; tentative++) {
+        console.log(`-------------- Début de la tentative n°${tentative} --------------\n`);
         // Initialisation d'une grille vide
         const grille: Cellule[][] = [];
 
@@ -371,6 +412,7 @@ function genererCarteComplete(options: Options): Cellule[][] | null {
         const tuilesIles: Cellule[][] = [];
 
         for (let i: number = 0; i < options.iles; i++) {
+            console.log(`Génération de l'île n°${i + 1} avec nbPlaines: ${distPlaines[i]}, nbForets: ${distForets[i]}, nbMontagnes: ${distMontagnes[i]}, nbMassifsForets: ${distMassifsF[i]}, nbMassifsMontagnes: ${distMassifsM[i]}`);
             const idIle: number = i + 1;
             tabIdIle.push(idIle);
 
@@ -388,37 +430,40 @@ function genererCarteComplete(options: Options): Cellule[][] | null {
             if (succes) tuilesIles.push(tuilesIle);
 
             if (!succes) {
+                console.warn(`Impossible de générer l'île n°${i + 1} avec ces distributions, on recommence !\n`);
                 carteValide = false;
                 break;
             }
         }
 
-        let idIleResInfo: number = tabIdIle[0];
-        let idIleResBio: number = tabIdIle[1];
-
-        if (options.iles > 2) {
-            do {
-                idIleResInfo = tabIdIle[Math.floor(Math.random() * (tabIdIle.length - 1))];
-                idIleResBio = tabIdIle[Math.floor(Math.random() * (tabIdIle.length - 1))];
-            } while (idIleResInfo === idIleResBio);
-        }
-
-        let indiceAleatoireInfo: number = Math.floor(Math.random() * tuilesIles[idIleResInfo - 1].length);
-        let indiceAleatoireBio: number = Math.floor(Math.random() * tuilesIles[idIleResBio - 1].length);
-        let tuileInfoAleatoire: Cellule = tuilesIles[idIleResInfo - 1][indiceAleatoireInfo];
-        let tuileBioAleatoire: Cellule = tuilesIles[idIleResBio - 1][indiceAleatoireBio];
-
-        while ((tuileInfoAleatoire.type === Terrains.Ocean || tuileInfoAleatoire.type === Terrains.Montagne) || (tuileBioAleatoire.type === Terrains.Ocean || tuileBioAleatoire.type === Terrains.Montagne)) {
-            indiceAleatoireInfo = Math.floor(Math.random() * tuilesIles[idIleResInfo - 1].length);
-            indiceAleatoireBio = Math.floor(Math.random() * tuilesIles[idIleResBio - 1].length);
-            tuileInfoAleatoire = tuilesIles[idIleResInfo - 1][indiceAleatoireInfo];
-            tuileBioAleatoire = tuilesIles[idIleResBio - 1][indiceAleatoireBio];
-        }
-
-        tuileInfoAleatoire.estResidenceInfo = true;
-        tuileBioAleatoire.estResidenceBio = true;
-
         if (carteValide) {
+            let idIleResInfo: number = tabIdIle[0];
+            let idIleResBio: number = tabIdIle[1];
+
+            if (options.iles > 2) {
+                do {
+                    idIleResInfo = tabIdIle[Math.floor(Math.random() * (tabIdIle.length - 1))];
+                    idIleResBio = tabIdIle[Math.floor(Math.random() * (tabIdIle.length - 1))];
+                } while (idIleResInfo === idIleResBio);
+            }
+
+            let indiceAleatoireInfo: number = Math.floor(Math.random() * tuilesIles[idIleResInfo - 1].length);
+            let indiceAleatoireBio: number = Math.floor(Math.random() * tuilesIles[idIleResBio - 1].length);
+            let tuileInfoAleatoire: Cellule = tuilesIles[idIleResInfo - 1][indiceAleatoireInfo];
+            let tuileBioAleatoire: Cellule = tuilesIles[idIleResBio - 1][indiceAleatoireBio];
+
+            while ((tuileInfoAleatoire.type === Terrains.Ocean || tuileInfoAleatoire.type === Terrains.Montagne) || (tuileBioAleatoire.type === Terrains.Ocean || tuileBioAleatoire.type === Terrains.Montagne)) {
+                indiceAleatoireInfo = Math.floor(Math.random() * tuilesIles[idIleResInfo - 1].length);
+                indiceAleatoireBio = Math.floor(Math.random() * tuilesIles[idIleResBio - 1].length);
+                tuileInfoAleatoire = tuilesIles[idIleResInfo - 1][indiceAleatoireInfo];
+                tuileBioAleatoire = tuilesIles[idIleResBio - 1][indiceAleatoireBio];
+            }
+
+            tuileInfoAleatoire.estResidenceInfo = true;
+            tuileBioAleatoire.estResidenceBio = true;
+
+            console.log("\nLes résidences ont été placées !\n");
+
             // Tyroliennes obligatoires entre les résidences
             let tyrolienneAller: boolean = false;
             let tyrolienneRetour: boolean = false;
@@ -428,6 +473,7 @@ function genererCarteComplete(options: Options): Cellule[][] | null {
 
             for (const depart of foretsDepartAller) {
                 if (genererTyrolienne(grille, tuilesIles, options, depart, idIleResBio)) {
+                    console.log('Tyrolienne aller placée !');
                     tyrolienneAller = true;
                     break;
                 }
@@ -438,6 +484,7 @@ function genererCarteComplete(options: Options): Cellule[][] | null {
 
             for (const depart of foretsDepartRetour) {
                 if (genererTyrolienne(grille, tuilesIles, options, depart, idIleResInfo)) {
+                    console.log('Tyrolienne retour placée !');
                     tyrolienneRetour = true;
                     break;
                 }
@@ -466,6 +513,7 @@ function genererCarteComplete(options: Options): Cellule[][] | null {
 
                         if (genererTyrolienne(grille, tuilesIles, options, tuileAleatoire, idIleAleatoireFin)) {
                             nbTyroliennes++;
+                            console.log(`Tyrolienne n°${nbTyroliennes} placée, plus que ${options.tyroliennes - nbTyroliennes} à placer !`);
                             tentatives = 0; // Réinitialiser le compteur après un succès
                         }
                     }
@@ -473,16 +521,80 @@ function genererCarteComplete(options: Options): Cellule[][] | null {
 
                 if (nbTyroliennes < options.tyroliennes) {
                     carteValide = false;
-                    console.log(`Impossible de placer toutes les tyroliennes (${nbTyroliennes}/${options.tyroliennes}), regénération de la carte !`);
+                    console.log(`Impossible de placer toutes les tyroliennes (${nbTyroliennes}/${options.tyroliennes}), regénération de la carte !\n`);
                 } else {
-                    console.log(`${nbTyroliennes} tyroliennes générées avec succès`);
+                    console.log(`\n${nbTyroliennes} tyroliennes générées avec succès\n`);
                 }
             }
         }
 
         if (carteValide) {
+            const tuilesRiviere: Set<Cellule> = new Set();
+            const riviereEchec: Cellule[] = [];
+            let tentativesRiviere: number = 0;
+
+            while (tuilesRiviere.size < options.longueur_rivieres && tentativesRiviere < 50) {
+                tentativesRiviere++;
+
+                const idIleAleatoireDebut: number = tabIdIle[Math.floor(Math.random() * tabIdIle.length)];
+                const tuilesIleAleatoire: Cellule[] = tuilesIles[idIleAleatoireDebut - 1];
+                const tuileDepart: Cellule = tuilesIleAleatoire[Math.floor(Math.random() * tuilesIleAleatoire.length)];
+
+                if (tuileDepart.type === Terrains.Montagne || tuileDepart.type === Terrains.Ocean || riviereEchec.includes(tuileDepart)) continue;
+
+                const voisinsDepart: Cellule[] = getVoisins(grille, tuileDepart.x, tuileDepart.y, options.lignes, options.colonnes);
+                let departPossible: boolean = false;
+
+                if (tuileDepart.riviere) {
+                    departPossible = voisinsDepart.some((v: Cellule): boolean => v.type !== Terrains.Montagne
+                        && v.type !== Terrains.Ocean);
+                } else {
+                    departPossible = voisinsDepart.some((v: Cellule): boolean => v.type !== Terrains.Montagne
+                        && v.type !== Terrains.Ocean && v.riviere === undefined);
+                }
+
+                if (!departPossible) {
+                    riviereEchec.push(tuileDepart);
+                    continue;
+                }
+
+                const cheminRiviere: Cellule[] = [];
+                const succes: boolean = genererRiviere(grille, options, tuileDepart, cheminRiviere, riviereEchec);
+
+                if (succes && cheminRiviere.length > 3) {
+                    const derniereCase: Cellule = cheminRiviere[cheminRiviere.length - 1];
+                    const connecteEau: boolean = (derniereCase.type === Terrains.Ocean || derniereCase.riviere !== undefined);
+
+                    if (connecteEau) {
+                        const doublons: Cellule[] = cheminRiviere.filter((c: Cellule): boolean => tuilesRiviere.has(c));
+
+                        if (cheminRiviere.length - 1 - doublons.length + tuilesRiviere.size <= options.longueur_rivieres) {
+                            console.log(`Rivière créée (taille ${cheminRiviere.length}), plus que ${options.longueur_rivieres - tuilesRiviere.size} cases rivières à placer !`);
+
+                            for (let i = 0; i < cheminRiviere.length - 1; i++) {
+                                const tuileCourante: Cellule = cheminRiviere[i];
+                                const tuileSuivante: Cellule = cheminRiviere[i + 1];
+
+                                tuileCourante.riviere = {estDebut: (i === 0), celluleSuivante: tuileSuivante};
+                                tuilesRiviere.add(tuileCourante);
+                            }
+                        }
+                    }
+                }
+            }
+
+            tentativesRiviere = 0;
+
+            if (tuilesRiviere.size !== options.longueur_rivieres) {
+                console.warn(`Attention, il n'y a pas le bon nombre de cases ayant des rivières (${tuilesRiviere.size}/${options.longueur_rivieres}). Regénération de la carte !\n`);
+                carteValide = false;
+            } else {
+                console.log("Toutes les cases rivières ont été placées !\n");
+            }
+        }
+
+        if (carteValide) {
             console.log(`Succès à la tentative ${tentative}`);
-            console.log(grille);
             return grille;
         }
     }
@@ -597,6 +709,22 @@ if (grilleFinale) {
                 };
 
                 sortieData.connexions.push(connexionTyro);
+            }
+            if (cellule.riviere?.estDebut && cellule.riviere?.celluleSuivante != undefined) {
+                const connexionRiviere = {
+                    type: "riviere",
+                    tuiles: [
+                        [cellule.x, cellule.y]
+                    ],
+                }
+
+                let cellSuiv: Cellule | undefined = cellule.riviere.celluleSuivante;
+                while (cellSuiv != undefined) {
+                    connexionRiviere.tuiles.push([cellSuiv.x, cellSuiv.y]);
+                    cellSuiv = cellSuiv.riviere?.celluleSuivante;
+                }
+
+                sortieData.connexions.push(connexionRiviere);
             }
         }
     }
