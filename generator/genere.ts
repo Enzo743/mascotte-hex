@@ -377,6 +377,49 @@ function genererRiviere(grille: Cellule[][], options: Options, caseActuelle: Cel
 }
 
 /*
+ * Permet de vérifier si s'il existe un chemin entre la case de départ et la case d'arrivée
+ */
+function estCheminMeneARome(grille: Cellule[][], options: Options, caseDepart: Cellule, caseFin: Cellule,
+                            tuilesIles: Cellule[][]): boolean {
+    const file: Cellule[] = [caseDepart];
+    const casesVisitees: Set<Cellule> = new Set();
+
+    casesVisitees.add(caseDepart);
+
+    while (file.length > 0) {
+        let caseActuelle: Cellule = file.splice(0, 1)[0];
+        if (caseActuelle === caseFin) {
+            return true;
+        }
+
+        if (caseActuelle.tyrolienne !== undefined && caseActuelle.tyrolienne.estDebut) {
+            const arriveeTyrolienne: Cellule | undefined = caseActuelle.tyrolienne.celluleSuivante;
+            const tuilesIleArrivee: Cellule[] = tuilesIles[caseFin.idIle - 1];
+
+            if (arriveeTyrolienne != undefined) {
+                if (tuilesIleArrivee.includes(arriveeTyrolienne) && !casesVisitees.has(arriveeTyrolienne)) {
+                    file.push(arriveeTyrolienne);
+                    casesVisitees.add(arriveeTyrolienne);
+                    caseActuelle = arriveeTyrolienne;
+                }
+            }
+        }
+
+        const voisinsCase: Cellule[] = getVoisins(grille, caseActuelle.x, caseActuelle.y, options.lignes, options.colonnes);
+
+        for (const voisin of voisinsCase) {
+            if (voisin.type !== Terrains.Montagne && voisin.type !== Terrains.Ocean && !casesVisitees.has(voisin)) {
+                file.push(voisin);
+                casesVisitees.add(voisin);
+                caseActuelle = voisin;
+            }
+        }
+    }
+
+    return false;
+}
+
+/*
  * Permet de générer une carte en fonction des options passées dans la ligne de commande
  */
 function genererCarteComplete(options: Options): Cellule[][] | null {
