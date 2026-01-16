@@ -10,7 +10,7 @@ Fonction qui affiche l'intégralité des éléments disponibles de la carte
 Affiche également les cases adjacentes du joueur à qui c'est le tour
 Si l'on clique sur une case, la fonction déplacerJoueur est appelée (vers page.tsx)
 */
-export function Affichage({contexte, rayon, tour, pion, deplacement, brouillard, equipe}: AffichageParams) {
+export function Affichage({contexte, rayon, tour, pion, deplacement, brouillard, equipe, surveillants, castors, casse}: AffichageParams) {
     // Largeur et hauteur du canvas en pixels.
     const largeurCanvas: number = Math.max.apply(0, contexte.carte.cases.map((c) => c.positionCanvas.x)) + rayon;
     const hauteurCanvas: number = Math.max.apply(0, contexte.carte.cases.map((c) => c.positionCanvas.y)) + rayon;
@@ -134,10 +134,12 @@ export function Affichage({contexte, rayon, tour, pion, deplacement, brouillard,
                     {/* === VISUEL DES TYROLIENNES === 
                     Une tyrolienne est représentée par une flèche pointant du départ vers l'arrivée de la tyrolienne
                     */}
+                    {/* === VISUEL DES TYROLIENNES === */}
                     {contexte.carte.tyroliennes.map((tyrolienne: Tyrolienne) => {
                         const entree: Case | undefined = contexte.carte.cases.find((c) => c.id === `${tyrolienne.entree.x}-${tyrolienne.entree.y}`);
                         const sortie: Case | undefined = contexte.carte.cases.find((c) => c.id === `${tyrolienne.sortie.x}-${tyrolienne.sortie.y}`);
                         if (!entree || !sortie) return;
+                        const estCasse = casse.some(c => c.x === entree.positionMatrice.x && c.y === entree.positionMatrice.y);
                         return (
                             <Arrow
                                 key = {`t-${tyrolienne.entree.x}-${tyrolienne.entree.y}-${tyrolienne.sortie.x}-${tyrolienne.sortie.y}`}
@@ -149,9 +151,42 @@ export function Affichage({contexte, rayon, tour, pion, deplacement, brouillard,
                                 ]}
                                 pointerLength = {rayon/2.5}
                                 pointerWidth = {rayon/2.5}
-                                fill = "#FFA23A"
-                                stroke = "#FFA23A"
+                                // Use the calculated boolean here
+                                fill = {estCasse ? "#303030ff" : "#FFA23A"}
+                                stroke = {estCasse ? "#303030ff" : "#FFA23A"}
                                 strokeWidth = {6}
+                            />
+                        );
+                    })}
+
+                    {surveillants.map((p: Position) => {
+                        const pos: Case | undefined = contexte.carte.cases.find((c) => c.id === `${p.x}-${p.y}`);
+                        if (!pos) return;
+                        return (
+                            <Text
+                                key = {`s-${p.x}-${p.y}`}
+                                x = {pos.positionCanvas.x}
+                                y = {pos.positionCanvas.y}
+                                text = {"🥸"}
+                                fontSize = {rayon/1.5}
+                                offsetX = {rayon/2.5}
+                                offsetY = {rayon/2.5}
+                            />
+                        );
+                    })}
+
+                    {castors.map((p: Position) => {
+                        const pos: Case | undefined = contexte.carte.cases.find((c) => c.id === `${p.x}-${p.y}`);
+                        if (!pos) return;
+                        return (
+                            <Text
+                                key = {`c-${p.x}-${p.y}`}
+                                x = {pos.positionCanvas.x}
+                                y = {pos.positionCanvas.y}
+                                text = {"🦫"}
+                                fontSize = {rayon/1.5}
+                                offsetX = {rayon/2.5}
+                                offsetY = {rayon/2.5}
                             />
                         );
                     })}
