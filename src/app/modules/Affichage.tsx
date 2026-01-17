@@ -106,8 +106,8 @@ export function Affichage({contexte, rayon, tour, pion, deplacement, brouillard,
                         );
                     })}
 
-                    {/* Visuel des détails des cases (l'océan : vagues, montagne)
-                    A cet emplacement pour que les 'vagues' soient par dessus les rivières
+                    {/* === VISUEL DES MOTIFS SUR LES CASES OCEAN ET MONTAGNE ===
+                    A cet emplacement pour que les motifs 'vagues' soient par dessus les rivières
                     */}
                     {
                         contexte.carte.cases.map((c: Case) => {
@@ -191,7 +191,6 @@ export function Affichage({contexte, rayon, tour, pion, deplacement, brouillard,
                     {/* === VISUEL DES TYROLIENNES === 
                     Une tyrolienne est représentée par une flèche pointant du départ vers l'arrivée de la tyrolienne
                     */}
-                    {/* === VISUEL DES TYROLIENNES === */}
                     {contexte.carte.tyroliennes.map((tyrolienne: Tyrolienne) => {
                         const entree: Case | undefined = contexte.carte.cases.find((c) => c.id === `${tyrolienne.entree.x}-${tyrolienne.entree.y}`);
                         const sortie: Case | undefined = contexte.carte.cases.find((c) => c.id === `${tyrolienne.sortie.x}-${tyrolienne.sortie.y}`);
@@ -503,8 +502,7 @@ export function Affichage({contexte, rayon, tour, pion, deplacement, brouillard,
                                     />
                                     <Path
                                         key = {"motifBrouillard" + c.id}
-                                        data = {
-                                            "M" + (c.positionCanvas.x-(petitRayon*3.5/5)) + " " + (c.positionCanvas.y-(petitRayon/3)) +
+                                        data = {"M" + (c.positionCanvas.x-(petitRayon*3.5/5)) + " " + (c.positionCanvas.y-(petitRayon/3)) +
                                             " L" + (c.positionCanvas.x-(petitRayon*1.1/6)) + " " + (c.positionCanvas.y-(petitRayon/3)) +
                                             " A" + rayon/10 + " " + rayon/10 + " ," + "1, 1, 0, " + (c.positionCanvas.x-(petitRayon*1.5/5)) + " " + (c.positionCanvas.y-(petitRayon*1.4/3)) +
                                             

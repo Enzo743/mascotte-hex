@@ -271,7 +271,7 @@ export function TraitementGraphe(carte: Carte, joueurInfo: Joueur, joueurBio: Jo
     // ^ Probablement besoin d'utiliser les cases adjacentes pour que le bot se déplace quand même.
     let positionsJoueurs: Position[]
     if (equipe) {
-        if (tour === 0) { // C'est à l'équipe bio de jouer
+        if (tour === 1) { // C'est à l'équipe bio de jouer
             positionsJoueurs = [joueurInfo.position, joueurInfo2.position];
             // Le pion info est sur une résidence
             if (joueurInfo.position.x === carte.residenceInfo.x && joueurInfo.position.y === carte.residenceInfo.y ||
