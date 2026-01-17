@@ -74,7 +74,7 @@ export function Affichage({contexte, rayon, tour, pion, deplacement, brouillard,
                                 radius = {rayon}
                                 fill = {c.couleur}
                                 stroke = {"black"}
-                                strokeWidth={rayon/18}
+                                strokeWidth = {rayon/18}
                             />
                         );
                     }
@@ -98,10 +98,10 @@ export function Affichage({contexte, rayon, tour, pion, deplacement, brouillard,
                         }
                         return (
                             <Path
-                                key={`r-${riviere.parcours[0].x}-${riviere.parcours[0].y}-${riviere.embouchure.x}-${riviere.embouchure.y}`}
+                                key = {`r-${riviere.parcours[0].x}-${riviere.parcours[0].y}-${riviere.embouchure.x}-${riviere.embouchure.y}`}
                                 data = {chemin.join(" ")}
                                 stroke = "#748BF8"
-                                strokeWidth = {rayon/7} // 6
+                                strokeWidth = {rayon/7}
                             />
                         );
                     })}
@@ -114,8 +114,8 @@ export function Affichage({contexte, rayon, tour, pion, deplacement, brouillard,
                             if (c.type === "ocean") {
                                 return (
                                     <Path
-                                        key={"motifVague" + c.id}
-                                        data={"M"+ (c.positionCanvas.x-(petitRayon*6/8)) + " " + (c.positionCanvas.y-(rayon*2/12)) +
+                                        key = {"motifVague" + c.id}
+                                        data = {"M"+ (c.positionCanvas.x-(petitRayon*6/8)) + " " + (c.positionCanvas.y-(rayon*2/12)) +
                                             " L"+ (c.positionCanvas.x-(petitRayon*2/8)) + " " + (c.positionCanvas.y-(rayon*4/12)) +
                                             " L"+ (c.positionCanvas.x+(petitRayon*2/8)) + " " + (c.positionCanvas.y-(rayon*2/12)) +
                                             " L"+ (c.positionCanvas.x+(petitRayon*6/8)) + " " + (c.positionCanvas.y-(rayon*4/12)) +
@@ -129,29 +129,29 @@ export function Affichage({contexte, rayon, tour, pion, deplacement, brouillard,
                                             " L"+ (c.positionCanvas.x-(petitRayon*2/8)) + " " + (c.positionCanvas.y+(rayon*2/12)) +
                                             " L"+ (c.positionCanvas.x+(petitRayon*2/8)) + " " + (c.positionCanvas.y+(rayon*4/12)) +
                                             " L"+ (c.positionCanvas.x+(petitRayon*6/8)) + " " + (c.positionCanvas.y+(rayon*2/12))}
-                                        stroke={"white"}
-                                        strokeWidth={rayon/14}
-                                        opacity={0.5}
+                                        stroke = {"white"}
+                                        strokeWidth = {rayon/14}
+                                        opacity = {0.5}
                                     />
                                 );
                             }
                             if (c.type === "montagne") {
-                            return (
-                                <Path
-                                    key={"motifMontagne" + c.id}
-                                    data={"M"+ (c.positionCanvas.x-(petitRayon*2/3)) + " " + (c.positionCanvas.y+(rayon/3)) + 
-                                        " L"+ (c.positionCanvas.x-(petitRayon/4)) + " " + (c.positionCanvas.y-(rayon*1.8/3)) + 
-                                        " L"+ (c.positionCanvas.x+(petitRayon/5)) + " " + (c.positionCanvas.y+(rayon/3)) + 
-                                        " M"+ (c.positionCanvas.x+(petitRayon/11)) + " " + (c.positionCanvas.y+(rayon/12)) +
-                                        " L"+ (c.positionCanvas.x+(petitRayon/3)) + " " + (c.positionCanvas.y-(rayon/4)) + 
-                                        " L"+ (c.positionCanvas.x+(petitRayon*2/3)) + " " + (c.positionCanvas.y+(rayon/3)) +
-                                        " L" + (c.positionCanvas.x-(petitRayon*2/3)-1) + " " + (c.positionCanvas.y+(rayon/3))}
-                                    stroke={"white"}
-                                    strokeWidth={rayon/14}
-                                    opacity={0.5}
-                                />
-                            );
-                        }
+                                return (
+                                    <Path
+                                        key = {"motifMontagne" + c.id}
+                                        data = {"M"+ (c.positionCanvas.x-(petitRayon*2/3)) + " " + (c.positionCanvas.y+(rayon/3)) + 
+                                            " L"+ (c.positionCanvas.x-(petitRayon/4)) + " " + (c.positionCanvas.y-(rayon*1.8/3)) + 
+                                            " L"+ (c.positionCanvas.x+(petitRayon/5)) + " " + (c.positionCanvas.y+(rayon/3)) + 
+                                            " M"+ (c.positionCanvas.x+(petitRayon/11)) + " " + (c.positionCanvas.y+(rayon/12)) +
+                                            " L"+ (c.positionCanvas.x+(petitRayon/3)) + " " + (c.positionCanvas.y-(rayon/4)) + 
+                                            " L"+ (c.positionCanvas.x+(petitRayon*2/3)) + " " + (c.positionCanvas.y+(rayon/3)) +
+                                            " L" + (c.positionCanvas.x-(petitRayon*2/3)-1) + " " + (c.positionCanvas.y+(rayon/3))}
+                                        stroke = {"white"}
+                                        strokeWidth = {rayon/14}
+                                        opacity = {0.5}
+                                    />
+                                );
+                            }
                         })
                     }
 
@@ -172,7 +172,7 @@ export function Affichage({contexte, rayon, tour, pion, deplacement, brouillard,
                                     outerRadius = {rayon}
                                     fill = "#9486E1"
                                     stroke = "black"
-                                    strokeWidth={rayon/18}
+                                    strokeWidth = {rayon/18}
                                 />
                                 <Star
                                     x = {residenceBio.positionCanvas.x}
@@ -182,7 +182,7 @@ export function Affichage({contexte, rayon, tour, pion, deplacement, brouillard,
                                     outerRadius = {rayon}
                                     fill = "#F17961"
                                     stroke = "black"
-                                    strokeWidth={rayon/18}
+                                    strokeWidth = {rayon/18}
                                 />
                             </>
                         );
@@ -374,7 +374,7 @@ export function Affichage({contexte, rayon, tour, pion, deplacement, brouillard,
                                         radius = {tailleRayon}
                                         fill = "#9486E1"
                                         stroke = "black"
-                                        strokeWidth={rayon/14}
+                                        strokeWidth = {rayon/14}
                                     />
                                     <Circle
                                         x = {posInfo2.positionCanvas.x + decalageInfo2X}
@@ -382,7 +382,7 @@ export function Affichage({contexte, rayon, tour, pion, deplacement, brouillard,
                                         radius = {tailleRayon}
                                         fill = "#9486E1"
                                         stroke = "white"
-                                        strokeWidth={rayon/14}
+                                        strokeWidth = {rayon/14}
                                     />
                                     <Circle
                                         x = {posBio.positionCanvas.x + decalageBioX}
@@ -390,7 +390,7 @@ export function Affichage({contexte, rayon, tour, pion, deplacement, brouillard,
                                         radius = {tailleRayon}
                                         fill = "#F17961"
                                         stroke = "black"
-                                        strokeWidth={rayon/14}
+                                        strokeWidth = {rayon/14}
                                     />
                                     <Circle
                                         x = {posBio2.positionCanvas.x + decalageBio2X}
@@ -398,7 +398,7 @@ export function Affichage({contexte, rayon, tour, pion, deplacement, brouillard,
                                         radius = {tailleRayon}
                                         fill = "#F17961"
                                         stroke = "white"
-                                        strokeWidth={rayon/14}
+                                        strokeWidth = {rayon/14}
                                     />
                                     <Text
                                         x = {mascotteBio.positionCanvas.x + 1 + decalageMascotteBioX}
@@ -443,7 +443,7 @@ export function Affichage({contexte, rayon, tour, pion, deplacement, brouillard,
                                         radius = {rayon / 2}
                                         fill = "#9486E1"
                                         stroke = "black"
-                                        strokeWidth={rayon/14}
+                                        strokeWidth = {rayon/14}
                                     />
                                     <Circle
                                         x = {posBio.positionCanvas.x}
@@ -451,7 +451,7 @@ export function Affichage({contexte, rayon, tour, pion, deplacement, brouillard,
                                         radius = {rayon / 2}
                                         fill = "#F17961"
                                         stroke = "black"
-                                        strokeWidth={rayon/14}
+                                        strokeWidth = {rayon/14}
                                     />
                                     <Text
                                         x = {mascotteBio.positionCanvas.x}
@@ -488,7 +488,7 @@ export function Affichage({contexte, rayon, tour, pion, deplacement, brouillard,
                                 v.x === c.positionMatrice.x &&
                                 v.y === c.positionMatrice.y
                             );
-                            if (visible) return null;
+                            if (visible) {return null;}
                             return (
                                 <>
                                     <RegularPolygon
@@ -499,17 +499,27 @@ export function Affichage({contexte, rayon, tour, pion, deplacement, brouillard,
                                         radius = {rayon}
                                         fill = "grey"
                                         stroke = {"black"}
-                                        strokeWidth={rayon/18}
+                                        strokeWidth = {rayon/18}
                                     />
                                     <Path
                                         key = {"motifBrouillard" + c.id}
-                                        data={"M0 0"}
-                                        stroke={"white"}
-                                        strokeWidth={rayon/14}
-                                        opacity={0.5}
+                                        data = {
+                                            "M" + (c.positionCanvas.x-(petitRayon*3.5/5)) + " " + (c.positionCanvas.y-(petitRayon/3)) +
+                                            " L" + (c.positionCanvas.x-(petitRayon*1.1/6)) + " " + (c.positionCanvas.y-(petitRayon/3)) +
+                                            " A" + rayon/10 + " " + rayon/10 + " ," + "1, 1, 0, " + (c.positionCanvas.x-(petitRayon*1.5/5)) + " " + (c.positionCanvas.y-(petitRayon*1.4/3)) +
+                                            
+                                            " M" + (c.positionCanvas.x-(petitRayon*3.5/5)) + " " + (c.positionCanvas.y) +
+                                            " L" + (c.positionCanvas.x+(petitRayon*0.9/2)) + " " + (c.positionCanvas.y) +
+                                            " A" + rayon/4 + " " + rayon/4 + " ," +  "1, 1, 0, " + (c.positionCanvas.x+(petitRayon*0.8/5)) + " " + (c.positionCanvas.y-(petitRayon*0.9/3)) +
+                                            
+                                            " M" + (c.positionCanvas.x-(petitRayon*3.5/5)) + " " + (c.positionCanvas.y+(petitRayon/3)) +
+                                            " L" + (c.positionCanvas.x+(petitRayon*0.8/8)) + " " + (c.positionCanvas.y+(petitRayon/3)) +
+                                            " A" + rayon*1.1/6 + " " + rayon*1.1/6 + " ," + "1, 1, 1, " + (c.positionCanvas.x-(petitRayon/10)) + " " + (c.positionCanvas.y+(petitRayon*1.6/3))}
+                                        stroke = {"white"}
+                                        strokeWidth = {rayon/18}
+                                        opacity = {0.5}
                                     />
                                 </>
-                                
                             );
                         })
                     }
@@ -530,16 +540,16 @@ export function Affichage({contexte, rayon, tour, pion, deplacement, brouillard,
                         );
                         if (!adjacent) {return null;}
                         return (
-                        <RegularPolygon
-                            key = {"a-" + c.id}
-                            x = {c.positionCanvas.x}
-                            y = {c.positionCanvas.y}
-                            sides = {6}
-                            radius = {rayon-1}
-                            stroke = {tour === 0 ? "#9486E1" : tour === 1 ? "#F17961" : "transparent"}
-                            strokeWidth = {rayon/8} // 4
-                        />
-                        )
+                            <RegularPolygon
+                                key = {"a-" + c.id}
+                                x = {c.positionCanvas.x}
+                                y = {c.positionCanvas.y}
+                                sides = {6}
+                                radius = {rayon-1}
+                                stroke = {tour === 0 ? "#9486E1" : tour === 1 ? "#F17961" : "transparent"}
+                                strokeWidth = {rayon/8}
+                            />
+                        );
                     })} 
 
                     {/* === INTERACTION AVEC LES CASES ===

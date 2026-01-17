@@ -269,7 +269,7 @@ export function useLogiqueJeu() {
             nouvellePioche.ajouter([0, "🥸 Surveillant"]);
             nouvellePioche.ajouter([0, "🥸 Surveillant"]);
             for (let i = 0; i < 3; i++) {
-                nouvellePioche.ajouter([3, "🚜 Budlozer"]);
+                nouvellePioche.ajouter([3, "🚜 Bulldozer"]);
                 nouvellePioche.ajouter([4, "✂️ Tenaille"]);
             }
             for (let i = 0; i < 4; i++) nouvellePioche.ajouter([1, "📄 Corrections"]);

@@ -168,7 +168,7 @@ export type CarteAJouer =
     [0, "🥸 Surveillant"] | 
     [1, "📄 Corrections"] | 
     [2, "🦫 Castor"] | 
-    [3, "🚜 Budlozer"] | 
+    [3, "🚜 Bulldozer"] | 
     [4, "✂️ Tenaille"] | 
     [5, "🪢 Corde"] | 
     undefined;
