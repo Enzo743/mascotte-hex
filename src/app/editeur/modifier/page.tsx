@@ -1,7 +1,7 @@
 "use client"
 
 import {ReadonlyURLSearchParams, useRouter, useSearchParams} from "next/navigation";
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import "../../globals.css";
 import GrilleEditeur from "@/app/components/editeur/GrilleEditeur";
 import LogTextarea from "@/app/components/editeur/LogTextarea";
@@ -43,6 +43,10 @@ export default function Page() {
     // States pour gérer le mode ajout et suppression : true pour ajout, et false pour suppression
     const [modeTyrolienne, setModeTyrolienne] = useState(true);
     const [modeRiviere, setModeRiviere] = useState(true);
+
+    // States pour gérer le clic droit maintenu (mode peinture)
+    const [estEnModePeinture, setEstEnModePeinture] = useState<boolean>(false);
+    const casesModifiees = useRef<Set<string>>(new Set());
 
     // Hook pour gérer l'historique (undo/redo)
     const {sauvegarderState, undo, redo, peutUndo, peutRedo, indexCourant} = useHistorique(20);
@@ -215,6 +219,19 @@ export default function Page() {
         return () => window.removeEventListener('keydown', handleBoutonPressee);
     }, [peutUndo, peutRedo]);
 
+    // Gestion globale du relâchement des boutons de la souris
+    useEffect(() => {
+        const handleMouseUp = () => {
+            if (estEnModePeinture) {
+                setEstEnModePeinture(false);
+                casesModifiees.current.clear();
+            }
+        };
+
+        window.addEventListener('mouseup', handleMouseUp);
+        return () => window.removeEventListener('mouseup', handleMouseUp);
+    }, [estEnModePeinture]);
+
     // Import de toutes les fonctions du hook useClickHandler
     const {handleTerrainClic, handleResidenceClic, handleTyrolienneClic, handleRiviereClic} = useClicHandler({
         carteId,
@@ -236,6 +253,43 @@ export default function Page() {
         sauvegardeHistorique: sauvegarderState,
         jsonData
     });
+
+    // Fonction pour gérer l'interaction avec une case (clic ou survol en mode peinture)
+    const handleHexInteraction = (hex: any, estClicGauche: boolean = false) => {
+        const coordonnees_hex: string[] = hex.id.split("-");
+        const x: number = Number(coordonnees_hex[0]);
+        const y: number = Number(coordonnees_hex[1]);
+        const date: string = new Date().toLocaleString().toString();
+
+        // Si c'est un clic droit et qu'un terrain est sélectionné, on active le mode peinture
+        if (estClicGauche && terrainSelectionne) {
+            setEstEnModePeinture(true);
+            casesModifiees.current.clear();
+            handleTerrainClic(terrainSelectionne, hex, x, y, date);
+            casesModifiees.current.add(hex.id);
+            return;
+        }
+
+        // Si on est en mode peinture et qu'on survole une nouvelle case
+        if (estEnModePeinture && terrainSelectionne && !casesModifiees.current.has(hex.id)) {
+            handleTerrainClic(terrainSelectionne, hex, x, y, date);
+            casesModifiees.current.add(hex.id);
+            return;
+        }
+
+        // Sinon, comportement normal (clic gauche)
+        if (!estClicGauche) {
+            if (terrainSelectionne) {
+                handleTerrainClic(terrainSelectionne, hex, x, y, date);
+            } else if (residenceSelectionnee) {
+                handleResidenceClic(residenceSelectionnee, hex, x, y, date);
+            } else if (connexionsSelectionnee === "tyrolienne") {
+                handleTyrolienneClic(hex, x, y, date, modeTyrolienne);
+            } else if (connexionsSelectionnee === "riviere") {
+                handleRiviereClic(hex, x, y, date, modeRiviere);
+            }
+        }
+    };
 
     if (!isLoaded) {
         return <div>Chargement de la carte...</div>;
@@ -277,27 +331,19 @@ export default function Page() {
                         mascotteBio={posBio}
                         rivieres={rivieres}
                         tyroliennes={tyroliennes}
-                        onClick={(hex) => {
-                            const coordonnees_hex: string[] = hex.id.split("-");
-                            const x: number = Number(coordonnees_hex[0]);
-                            const y: number = Number(coordonnees_hex[1]);
-                            console.log("x = " + x);
-                            console.log("y = " + y);
-                            const date: string = new Date().toLocaleString().toString();
-
-                                // On gère chacun des cas possibles d'onglets
-                                if (terrainSelectionne) {
-                                    handleTerrainClic(terrainSelectionne, hex, x, y, date);
-                                } else if (residenceSelectionnee) {
-                                    handleResidenceClic(residenceSelectionnee, hex, x, y, date);
-                                } else if (connexionsSelectionnee === "tyrolienne") {
-                                    handleTyrolienneClic(hex, x, y, date, modeTyrolienne);
-                                } else if (connexionsSelectionnee === "riviere") {
-                                    handleRiviereClic(hex, x, y, date, modeRiviere);
-                                }
-                            }}
-                        />
-                    </div>
+                        onClick={(hex) => handleHexInteraction(hex, false)}
+                        onMouseDown={(hex, estClicGauche) => {
+                            if (estClicGauche) {
+                                handleHexInteraction(hex, true);
+                            }
+                        }}
+                        onMouseEnter={(hex) => {
+                            if (estEnModePeinture) {
+                                handleHexInteraction(hex, false);
+                            }
+                        }}
+                    />
+                </div>
 
                 {/* Zone des messages pour les logs de chaque changement dans l'éditeur */}
                 <div className={"messages"}>

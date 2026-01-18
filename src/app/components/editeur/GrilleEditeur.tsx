@@ -2,6 +2,7 @@
 import {Arrow, Group, Layer, Path, RegularPolygon, Stage, Star} from "react-konva";
 import {Case, Connexion} from "../Structure";
 import {useEffect, useRef, useState} from "react";
+import {KonvaEventObject} from "konva/lib/Node";
 
 export default function GrilleEditeur(
     {
@@ -12,6 +13,8 @@ export default function GrilleEditeur(
         rivieres,
         tyroliennes,
         onClick,
+        onMouseDown,
+        onMouseEnter
     }: {
         rayon: number;
         hexagones: Case[];
@@ -19,7 +22,9 @@ export default function GrilleEditeur(
         mascotteBio: undefined | Case;
         rivieres: Connexion[];
         tyroliennes: Connexion[];
-        onClick: (hex: Case) => void;
+        onClick?: (hex: Case) => void;
+        onMouseDown?: (hex: Case, estClicGauche: boolean) => void;
+        onMouseEnter?: (hex: Case) => void;
     }) {
     const containerRef = useRef<HTMLDivElement>(null);
     const [dimensions, setDimensions] = useState({width: 800, height: 600});
@@ -32,10 +37,9 @@ export default function GrilleEditeur(
             if (containerRef.current) {
                 const container = containerRef.current.parentElement;
                 if (container) {
-                    const containerWidth = container.clientWidth - 40; // Marge
+                    const containerWidth = container.clientWidth - 40;
                     const containerHeight = container.clientHeight - 40;
 
-                    // Calculer le ratio pour adapter la carte
                     const scaleX = containerWidth / originalWidth;
                     const scaleY = containerHeight / originalHeight;
                     const scale = Math.min(scaleX, scaleY, 1);
@@ -155,7 +159,18 @@ export default function GrilleEditeur(
                                 y={hexagone.position.y}
                                 sides={6}
                                 radius={rayon}
-                                onClick={() => onClick?.(hexagone)}
+                                onClick={(e: KonvaEventObject<MouseEvent>) => {
+                                    // On exécute l'événement au clic gauche uniquement
+                                    if (e.evt.button === 0) {
+                                        onClick?.(hexagone);
+                                    }
+                                }}
+                                onMouseDown={(e: KonvaEventObject<MouseEvent>) => {
+                                    // On détecte le bouton appuyé devant être le clic gauche
+                                    const estClicGauche = e.evt.button === 0;
+                                    onMouseDown?.(hexagone, estClicGauche);
+                                }}
+                                onMouseEnter={() => onMouseEnter?.(hexagone)}
                             />
                         ))}
                     </Group>
