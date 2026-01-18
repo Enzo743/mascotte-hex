@@ -218,17 +218,42 @@ export function Affichage({contexte, rayon, tour, pion, deplacement, brouillard,
                     {surveillants.map((p: Position) => {
                         const pos: Case | undefined = contexte.carte.cases.find((c) => c.id === `${p.x}-${p.y}`);
                         if (!pos) return;
-                        return (
-                            <Text
-                                key = {`s-${p.x}-${p.y}`}
-                                x = {pos.positionCanvas.x}
-                                y = {pos.positionCanvas.y}
-                                text = {"🥸"}
-                                fontSize = {rayon/1.5}
-                                offsetX = {rayon/2.5}
-                                offsetY = {rayon/2.5}
-                            />
-                        );
+                        if (pos.type !== "ocean") {
+                            return (
+                                <Text
+                                    key = {`s-${p.x}-${p.y}`}
+                                    x = {pos.positionCanvas.x}
+                                    y = {pos.positionCanvas.y}
+                                    text = {"🥸"}
+                                    fontSize = {rayon/1.5}
+                                    offsetX = {rayon/2.5}
+                                    offsetY = {rayon/2.5}
+                                />
+                            );
+                        } else {
+                            return (
+                                <>
+                                    <Text
+                                        key = {`sb-${p.x}-${p.y}`}
+                                        x = {pos.positionCanvas.x}
+                                        y = {pos.positionCanvas.y}
+                                        text = {"🛥️"}
+                                        fontSize = {rayon}
+                                        offsetX = {rayon/1.5}
+                                        offsetY = {rayon/1.8}
+                                    />
+                                    <Text
+                                        key = {`s-${p.x}-${p.y}`}
+                                        x = {pos.positionCanvas.x}
+                                        y = {pos.positionCanvas.y}
+                                        text = {"🥸"}
+                                        fontSize = {rayon/1.5}
+                                        offsetX = {rayon/2.5}
+                                        offsetY = {rayon/2.5}
+                                />
+                                </>
+                            );
+                        }
                     })}
 
                     {castors.map((p: Position) => {
