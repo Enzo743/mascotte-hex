@@ -739,6 +739,28 @@ grid-row-gap: 0px;
     padding-bottom: 5px;
 }
 
+.win {
+    color: #fff;
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 15px 0 10px 0;
+    padding-bottom: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    height: 100%;
+}
+
+.bio {
+    color: #F17961;
+}
+
+.info {
+    color: #9486E1;
+}
+
 .sidebar p {
     font-size: 0.85rem;
     margin-bottom: 8px;

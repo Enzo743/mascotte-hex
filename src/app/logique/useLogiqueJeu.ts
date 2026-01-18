@@ -5,8 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { getCarte } from "@/app/actions/getCarte";
 import { cheminRandom, plusCourtChemin } from "@/app/modules/Bot";
 import { TraitementCarte, TraitementGraphe, TraitementTotal } from "@/app/modules/Traitement";
-// Voir @1
-// import { Terrain } from "@/app/components/Terrain";
+import { Terrain } from "@/app/components/Terrain";
 import { Arc, Case, CarteJSON, Contexte, DifficulteIA, Joueur, ModeJeu, Noeud, Pioche, Position, PremierTour, CarteAJouer, Connexion} from "@/app/modules/Interfaces";
 import { cp } from "node:fs";
 
@@ -23,8 +22,7 @@ export function useLogiqueJeu() {
     const showModification = searchParams.get("showModif");
 
     const [indexCarte, setIndexCarte] = useState(0);
-    // Voir @1
-    // const [carteJSONvisu, definirCarteJSONvisu] = useState<CarteJSON | null>(null);
+    const [carteJSONvisu, definirCarteJSONvisu] = useState<CarteJSON | null>(null);
     const [hexagones, definirHexagones] = useState<Case[]>([]);
     const [residenceInfo, definirResidenceInfo] = useState<Case | undefined>(undefined);
     const [residenceBio, definirResidenceBio] = useState<Case | undefined>(undefined);
@@ -69,7 +67,6 @@ export function useLogiqueJeu() {
         c.positionMatrice.y === joueurActuel?.position.y
     );
 
-    /* @1 === Commenté, en attendant de potentiellement le retravailler (erreurs de type) ===
     async function showCarteVisu() {
         if (carteId && residenceBio !== null && residenceInfo !== null) {
             const carte: CarteJSON = await getCarte(carteId);
@@ -91,7 +88,6 @@ export function useLogiqueJeu() {
             definirRivieres(riv);
         }
     }
-    */
 
     const deplacerJoueur = useCallback((position: Position) => {
         if (tour === 5 || tour === 6) {
@@ -198,20 +194,35 @@ export function useLogiqueJeu() {
 
     function deplacerIA() {
         if (!contexte) return;
+        
+        // Recalculer le graphe AVANT de calculer le chemin
+        const grapheActuel = TraitementGraphe(
+            contexte.carte, 
+            contexte.joueurInfo, 
+            contexte.joueurBio, 
+            contexte.joueurInfo2, 
+            contexte.joueurBio2, 
+            tour, 
+            equipe,
+            surveillants,
+            castors,
+            casse
+        );
+        
         const iaInfo = modeJeu === "bot" && premierTour === "bio";
         const joueurIA = iaInfo ? contexte.joueurInfo : contexte.joueurBio;
         const joueurHumain = iaInfo ? contexte.joueurBio : contexte.joueurInfo;
         let prochainePosition;
         if (difficulteIA == "stupide") {
-            prochainePosition = cheminRandom(contexte.graphe, joueurIA.position);
+            prochainePosition = cheminRandom(grapheActuel, joueurIA.position);
         } else {
             let arrivee: Arc | undefined;
             if (joueurIA.mascotte) {
                 const res = iaInfo ? contexte.carte.residenceInfo : contexte.carte.residenceBio;
-                arrivee = contexte.graphe.find(g => g.noeud.x === res.x && g.noeud.y === res.y);
+                arrivee = grapheActuel.find(g => g.noeud.x === res.x && g.noeud.y === res.y);
             } else {
                 const res = iaInfo ? contexte.carte.residenceBio : contexte.carte.residenceInfo;
-                arrivee = contexte.graphe.find(g => g.noeud.x === res.x && g.noeud.y === res.y);
+                arrivee = grapheActuel.find(g => g.noeud.x === res.x && g.noeud.y === res.y);
             }
             if (!arrivee) return;
             let chemin: Noeud[] | null = null;
@@ -219,13 +230,13 @@ export function useLogiqueJeu() {
             if (arriveeBloquee) {
                 const chemins: Noeud[][] = [];
                 arrivee.voisins.forEach(voisin => {
-                    const c = plusCourtChemin(contexte.graphe, joueurIA.position, voisin, difficulteIA);
+                    const c = plusCourtChemin(grapheActuel, joueurIA.position, voisin, difficulteIA);
                     if (c) chemins.push(c);
                 });
                 if (chemins.length === 0) return;
                 chemin = chemins.reduce((a, b) => (a.length < b.length ? a : b));
             } else {
-                chemin = plusCourtChemin(contexte.graphe, joueurIA.position, arrivee.noeud, difficulteIA);
+                chemin = plusCourtChemin(grapheActuel, joueurIA.position, arrivee.noeud, difficulteIA);
             }
             if (!chemin || chemin.length < 2) return;
             prochainePosition = chemin[1];
@@ -238,6 +249,7 @@ export function useLogiqueJeu() {
         };
         const nouveauContexte: Contexte = {
             ...contexte,
+            graphe: grapheActuel,
             joueurInfo: iaInfo ? joueurIAUpdate : contexte.joueurInfo,
             joueurBio: !iaInfo ? joueurIAUpdate : contexte.joueurBio
         };
@@ -377,15 +389,6 @@ export function useLogiqueJeu() {
     }, [jeuDemarre, equipe]);
 
     useEffect(() => {
-        const touche = (event: KeyboardEvent) => {
-            if (event.key === "t") utiliserTyrolienne();
-            else if (event.key === "r") utiliserRiviere();
-        };
-        document.addEventListener("keydown", touche);
-        return () => document.removeEventListener("keydown", touche);
-    }, [utiliserTyrolienne, utiliserRiviere]);
-
-    useEffect(() => {
         let interval: number | null = null;
         const onKeyDown = (e: KeyboardEvent) => {
             if (e.key === "ArrowUp") {
@@ -436,13 +439,11 @@ export function useLogiqueJeu() {
             );
             definirContexte(prev => prev ? { ...prev, graphe: nouveauGraphe } : prev);
         }
-    }, [tour, contexte?.joueurInfo.position, contexte?.joueurBio.position]);
+    }, [tour, contexte?.joueurInfo.position, contexte?.joueurBio.position, contexte?.joueurInfo2.position, contexte?.joueurBio2.position, surveillants, castors, casse]);
 
-    /* Voir @1 
     useEffect(() => {
         if (carteId) showCarteVisu();
     }, [carteId, rayon]);
-    */
 
     return {
         carteId, showSelection, showVictoire, show, showModification,

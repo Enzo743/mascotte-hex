@@ -489,9 +489,8 @@ export function Affichage({contexte, rayon, tour, pion, deplacement, brouillard,
                             );
                             if (visible) {return null;}
                             return (
-                                <>
+                                <Group key={"fog-" + c.id}>
                                     <RegularPolygon
-                                        key = {"b-" + c.id}
                                         x = {c.positionCanvas.x}
                                         y = {c.positionCanvas.y}
                                         sides = {6}
@@ -501,7 +500,6 @@ export function Affichage({contexte, rayon, tour, pion, deplacement, brouillard,
                                         strokeWidth = {rayon/18}
                                     />
                                     <Path
-                                        key = {"motifBrouillard" + c.id}
                                         data = {"M" + (c.positionCanvas.x-(petitRayon*3.5/5)) + " " + (c.positionCanvas.y-(petitRayon/3)) +
                                             " L" + (c.positionCanvas.x-(petitRayon*1.1/6)) + " " + (c.positionCanvas.y-(petitRayon/3)) +
                                             " A" + rayon/10 + " " + rayon/10 + " ," + "1, 1, 0, " + (c.positionCanvas.x-(petitRayon*1.5/5)) + " " + (c.positionCanvas.y-(petitRayon*1.4/3)) +
@@ -517,7 +515,7 @@ export function Affichage({contexte, rayon, tour, pion, deplacement, brouillard,
                                         strokeWidth = {rayon/18}
                                         opacity = {0.5}
                                     />
-                                </>
+                                </Group>
                             );
                         })
                     }

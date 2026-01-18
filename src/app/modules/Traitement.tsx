@@ -212,11 +212,13 @@ export function TraitementGraphe(carte: Carte, joueurInfo: Joueur, joueurBio: Jo
         }
     });
 
+    // Ajout des arêtes liées aux rivières, estCastor sert dans le cas ou un castor bouche telle case de rivière
+    // Calcul des adjacences assez complexe
+    // On vérifie donc si la rivière se jette dans l'océan ou une autre rivière, si en parcourant la rivière de 3 case on est toujours dans la rivière et pas au dela
     const estCastor = (x: number, y: number): boolean => {
         return castors.some(c => c.x === x && c.y === y);
     };
 
-    // Ajout des arêtes liées aux tyroliennes.
     carte.rivieres.forEach((riviere: Riviere) => {
         const embouchureCase: Case | undefined = carte.cases.find(c => c.id === `${riviere.embouchure.x}-${riviere.embouchure.y}`);
         if (!embouchureCase) return;
@@ -316,7 +318,7 @@ export function TraitementGraphe(carte: Carte, joueurInfo: Joueur, joueurBio: Jo
         positionsJoueurs = [joueurInfo.position, joueurBio.position];
     }
 
-    // Zone des surveillants
+    // On retire l'adjacences à toutes les cases autour des surveillants, et aux tyroliennes cassées
     const zonesInterdites = new Set<string>();
     surveillants.forEach(s => {
         zonesInterdites.add(`${s.x}-${s.y}`);
@@ -342,18 +344,16 @@ export function TraitementGraphe(carte: Carte, joueurInfo: Joueur, joueurBio: Jo
             return !zonesInterdites.has(cle);
         });
     }
-
+    
     carte.tyroliennes.forEach((tyrolienne: Tyrolienne) => {
         const estCassee = casse.some(pos => 
             pos.x === tyrolienne.entree.x && pos.y === tyrolienne.entree.y
         );
-
         if (estCassee) {
             const arcDepart: Arc | undefined = graphe.find(g =>
                 (g.noeud.x === tyrolienne.entree.x) &&
                 (g.noeud.y === tyrolienne.entree.y)
             );
-
             if (arcDepart) {
                 arcDepart.voisins = arcDepart.voisins.filter(voisin => 
                     !(voisin.x === tyrolienne.sortie.x && voisin.y === tyrolienne.sortie.y)

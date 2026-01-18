@@ -6,7 +6,11 @@ import GestionnaireModal from "@/app/components/editeur/modals/GestionnaireModal
 import { ModeJeu, PremierTour } from "@/app/modules/Interfaces";
 
 /* === Lobby ===
-Todo : Commenter vite fait
+Page principale du jeu, deux côtés, deux utilités
+- à gauche tout ce qui est apparenté à la création et modification des cartes, ainsi qu'un espace pour visualiser la carte sélectionnée
+- à droite tout ce qui est apparenté au jeu, mode de jeu et ses paramètres
+Enregistre les choix du joueur et le redirige au bon endroit
+Pas grand interet à commenter plus que ca, c'est du html avec des onclick pour changer les états relatifs au jeu ou à l'éditeur
 */
 export default function Lobby({ data, actions }: any) {
     return (

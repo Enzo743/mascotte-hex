@@ -63,6 +63,7 @@ export function plusCourtChemin(graphe: Arc[], depart: Noeud, arrive: Noeud, dif
     return null;
 }
 
+// Vrai mode random pour le bot, utile pour le paramètre brouillard car il n'est pas censé savoir ou aller
 export function cheminRandom(graphe: Arc[], depart: Noeud): Noeud | null {
     const arcCourant = graphe.find(a => a.noeud.x === depart.x && a.noeud.y === depart.y);
     if (!arcCourant || arcCourant.voisins.length == 0) {
