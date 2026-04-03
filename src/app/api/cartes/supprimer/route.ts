@@ -1,29 +1,31 @@
 import {NextResponse} from "next/server";
 import fs from "node:fs/promises";
 import {estMemeTuile} from "@/app/utils/jsonUtils";
+import {APISuppressionTuile} from "@/app/types/api";
+import {CarteJSON, Connexion} from "@/app/modules/Interfaces";
 
 /**
  * route → /api/cartes/supprimer
  * Route en POST qui supprime une tuile de la carte en fonction du type de connexion
  */
-export async function POST(req: Request) {
+export async function POST(req: Request): Promise<NextResponse> {
     try {
-        const jsonReq = await req.json();
-        const nom = jsonReq.nom;
-        const type = jsonReq.type;
-        const tuileSupprimee = jsonReq.tuileSupprimee;
+        const jsonReq: APISuppressionTuile = await req.json();
+        const nom: string = jsonReq.nom;
+        const type: string = jsonReq.type;
+        const tuileSupprimee: [number, number] = jsonReq.tuileSupprimee;
 
-        const data = await fs.readFile(`./public/json/${nom}.json`, "utf8");
-        const json = JSON.parse(data);
+        const data: string = await fs.readFile(`./public/json/${nom}.json`, "utf8");
+        const json: CarteJSON = JSON.parse(data);
 
         switch (type) {
             case "tyrolienne": {
-                const connexions = json.connexions;
+                const connexions: Connexion[] = json.connexions;
 
-                json.connexions = connexions.filter(c => {
+                json.connexions = connexions.filter((c: Connexion) => {
                     if (c.type !== "tyrolienne") return true;
 
-                    const contient = c.tuiles.some((t) => estMemeTuile(t, tuileSupprimee));
+                    const contient: boolean = c.tuiles.some((t: [number, number]): boolean => estMemeTuile(t, tuileSupprimee));
 
                     return !contient;
                 });
@@ -31,12 +33,12 @@ export async function POST(req: Request) {
                 break;
             }
             case "riviere": {
-                const connexions = json.connexions;
+                const connexions: Connexion[] = json.connexions;
 
-                json.connexions = connexions.filter(c => {
+                json.connexions = connexions.filter((c: Connexion) => {
                     if (c.type !== "riviere") return true;
 
-                    const contient = c.tuiles.some((t) => estMemeTuile(t, tuileSupprimee));
+                    const contient: boolean = c.tuiles.some((t: [number, number]): boolean => estMemeTuile(t, tuileSupprimee));
 
                     return !contient;
                 });

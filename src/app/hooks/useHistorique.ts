@@ -1,7 +1,8 @@
 import {useCallback, useState} from 'react';
+import {CarteJSON} from "@/app/modules/Interfaces";
 
 interface HistoriqueState {
-    jsonData: any;
+    jsonData: CarteJSON;
     timestamp: number;
 }
 
@@ -10,7 +11,7 @@ export function useHistorique(maxHistoriqueTaille: number = 20) {
     const [indexCourant, setIndexCourant] = useState<number>(-1);
 
     // Sauvegarder un nouvel état (Action effectuée)
-    const sauvegarderState = useCallback((jsonData: any) => {
+    const sauvegarderState = useCallback((jsonData: CarteJSON) => {
         setHistorique(prev => {
             const baseHistorique = prev.slice(0, indexCourant + 1);
 
@@ -33,7 +34,7 @@ export function useHistorique(maxHistoriqueTaille: number = 20) {
     }, [indexCourant, maxHistoriqueTaille]);
 
     // Undo : Recule l'index et renvoie l'état correspondant
-    const undo = useCallback((): any | null => {
+    const undo: () => (CarteJSON | null) = useCallback((): CarteJSON | null => {
         if (indexCourant > 0) {
             const nouvelIndex = indexCourant - 1;
             setIndexCourant(nouvelIndex);

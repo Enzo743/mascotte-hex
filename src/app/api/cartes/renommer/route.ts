@@ -1,4 +1,4 @@
-import {NextRequest, NextResponse} from 'next/server';
+import {NextResponse} from 'next/server';
 import fs from 'fs';
 import path from 'path';
 
@@ -6,12 +6,12 @@ import path from 'path';
  * route → /api/cartes/renommer
  * Route en POST qui renomme une carte en fonction de son nom actuel et de son nouveau nom
  */
-export async function POST(request: NextRequest) {
+export async function POST(req: Request): Promise<NextResponse> {
     try {
-        const {ancienNom, nouveauNom} = await request.json();
+        const {ancienNom, nouveauNom} = await req.json();
 
-        const ancienChemin = path.join('./public/json/', `${ancienNom}.json`);
-        const nouveauChemin = path.join('./public/json/', `${nouveauNom}.json`);
+        const ancienChemin: string = path.join('./public/json/', `${ancienNom}.json`);
+        const nouveauChemin: string = path.join('./public/json/', `${nouveauNom}.json`);
 
         // Vérifie que l'ancien fichier existe
         if (!fs.existsSync(ancienChemin)) {
