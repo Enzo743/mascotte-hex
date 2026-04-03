@@ -2,14 +2,20 @@ import {CarteJSON} from "@/app/modules/Interfaces";
 
 export interface APITuileCollection {
     nom: string;
-    info?: string;
-    bio?: string;
-    montagne?: number;
-    foret?: number;
-    ocean?: number;
-    plaine?: number;
-    tyrolienne?: number;
-    riviere?: number;
+    info?: string | [number, number];
+    bio?: string | [number, number];
+    montagne?: number | [number, number];
+    foret?: number | [number, number];
+    ocean?: number | [number, number];
+    plaine?: number | [number, number];
+    tyrolienne?: number | [number, number][];
+    riviere?: number | [number, number][];
+}
+
+export interface APINom {
+    nom: string;
+    lignes: number;
+    colonnes: number
 }
 
 export interface APIRemplacerCarte {

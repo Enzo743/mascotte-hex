@@ -1,7 +1,8 @@
 import fs from "node:fs/promises";
 import {NextResponse} from "next/server";
-import {estMemeTuile} from "@/app/utils/jsonUtils";
 import {CarteJSON, Connexion} from "@/app/modules/Interfaces";
+import {estEnConflit, retirerDesTerrainsSiPresent} from "@/app/utils/jsonUtils";
+import {APITuileCollection} from "@/app/types/api";
 
 /**
  * route → /api/cartes/ajouter
@@ -10,7 +11,7 @@ import {CarteJSON, Connexion} from "@/app/modules/Interfaces";
 export async function POST(req: Request): Promise<NextResponse> {
     try {
         // Variables servant à stocker les potentielles valeurs reçues par le JSON
-        const jsonReq: Record<string, unknown> = await req.json();
+        const jsonReq: APITuileCollection = await req.json();
 
         let nom: string | null = null;
         let residenceInfo: [number, number] | null = null;
@@ -71,60 +72,39 @@ export async function POST(req: Request): Promise<NextResponse> {
         const data: string = await fs.readFile(`./public/json/${nom}.json`, "utf8");
         const json: CarteJSON = JSON.parse(data) as CarteJSON;
 
-        console.log("JSON lu:", json);
+        // console.log("JSON lu:", json);
 
         // Gestion de la sauvegarde des résidences
         if (residenceInfo) json.résidences.info = residenceInfo;
-
         if (residenceBio) json.résidences.bio = residenceBio;
-
-        // Fonction qui permet de retirer des terrains s'ils sont déjà présents dans le JSON
-        const retirerDesTerrainsSiPresent: (tuile: [number, number]) => void = (tuile: [number, number]) => {
-            const {terrains} = json;
-            if (!terrains) return;
-
-            const indexMontagne: number = terrains.montagne?.findIndex((t: [number, number]) => estMemeTuile(t, tuile)) ?? -1;
-            if (indexMontagne !== -1) terrains.montagne.splice(indexMontagne, 1);
-
-            const indexForet: number = terrains.foret?.findIndex((t: [number, number]) => estMemeTuile(t, tuile)) ?? -1;
-            if (indexForet !== -1) terrains.foret.splice(indexForet, 1);
-
-            const indexPlaine: number = terrains.plaine?.findIndex((t: [number, number]) => estMemeTuile(t, tuile)) ?? -1;
-            if (indexPlaine !== -1) terrains.plaine.splice(indexPlaine, 1);
-        };
 
         // Gestion des terrains
         if (montagne) {
-            retirerDesTerrainsSiPresent(montagne);
+            retirerDesTerrainsSiPresent(json, montagne);
             json.terrains.montagne.push(montagne);
         }
 
         if (foret) {
-            retirerDesTerrainsSiPresent(foret);
+            retirerDesTerrainsSiPresent(json, foret);
             json.terrains.foret.push(foret);
         }
 
         if (plaine) {
-            retirerDesTerrainsSiPresent(plaine);
+            retirerDesTerrainsSiPresent(json, plaine);
             json.terrains.plaine.push(plaine);
         }
 
-        if (ocean) retirerDesTerrainsSiPresent(ocean);
+        if (ocean) retirerDesTerrainsSiPresent(json, ocean);
 
         // Gestion des connexions
         if (tyrolienne) {
-            json.connexions = json.connexions.filter((connexion: Connexion) => {
+            json.connexions = json.connexions.filter((connexion: Connexion): boolean => {
                 if (connexion.type !== "riviere") return true;
 
-                const estEnConflit: boolean = connexion.tuiles.some((tuileRiviere: [number, number]) =>
-                    (tyrolienne as [number, number][]).some((tuileTyro: [number, number]) =>
-                        JSON.stringify(tuileRiviere) === JSON.stringify(tuileTyro) ||
-                        JSON.stringify(tuileRiviere) === JSON.stringify([...tuileTyro].reverse())
-                    )
-                );
+                const isConflit: boolean = estEnConflit(connexion, tyrolienne as [number, number][]);
 
-                if (estEnConflit) console.log("Conflit rivière supprimé :", connexion);
-                return !estEnConflit;
+                if (isConflit) console.log("Conflit rivière supprimé :", connexion);
+                return !isConflit;
             });
 
             json.connexions.push({
@@ -134,18 +114,13 @@ export async function POST(req: Request): Promise<NextResponse> {
         }
 
         if (riviere) {
-            json.connexions = json.connexions.filter((connexion: Connexion) => {
+            json.connexions = json.connexions.filter((connexion: Connexion): boolean => {
                 if (connexion.type !== "tyrolienne") return true;
 
-                const estEnConflit: boolean = connexion.tuiles.some((tuileTyrolienne: [number, number]) =>
-                    (riviere as [number, number][]).some((tuileRiviere: [number, number]) =>
-                        JSON.stringify(tuileTyrolienne) === JSON.stringify(tuileRiviere) ||
-                        JSON.stringify(tuileTyrolienne) === JSON.stringify([...tuileRiviere].reverse())
-                    )
-                );
+                const isConflit: boolean = estEnConflit(connexion, riviere as [number, number][]);
 
-                if (estEnConflit) console.log("Conflit tyrolienne supprimé :", connexion);
-                return !estEnConflit;
+                if (isConflit) console.log("Conflit tyrolienne supprimé :", connexion);
+                return !isConflit;
             });
 
             json.connexions.push({
@@ -154,7 +129,7 @@ export async function POST(req: Request): Promise<NextResponse> {
             });
         }
 
-        console.log("JSON Final avant écriture:", JSON.stringify(json, null, 2));
+        // console.log("JSON Final avant écriture:", JSON.stringify(json, null, 2));
 
         await fs.writeFile(`./public/json/${nom}.json`, JSON.stringify(json, null, 2));
 

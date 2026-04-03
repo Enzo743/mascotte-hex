@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import {NextResponse} from "next/server";
 import {CarteJSON} from "@/app/modules/Interfaces";
+import {APINom} from "@/app/types/api";
 
 /**
  * route → /api/cartes/noms
@@ -10,14 +11,14 @@ export async function GET(): Promise<NextResponse> {
     try {
         const cheminDossier: string = "./public/json";
         const fichiers: string[] = await fs.readdir(cheminDossier);
-        const tab: { nom: string, lignes: number, colonnes: number }[] = [];
+        const tab: APINom[] = [];
 
         for (let i: number = 0; i < fichiers.length; i++) {
             if (fichiers[i].startsWith('.')) continue;
 
             const data: string = await fs.readFile(`${cheminDossier}/${fichiers[i]}`, "utf8");
             const json: CarteJSON = JSON.parse(data) as CarteJSON;
-            const jsonGrille: { nom: string; lignes: number; colonnes: number } = {
+            const jsonGrille: APINom = {
                 "nom": fichiers[i].split(".")[0],
                 "lignes": json.grille.lignes,
                 "colonnes": json.grille.colonnes
